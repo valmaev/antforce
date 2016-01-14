@@ -1,0 +1,44 @@
+group 'com.newmarket.force.ant'
+version '0.1-SNAPSHOT'
+
+buildscript {
+    ext.kotlin_version = '1.0.0-beta-4584'
+    ext.ant_version = '1.9.6'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    runtime "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    testCompile 'org.testng:testng:6.9.10'
+}
+
+test {
+    useTestNG()
+    return true
+}
+
+sourceSets {
+    main {
+        kotlin {
+            srcDir "src/main/kotlin"
+        }
+    }
+    test {
+        kotlin {
+            srcDir "src/test/kotlin"
+        }
+    }
+}
