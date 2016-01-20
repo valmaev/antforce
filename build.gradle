@@ -21,6 +21,7 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.apache.ant:ant:$ant_version"
     runtime "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     testCompile 'org.testng:testng:6.9.10'
 }
@@ -28,17 +29,4 @@ dependencies {
 test {
     useTestNG()
     return true
-}
-
-sourceSets {
-    main {
-        kotlin {
-            srcDir "src/main/kotlin"
-        }
-    }
-    test {
-        kotlin {
-            srcDir "src/test/kotlin"
-        }
-    }
 }
