@@ -1,7 +1,6 @@
 package com.newmarket.force.ant
 
 import org.apache.tools.ant.Project
-import org.apache.tools.ant.types.FileSet
 import org.testng.Assert.assertEquals
 import org.testng.Assert.assertTrue
 import org.testng.annotations.AfterMethod
@@ -25,7 +24,7 @@ public class BatchTestTestCase() {
 
     @Test fun addFileSet_always_shouldFillProjectPropertyOfPassedValue() {
         val sut = createSystemUnderTest()
-        val input = createFileSet()
+        val input = createFileSet(testDirectory!!)
 
         sut.addFileSet(input)
 
@@ -34,7 +33,7 @@ public class BatchTestTestCase() {
 
     @Test fun addFileSet_always_shouldAddFileSetToResources() {
         val sut = createSystemUnderTest()
-        val input = createFileSet("foo", "bar")
+        val input = createFileSet(testDirectory!!, "foo", "bar")
 
         sut.addFileSet(input)
 
@@ -52,7 +51,7 @@ public class BatchTestTestCase() {
 
         val sut = createSystemUnderTest()
         sut.namespace = namespace
-        val fileSet = createFileSet(inputFileNames)
+        val fileSet = createFileSet(testDirectory!!, inputFileNames)
         sut.addFileSet(fileSet)
 
         assertEquals(sut.getFileNames(), expected, message)
@@ -84,16 +83,4 @@ public class BatchTestTestCase() {
         project.name = "TestProject"
         return BatchTest(project)
     }
-
-    fun createFileSet(fileNames: Iterable<String>): FileSet {
-        val fileSet = FileSet()
-        fileSet.dir = testDirectory
-        fileNames.forEach {
-            val file = File("${testDirectory!!.path}${File.separator}$it")
-            file.createNewFile()
-        }
-        return fileSet
-    }
-
-    fun createFileSet(vararg filesNames: String) = createFileSet(filesNames.asIterable())
 }
