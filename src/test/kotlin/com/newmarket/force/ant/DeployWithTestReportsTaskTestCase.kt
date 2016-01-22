@@ -3,8 +3,8 @@ package com.newmarket.force.ant
 import com.salesforce.ant.DeployTask
 import org.apache.tools.ant.Project
 import org.apache.tools.ant.types.FileSet
-import org.hamcrest.MatcherAssert.assertThat;
-import org.hamcrest.Matchers.*;
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.*
 import org.testng.annotations.Test
 import java.io.File
 
