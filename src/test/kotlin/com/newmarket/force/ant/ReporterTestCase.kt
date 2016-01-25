@@ -3,6 +3,7 @@ package com.newmarket.force.ant
 import com.newmarket.force.ant.dsl.JUnitReport
 import com.newmarket.force.ant.dsl.TestCase
 import com.newmarket.force.ant.dsl.TestSuite
+import com.sforce.soap.metadata.RunTestFailure
 import com.sforce.soap.metadata.RunTestSuccess
 import com.sforce.soap.metadata.RunTestsResult
 import org.hamcrest.core.IsEqual.*
@@ -67,6 +68,7 @@ public class ReporterTestCase {
 
         val actual = sut.createJUnitReport(input).testCases
 
+        assertThat(actual.collectionSizeOrNull(), equalTo(expected.size))
         expected.forEach { assertThat(reason, actual.contains(it)) }
     }
 
@@ -76,7 +78,7 @@ public class ReporterTestCase {
             arrayOf<Any>(
                 arrayOf<RunTestSuccess>(),
                 arrayOf<TestCase>(),
-                "Should test suite with 0 test cases for 0 successes"),
+                "Should create test suite with 0 test cases for 0 successes"),
             arrayOf(
                 arrayOf(
                     createRunTestSuccess(
@@ -99,24 +101,115 @@ public class ReporterTestCase {
                         name = "otherTestMethodName",
                         time = 2000.0 / 1000.0)),
                 "Should properly create test case for each success " +
-                    "(className = namespace.name, name = methodName, time = time / 1000.0)"))
+                    "(className = namespace.name, name = methodName, time = time / 1000.0)"),
+            arrayOf(
+                arrayOf(
+                    createRunTestSuccess(
+                        namespace = null,
+                        name = "TestClass")),
+                arrayOf(
+                    createTestCase(
+                        className = "TestClass")),
+                "Should treat null namespace as empty string " +
+                    "(className = name instead of .name or null.name)"))
+
+    @Test(dataProvider = "createJUnitReportTestCaseFailureData")
+    fun createJUnitReport_forEachFailure_shouldCreateTestCaseWithFailureInsideTestSuite(
+        failures: Array<RunTestFailure>,
+        expected: Array<TestCase>,
+        reason: String) {
+
+        val sut = Reporter(dateTimeProvider)
+        val input = createRunTestsResult(failures = failures)
+
+        val actual = sut.createJUnitReport(input).testCases
+
+        assertThat(actual.collectionSizeOrNull(), equalTo(expected.size))
+        expected.forEach { assertThat(reason, actual.contains(it)) }
+    }
+
+    @DataProvider
+    fun createJUnitReportTestCaseFailureData(): Array<Array<out Any>> =
+        arrayOf(
+            arrayOf<Any>(
+                arrayOf<RunTestFailure>(),
+                arrayOf<TestCase>(),
+                "Should create test suite with 0 test cases for 0 failures"),
+            arrayOf(
+                arrayOf(
+                    createRunTestFailure(
+                        message = "System.AssertionError",
+                        type = "Class",
+                        stackTrace = "foo.MyTestClass.testMethodName: line 9, column 1",
+                        namespace = "foo",
+                        name = "MyTestClass",
+                        methodName = "testMethodName",
+                        time = 1000.0),
+                    createRunTestFailure(
+                        message = "System.NullPointerException",
+                        type = "Trigger",
+                        stackTrace = "bar.OtherTestClass.someTestMethodName: line 21, column 1",
+                        namespace = "bar",
+                        name = "OtherTestClass",
+                        methodName = "someTestMethodName",
+                        time = 2000.0)),
+                arrayOf(
+                    TestSuite().testCase(
+                        className = "foo.MyTestClass",
+                        name = "testMethodName",
+                        time = 1000.0 / 1000.0) {
+
+                        failure(
+                            message = "System.AssertionError",
+                            type = "Class") {
+                            + "foo.MyTestClass.testMethodName: line 9, column 1"
+                        }
+                    },
+                    TestSuite().testCase(
+                        className = "bar.OtherTestClass",
+                        name = "someTestMethodName",
+                        time = 2000.0 / 1000.0) {
+
+                        failure(
+                            message = "System.NullPointerException",
+                            type = "Trigger") {
+                            + "bar.OtherTestClass.someTestMethodName: line 21, column 1"
+                        }
+                    }),
+                "Should properly create test case with nested failure for each failure " +
+                    "(className = namespace.name, name = methodName, time = time / 1000.0 " +
+                    "failure.message = message, failure.type = type, failure.CDATA = stackTrace)"),
+            arrayOf(
+                arrayOf(
+                    createRunTestFailure(
+                        namespace = null,
+                        name = "MyTestClass")),
+                arrayOf(
+                    TestSuite().testCase(
+                        className = "MyTestClass") {
+                        failure() { + "" }
+                    }),
+                "Should treat null namespace as empty string " +
+                    "(className = name instead of .name or null.name)"))
 
     fun createRunTestsResult(
         numTestsRun: Int = 0,
         numFailures: Int = 0,
         totalTime: Double = 0.0,
-        successes: Array<RunTestSuccess> = arrayOf()): RunTestsResult {
+        successes: Array<RunTestSuccess> = arrayOf(),
+        failures: Array<RunTestFailure> = arrayOf()): RunTestsResult {
 
         val result = RunTestsResult()
         result.numTestsRun = numTestsRun
         result.numFailures = numFailures
         result.totalTime = totalTime
         result.successes = successes
+        result.failures = failures
         return result
     }
 
     fun createRunTestSuccess(
-        namespace: String = "",
+        namespace: String? = "",
         name: String = "",
         methodName: String = "",
         time: Double = 0.0): RunTestSuccess {
@@ -129,10 +222,30 @@ public class ReporterTestCase {
         return success
     }
 
+    fun createRunTestFailure(
+        namespace: String? = "",
+        name: String = "",
+        methodName: String = "",
+        message: String = "",
+        type: String = "",
+        stackTrace: String = "",
+        time: Double = 0.0): RunTestFailure {
+
+        val failure = RunTestFailure()
+        failure.namespace = namespace
+        failure.name = name
+        failure.methodName = methodName
+        failure.message = message
+        failure.type = type
+        failure.stackTrace = stackTrace
+        failure.time = time
+        return failure
+    }
+
     fun createTestCase(
         className: String = "",
-        name: String = "", time:
-        Double = 0.0): TestCase {
+        name: String = "",
+        time: Double = 0.0): TestCase {
 
         val testCase = TestCase()
         testCase.className = className

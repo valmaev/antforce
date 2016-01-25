@@ -56,9 +56,10 @@ public class TestSuite : Tag("testsuite") {
     public fun testCase(
         className: String = "",
         name: String = "",
-        time: Double = 0.0): TestCase {
+        time: Double = 0.0,
+        init: TestCase.() -> Unit = {}): TestCase {
 
-        val case = initTag(TestCase(), {})
+        val case = initTag(TestCase(), init)
         case.className = className
         case.name = name
         case.time = time
@@ -67,7 +68,7 @@ public class TestSuite : Tag("testsuite") {
 
     override fun toString(): String {
         val builder = StringBuilder()
-        builder.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n")
+        builder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
         render(builder, "")
         return builder.toString()
     }
@@ -85,4 +86,25 @@ public class TestCase : Tag("testcase") {
     public var time: Double
         get() = attributes["time"]!!.toDouble()
         set(value) { attributes["time"] = value.toString() }
+
+    public fun failure(
+        message: String = "",
+        type: String = "",
+        init: Failure.() -> Unit = {}): Failure {
+
+        val failure = initTag(Failure(), init)
+        failure.message = message
+        failure.type = type
+        return failure
+    }
+}
+
+public class Failure: TagWithCharacterData("failure") {
+    public var message: String
+        get() = attributes["message"]!!
+        set(value) { attributes["message"] = value }
+
+    public var type: String
+        get() = attributes["type"]!!
+        set(value) { attributes["type"] = value }
 }

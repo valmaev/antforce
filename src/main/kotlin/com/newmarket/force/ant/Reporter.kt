@@ -5,26 +5,37 @@ import com.newmarket.force.ant.dsl.TestSuite
 import com.sforce.soap.metadata.RunTestsResult
 import java.time.LocalDateTime
 
+
 public class Reporter(val dateTimeProvider: () -> LocalDateTime) {
 
     public fun createJUnitReport(
         runTestsResult: RunTestsResult,
         suiteName: String = ""): TestSuite {
 
-        val suite = JUnitReport.testSuite(
+        return JUnitReport.testSuite(
             name = suiteName,
             tests = runTestsResult.numTestsRun - runTestsResult.numFailures,
             failures = runTestsResult.numFailures,
             time = runTestsResult.totalTime / 1000,
-            timestamp = dateTimeProvider())
+            timestamp = dateTimeProvider()) {
 
-        runTestsResult.successes.forEach {
-            suite.testCase(
-                className = "${it.namespace}.${it.name}",
-                name = it.methodName,
-                time = it.time / 1000)
+            runTestsResult.successes.forEach {
+
+                testCase(
+                    className = if (it.namespace == null) it.name else "${it.namespace}.${it.name}",
+                    name = it.methodName,
+                    time = it.time / 1000)
+            }
+
+            runTestsResult.failures.forEach {
+                testCase(
+                    className = if (it.namespace == null) it.name else "${it.namespace}.${it.name}",
+                    name = it.methodName,
+                    time = it.time / 1000) {
+
+                    failure(message = it.message, type = it.type) { +it.stackTrace }
+                }
+            }
         }
-
-        return suite
     }
 }

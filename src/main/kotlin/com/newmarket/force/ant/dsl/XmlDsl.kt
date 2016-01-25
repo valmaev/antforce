@@ -7,6 +7,23 @@ public interface Element {
     fun render(builder: StringBuilder, indent: String)
 }
 
+public class CharacterDataElement(val text: String) : Element {
+    override fun render(builder: StringBuilder, indent: String) {
+        builder.append("$indent<![CDATA[$text]]>\n")
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other)
+            return true
+        if (other == null || javaClass != other.javaClass)
+            return false
+        val element = other as CharacterDataElement
+        return Objects.equals(text, element.text)
+    }
+
+    override fun hashCode(): Int = text.hashCode()
+}
+
 public abstract class Tag(val tagName: String) : Element {
     val children = arrayListOf<Element>()
     val attributes = hashMapOf<String, String>()
@@ -45,9 +62,16 @@ public abstract class Tag(val tagName: String) : Element {
         if (other == null || javaClass != other.javaClass)
             return false
         val tag = other as Tag
-        return Objects.deepEquals(children, tag.children)
-            && Objects.deepEquals(attributes, tag.attributes)
+        return Objects.equals(tagName, tag.tagName)
+            && Objects.equals(children, tag.children)
+            && Objects.equals(attributes, tag.attributes)
     }
 
-    override fun hashCode(): Int = Objects.hash(children, attributes)
+    override fun hashCode(): Int = Objects.hash(tagName, children, attributes)
+}
+
+public abstract class TagWithCharacterData(name: String) : Tag(name) {
+    operator fun String.unaryPlus() {
+        children.add(CharacterDataElement(this))
+    }
 }
