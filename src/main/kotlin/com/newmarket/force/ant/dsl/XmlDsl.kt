@@ -1,5 +1,7 @@
 package com.newmarket.force.ant.dsl
 
+import java.util.*
+
 
 public interface Element {
     fun render(builder: StringBuilder, indent: String)
@@ -36,4 +38,16 @@ public abstract class Tag(val tagName: String) : Element {
         render(builder, "")
         return builder.toString()
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other)
+            return true
+        if (other == null || javaClass != other.javaClass)
+            return false
+        val tag = other as Tag
+        return Objects.deepEquals(children, tag.children)
+            && Objects.deepEquals(attributes, tag.attributes)
+    }
+
+    override fun hashCode(): Int = Objects.hash(children, attributes)
 }

@@ -12,7 +12,7 @@ public object JUnitReport : Tag("") {
         failures: Int = 0,
         time: Double = 0.0,
         timestamp: LocalDateTime = LocalDateTime.now(),
-        init: TestSuite.() -> Unit): TestSuite {
+        init: TestSuite.() -> Unit = {}): TestSuite {
 
         val suite = initTag(TestSuite(), init)
         suite.name = name
@@ -26,6 +26,9 @@ public object JUnitReport : Tag("") {
 }
 
 public class TestSuite : Tag("testsuite") {
+    public final val testCases: Iterable<TestCase>
+        get() = children.filterIsInstance(TestCase::class.java)
+
     public var errors: Int
         get() = attributes["errors"]!!.toInt()
         set(value) { attributes["errors"] = value.toString() }
@@ -60,6 +63,13 @@ public class TestSuite : Tag("testsuite") {
         case.name = name
         case.time = time
         return case
+    }
+
+    override fun toString(): String {
+        val builder = StringBuilder()
+        builder.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n")
+        render(builder, "")
+        return builder.toString()
     }
 }
 
