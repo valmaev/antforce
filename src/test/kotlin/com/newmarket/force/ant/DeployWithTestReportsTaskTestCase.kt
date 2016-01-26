@@ -5,7 +5,6 @@ import org.apache.tools.ant.Project
 import org.apache.tools.ant.types.FileSet
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.*
-import org.hamcrest.core.IsEqual.*
 import org.testng.annotations.Test
 import org.testng.Assert.*
 import java.io.File
