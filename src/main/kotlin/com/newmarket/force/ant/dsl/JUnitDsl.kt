@@ -27,7 +27,7 @@ public object JUnitReport : Tag("") {
 
 public class TestSuite : Tag("testsuite") {
     public final val testCases: Iterable<TestCase>
-        get() = children.filterIsInstance(TestCase::class.java)
+        get() = children.filterIsInstance<TestCase>()
 
     public var errors: Int
         get() = attributes["errors"]!!.toInt()
@@ -53,6 +53,9 @@ public class TestSuite : Tag("testsuite") {
         get() = LocalDateTime.parse(attributes["timestamp"]!!, DateTimeFormatter.ISO_DATE_TIME)
         set(value) { attributes["timestamp"] = DateTimeFormatter.ISO_DATE_TIME.format(value) }
 
+    public fun properties(init: Properties.() -> Unit = {}): Properties =
+        initTag(Properties(), init)
+
     public fun testCase(
         className: String = "",
         name: String = "",
@@ -72,6 +75,32 @@ public class TestSuite : Tag("testsuite") {
         render(builder, "")
         return builder.toString()
     }
+}
+
+public class Properties: Tag("properties") {
+    public fun fromMap(properties: Map<String, String>) =
+        properties.forEach { property(name = it.key, value = it.value) }
+
+    public fun property(
+        name: String = "",
+        value: String = "",
+        init: Property.() -> Unit = {}): Property {
+
+        val property = initTag(Property(), init)
+        property.name = name
+        property.value = value
+        return property
+    }
+}
+
+public class Property: Tag("property") {
+    public var name: String
+        get() = attributes["name"]!!
+        set(value) { attributes["name"] = value }
+
+    public var value: String
+        get() = attributes["value"]!!
+        set(value) { attributes["value"] = value }
 }
 
 public class TestCase : Tag("testcase") {

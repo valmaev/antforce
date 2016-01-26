@@ -1,8 +1,6 @@
 package com.newmarket.force.ant
 
-import com.newmarket.force.ant.dsl.JUnitReport
-import com.newmarket.force.ant.dsl.TestCase
-import com.newmarket.force.ant.dsl.TestSuite
+import com.newmarket.force.ant.dsl.*
 import com.sforce.soap.metadata.RunTestFailure
 import com.sforce.soap.metadata.RunTestSuccess
 import com.sforce.soap.metadata.RunTestsResult
@@ -162,7 +160,7 @@ public class ReporterTestCase {
                         failure(
                             message = "System.AssertionError",
                             type = "Class") {
-                            + "foo.MyTestClass.testMethodName: line 9, column 1"
+                            +"foo.MyTestClass.testMethodName: line 9, column 1"
                         }
                     },
                     TestSuite().testCase(
@@ -173,7 +171,7 @@ public class ReporterTestCase {
                         failure(
                             message = "System.NullPointerException",
                             type = "Trigger") {
-                            + "bar.OtherTestClass.someTestMethodName: line 21, column 1"
+                            +"bar.OtherTestClass.someTestMethodName: line 21, column 1"
                         }
                     }),
                 "Should properly create test case with nested failure for each failure " +
@@ -187,10 +185,42 @@ public class ReporterTestCase {
                 arrayOf(
                     TestSuite().testCase(
                         className = "MyTestClass") {
-                        failure() { + "" }
+                        failure() { +"" }
                     }),
                 "Should treat null namespace as empty string " +
                     "(className = name instead of .name or null.name)"))
+
+    @Test(dataProvider = "createJUnitReportTestCasePropertiesData")
+    fun createJUnitReport_forEachProperty_shouldCreateCorrespondingPropertyElement(
+        properties: Map<String, String>,
+        expected: Array<Property>,
+        reason: String) {
+
+        val sut = Reporter(dateTimeProvider)
+        val suite = sut.createJUnitReport(createRunTestsResult(), properties = properties)
+        val actual = suite
+            .children.filterIsInstance<Properties>().single()
+            .children.filterIsInstance<Property>()
+
+        assertThat(actual.collectionSizeOrNull(), equalTo(expected.size))
+        expected.forEach { assertThat(reason, actual.contains(it)) }
+    }
+
+    @DataProvider
+    fun createJUnitReportTestCasePropertiesData(): Array<Array<out Any>> =
+        arrayOf(
+            arrayOf(
+                hashMapOf<String, String>(),
+                arrayOf<Property>(),
+                "Should create empty properties element"),
+            arrayOf(
+                hashMapOf(
+                    "foo" to "bar",
+                    "baz" to "qux"),
+                arrayOf(
+                    createProperty("foo", "bar"),
+                    createProperty("baz", "qux")),
+                "Should create property for each map entry"))
 
     fun createRunTestsResult(
         numTestsRun: Int = 0,
@@ -252,5 +282,12 @@ public class ReporterTestCase {
         testCase.name = name
         testCase.time = time
         return testCase
+    }
+
+    fun createProperty(name: String = "", value: String = ""): Property {
+        val property = Property()
+        property.name = name
+        property.value = value
+        return property
     }
 }

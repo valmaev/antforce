@@ -10,7 +10,8 @@ public class Reporter(val dateTimeProvider: () -> LocalDateTime) {
 
     public fun createJUnitReport(
         runTestsResult: RunTestsResult,
-        suiteName: String = ""): TestSuite {
+        suiteName: String = "",
+        properties: Map<String, String>? = null): TestSuite {
 
         return JUnitReport.testSuite(
             name = suiteName,
@@ -19,8 +20,11 @@ public class Reporter(val dateTimeProvider: () -> LocalDateTime) {
             time = runTestsResult.totalTime / 1000,
             timestamp = dateTimeProvider()) {
 
-            runTestsResult.successes.forEach {
+            properties {
+                properties?.forEach { property(name = it.key, value = it.value) }
+            }
 
+            runTestsResult.successes.forEach {
                 testCase(
                     className = if (it.namespace == null) it.name else "${it.namespace}.${it.name}",
                     name = it.methodName,
