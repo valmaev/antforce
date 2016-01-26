@@ -20,8 +20,10 @@ public class Reporter(val dateTimeProvider: () -> LocalDateTime) {
             time = runTestsResult.totalTime / 1000,
             timestamp = dateTimeProvider()) {
 
-            properties {
-                properties?.forEach { property(name = it.key, value = it.value) }
+            if (properties != null) {
+                properties {
+                    properties.forEach { property(name = it.key, value = it.value) }
+                }
             }
 
             runTestsResult.successes.forEach {

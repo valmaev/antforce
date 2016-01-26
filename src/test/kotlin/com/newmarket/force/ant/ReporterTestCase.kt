@@ -222,22 +222,6 @@ public class ReporterTestCase {
                     createProperty("baz", "qux")),
                 "Should create property for each map entry"))
 
-    fun createRunTestsResult(
-        numTestsRun: Int = 0,
-        numFailures: Int = 0,
-        totalTime: Double = 0.0,
-        successes: Array<RunTestSuccess> = arrayOf(),
-        failures: Array<RunTestFailure> = arrayOf()): RunTestsResult {
-
-        val result = RunTestsResult()
-        result.numTestsRun = numTestsRun
-        result.numFailures = numFailures
-        result.totalTime = totalTime
-        result.successes = successes
-        result.failures = failures
-        return result
-    }
-
     fun createRunTestSuccess(
         namespace: String? = "",
         name: String = "",

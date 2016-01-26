@@ -5,8 +5,11 @@ import org.apache.tools.ant.Project
 import org.apache.tools.ant.types.FileSet
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.*
+import org.hamcrest.core.IsEqual.*
 import org.testng.annotations.Test
+import org.testng.Assert.*
 import java.io.File
+import java.time.LocalDateTime
 
 
 public class DeployWithTestReportsTaskTestCase {
@@ -40,10 +43,8 @@ public class DeployWithTestReportsTaskTestCase {
     }
 
     @Test fun getRunTests_always_shouldContainAllFileNamesOfBatchTests() {
-        val sut = createSystemUnderTest()
-        var testDirectory: File? = null
-        try {
-            testDirectory = createTempDir(javaClass.name)
+        withTestDirectory { testDirectory ->
+            val sut = createSystemUnderTest()
             val batchTest = sut.createBatchTest()
             val expected = listOf("foo", "bar", "baz")
             val fileSet = createTestClassesFileSet(testDirectory, expected)
@@ -52,6 +53,40 @@ public class DeployWithTestReportsTaskTestCase {
             val actual = sut.runTests
 
             expected.forEach { assertThat(actual, hasItemInArray(it)) }
+        }
+    }
+
+    @Test fun saveJUnitReportToFile_ifJUnitReportDirIsNotNull_shouldCreateReportFileWithExpectedContent() {
+        withTestDirectory { testDirectory ->
+            val sut = createSystemUnderTest()
+            sut.reporter = Reporter{ LocalDateTime.MAX }
+            sut.junitReportDir = testDirectory
+            sut.junitReportName = "TEST-ApexSuite.xml"
+            sut.username = "foo"
+            sut.serverURL = "bar"
+            sut.apiVersion = 35.0
+            val input = createRunTestsResult()
+            val expectedContent = sut.reporter.createJUnitReport(
+                input,
+                sut.junitTestSuiteName,
+                hashMapOf(
+                    "username" to sut.username,
+                    "serverURL" to sut.serverURL,
+                    "apiVersion" to sut.apiVersion.toString())).toString()
+
+            sut.saveJUnitReportToFile(createRunTestsResult())
+
+            val actual = testDirectory.listFiles().single { it.name == sut.junitReportName }
+            assertTrue(actual.exists(), "Report file wasn't found")
+            assertEquals(actual.readText(), expectedContent)
+        }
+    }
+
+    fun withTestDirectory(directoryNamePrefix: String = javaClass.name, test: (File) -> Unit) {
+        var testDirectory: File? = null
+        try {
+            testDirectory = createTempDir(directoryNamePrefix)
+            test(testDirectory)
         } finally {
             testDirectory?.deleteRecursively()
         }
