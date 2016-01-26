@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<project default="deploy">
+    <property file="build.properties"/>
+    <property name="sf.server" value="https://login.salesforce.com" />
+    <property name="outputdir" value="artifacts" />
+
+    <taskdef
+        name="runApexTestsWithReports"
+        classname="com.newmarket.force.ant.DeployWithTestReportsTask"
+        classpath="${lib.dir}"/>
+
+    <target name="deploy">
+        <runApexTestsWithReports
+            username="${sf.username}"
+            password="${sf.password}${sf.token}"
+            serverUrl="${sf.server}"
+            deployRoot="src"
+            rollbackOnError="true"
+            junitReportDir="${outputdir}/test-reports"
+            junitReportName="TEST-MyApexTests.xml">
+            <batchtest>
+                <fileset dir="src/classes" includes="*TestClass.cls" />
+            </batchtest>
+        </runApexTestsWithReports>
+    </target>
+</project>
