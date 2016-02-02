@@ -13,7 +13,7 @@ public class Reporter(val dateTimeProvider: () -> LocalDateTime) {
         suiteName: String = "",
         properties: Map<String, String>? = null): TestSuite {
 
-        return JUnitReport.testSuite(
+        return JUnitReport().testSuite(
             name = suiteName,
             tests = runTestsResult.numTestsRun - runTestsResult.numFailures,
             failures = runTestsResult.numFailures,

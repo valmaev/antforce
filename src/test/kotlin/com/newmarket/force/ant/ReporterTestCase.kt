@@ -31,15 +31,15 @@ public class ReporterTestCase {
         arrayOf(
             arrayOf(
                 createRunTestsResult(),
-                JUnitReport.testSuite(timestamp = dateTimeProvider()),
+                JUnitReport().testSuite(timestamp = dateTimeProvider()),
                 "Should create default testSuite when default RunTestsResult passed"),
             arrayOf(
                 createRunTestsResult(numTestsRun = 10, numFailures = 2),
-                JUnitReport.testSuite(tests = 10 - 2, failures = 2, timestamp = dateTimeProvider()),
+                JUnitReport().testSuite(tests = 10 - 2, failures = 2, timestamp = dateTimeProvider()),
                 "Should properly calculate tests number (numRunTests - numFailures)"),
             arrayOf(
                 createRunTestsResult(totalTime = 1000.0),
-                JUnitReport.testSuite(time = 1000.0 / 1000.0, timestamp = dateTimeProvider()),
+                JUnitReport().testSuite(time = 1000.0 / 1000.0, timestamp = dateTimeProvider()),
                 "Should properly calculate time in ms (totalTime / 1000.0)"))
 
     @Test(dataProvider = "createJUnitReportSuiteNameData")

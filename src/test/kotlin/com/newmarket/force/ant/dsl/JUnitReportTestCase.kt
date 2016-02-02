@@ -7,10 +7,10 @@ import org.xmlmatchers.transform.XmlConverters.*
 import java.time.LocalDateTime
 
 
-public class JUnitDslTestCase {
+public class JUnitReportTestCase {
 
-    @Test fun testSuite_always_shouldContainsThreeChildElementsInStringRepresentation() {
-        val actual = JUnitReport.testSuite(name = "TestSuite",
+    @Test fun toString_always_shouldReturnsExpectedResult() {
+        val actual = JUnitReport().testSuite(name = "TestSuite",
             tests = 5,
             errors = 2,
             failures = 1,
