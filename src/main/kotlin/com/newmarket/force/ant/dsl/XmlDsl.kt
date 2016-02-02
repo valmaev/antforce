@@ -70,6 +70,11 @@ public abstract class Tag(val tagName: String) : Element {
     override fun hashCode(): Int = Objects.hash(tagName, children, attributes)
 }
 
+public abstract class EmptyTag : Tag("") {
+    override fun render(builder: StringBuilder, indent: String) =
+        children.forEach { it.render(builder, indent + "  ") }
+}
+
 public abstract class TagWithCharacterData(name: String) : Tag(name) {
     operator fun String.unaryPlus() {
         children.add(CharacterDataElement(this))

@@ -9,7 +9,8 @@ import org.xmlmatchers.transform.XmlConverters.*
 public class CoberturaReportTestCase {
 
     @Test fun toString_always_shouldReturnsExpectedResult() {
-        val actual = CoberturaReport().coverage {
+        val actual = CoberturaReport()
+        actual.coverage {
             packages {
                 packageTag(name = "fooPackage") {
                     classes {
@@ -31,7 +32,7 @@ public class CoberturaReportTestCase {
                     }
                 }
             }
-        }.toString()
+        }
 
         val expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<coverage>" +
@@ -58,6 +59,6 @@ public class CoberturaReportTestCase {
                 "</packages>" +
             "</coverage>"
 
-        assertThat(the(actual), isEquivalentTo(the(expected)))
+        assertThat(the(actual.toString()), isEquivalentTo(the(expected)))
     }
 }

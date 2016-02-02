@@ -10,7 +10,8 @@ import java.time.LocalDateTime
 public class JUnitReportTestCase {
 
     @Test fun toString_always_shouldReturnsExpectedResult() {
-        val actual = JUnitReport().testSuite(name = "TestSuite",
+        val actual = JUnitReport()
+        actual.testSuite(name = "TestSuite",
             tests = 5,
             errors = 2,
             failures = 1,
@@ -29,9 +30,9 @@ public class JUnitReportTestCase {
                     + "baz.BazTestClass.test3: line 9, column 1"
                 }
             }
-        }.toString()
+        }
 
-        val expected =
+        val expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<testsuite name=\"TestSuite\" tests=\"5\" errors=\"2\" failures=\"1\" time=\"0.37\" timestamp=\"${LocalDateTime.MAX}\">" +
                 "<properties>" +
                     "<property name=\"foo\" value=\"bar\" />" +
@@ -47,6 +48,6 @@ public class JUnitReportTestCase {
                 "</testcase>" +
             "</testsuite>"
 
-        assertThat(the(actual), isEquivalentTo(the(expected)))
+        assertThat(the(actual.toString()), isEquivalentTo(the(expected)))
     }
 }

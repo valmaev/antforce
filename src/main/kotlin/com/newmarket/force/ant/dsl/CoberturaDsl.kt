@@ -1,7 +1,7 @@
 package com.newmarket.force.ant.dsl
 
 
-public class CoberturaReport : Tag("") {
+public class CoberturaReport : EmptyTag() {
     public fun coverage(init: Coverage.() -> Unit = {}): Coverage = initTag(Coverage(), init)
 
     override fun toString(): String {

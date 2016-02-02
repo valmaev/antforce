@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
-public class JUnitReport : Tag("") {
+public class JUnitReport : EmptyTag() {
     public fun testSuite(
         name: String = "",
         tests: Int = 0,
@@ -22,6 +22,13 @@ public class JUnitReport : Tag("") {
         suite.time = time
         suite.timestamp = timestamp
         return suite
+    }
+
+    override fun toString(): String {
+        val builder = StringBuilder()
+        builder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+        render(builder, "")
+        return builder.toString()
     }
 }
 
@@ -67,13 +74,6 @@ public class TestSuite : Tag("testsuite") {
         case.name = name
         case.time = time
         return case
-    }
-
-    override fun toString(): String {
-        val builder = StringBuilder()
-        builder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-        render(builder, "")
-        return builder.toString()
     }
 }
 
