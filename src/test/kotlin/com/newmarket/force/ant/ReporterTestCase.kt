@@ -1,6 +1,7 @@
 package com.newmarket.force.ant
 
 import com.newmarket.force.ant.dsl.*
+import com.sforce.soap.metadata.CodeCoverageResult
 import com.sforce.soap.metadata.RunTestFailure
 import com.sforce.soap.metadata.RunTestSuccess
 import com.sforce.soap.metadata.RunTestsResult
@@ -226,6 +227,54 @@ public class ReporterTestCase {
                     createProperty("foo", "bar"),
                     createProperty("baz", "qux")),
                 "Should create property for each map entry"))
+
+    @Test(dataProvider = "createCoberturaReportPackagesTestData")
+    fun createCoberturaReport_forEachCodeCoverageType_shouldCreatePackage(
+        codeCoverage: Array<CodeCoverageResult>,
+        expected: Packages,
+        reason: String) {
+
+        val sut = Reporter(dateTimeProvider)
+        val testResult = createRunTestsResult(codeCoverage = codeCoverage)
+        val report = sut.createCoberturaReport(testResult)
+
+        val actual = report
+            .children.filterIsInstance<Coverage>().single()
+            .children.filterIsInstance<Packages>().single()
+
+        assertThat(reason, actual, equalTo(expected))
+    }
+
+    @DataProvider
+    fun createCoberturaReportPackagesTestData(): Array<Array<out Any>> =
+        arrayOf(
+            arrayOf(
+                arrayOf<CodeCoverageResult>(),
+                Packages(),
+                "Should create empty packages element for empty array of CodeCoverageResult"),
+            arrayOf(
+                arrayOf(
+                    createCodeCoverageResult(type = "Class"),
+                    createCodeCoverageResult(type = "Trigger")),
+                Coverage().packages {
+                    packageTag("Class")
+                    packageTag("Trigger")
+                },
+                "Should create two packages for two types of CodeCoverageResult"),
+            arrayOf(
+                arrayOf(
+                    createCodeCoverageResult(type = null)),
+                Coverage().packages {
+                    packageTag(name = "")
+                },
+                "Should create package with empty name if type of CodeCoverageResult is null"))
+
+    fun createCodeCoverageResult(
+        type: String? = null): CodeCoverageResult {
+        val result = CodeCoverageResult()
+        result.type = type
+        return result
+    }
 
     fun createRunTestSuccess(
         namespace: String? = "",

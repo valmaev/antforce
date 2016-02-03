@@ -1,5 +1,6 @@
 package com.newmarket.force.ant
 
+import com.newmarket.force.ant.dsl.CoberturaReport
 import com.newmarket.force.ant.dsl.JUnitReport
 import com.sforce.soap.metadata.RunTestsResult
 import java.time.LocalDateTime
@@ -40,6 +41,20 @@ public class Reporter(val dateTimeProvider: () -> LocalDateTime) {
                     time = it.time / 1000) {
 
                     failure(message = it.message, type = it.type) { +it.stackTrace }
+                }
+            }
+        }
+        return report
+    }
+
+    public fun createCoberturaReport(runTestsResult: RunTestsResult): CoberturaReport {
+        val coverageTypes = runTestsResult.codeCoverage.groupBy { it.type ?: "" }
+
+        val report = CoberturaReport()
+        report.coverage {
+            packages {
+                coverageTypes.forEach {
+                    packageTag(name = it.key)
                 }
             }
         }
