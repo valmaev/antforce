@@ -22,7 +22,8 @@ public class ReporterTestCase {
         reason: String) {
 
         val sut = Reporter(dateTimeProvider)
-        val actual = sut.createJUnitReport(input)
+        val report = sut.createJUnitReport(input)
+        val actual = report.children.filterIsInstance<TestSuite>().single()
         assertThat(reason, actual, equalTo(expected))
     }
 
@@ -45,7 +46,8 @@ public class ReporterTestCase {
     @Test(dataProvider = "createJUnitReportSuiteNameData")
     fun createJUnitReport_always_shouldUsePassedSuiteNameAsExpected(expected: String) {
         val sut = Reporter(dateTimeProvider)
-        val actual = sut.createJUnitReport(createRunTestsResult(), suiteName = expected)
+        val report = sut.createJUnitReport(createRunTestsResult(), suiteName = expected)
+        val actual = report.children.filterIsInstance<TestSuite>().single()
         assertThat(actual.name, equalTo(expected))
     }
 
@@ -64,7 +66,8 @@ public class ReporterTestCase {
         val sut = Reporter(dateTimeProvider)
         val input = createRunTestsResult(successes = successes)
 
-        val actual = sut.createJUnitReport(input).testCases
+        val report = sut.createJUnitReport(input)
+        val actual = report.children.filterIsInstance<TestSuite>().single().testCases
 
         assertThat(actual.collectionSizeOrNull(), equalTo(expected.size))
         expected.forEach { assertThat(reason, actual.contains(it)) }
@@ -120,7 +123,8 @@ public class ReporterTestCase {
         val sut = Reporter(dateTimeProvider)
         val input = createRunTestsResult(failures = failures)
 
-        val actual = sut.createJUnitReport(input).testCases
+        val report = sut.createJUnitReport(input)
+        val actual = report.children.filterIsInstance<TestSuite>().single().testCases
 
         assertThat(actual.collectionSizeOrNull(), equalTo(expected.size))
         expected.forEach { assertThat(reason, actual.contains(it)) }
@@ -197,7 +201,8 @@ public class ReporterTestCase {
         reason: String) {
 
         val sut = Reporter(dateTimeProvider)
-        val suite = sut.createJUnitReport(createRunTestsResult(), properties = properties)
+        val report = sut.createJUnitReport(createRunTestsResult(), properties = properties)
+        val suite = report.children.filterIsInstance<TestSuite>().single()
         val actual = suite
             .children.filterIsInstance<Properties>().single()
             .children.filterIsInstance<Property>()

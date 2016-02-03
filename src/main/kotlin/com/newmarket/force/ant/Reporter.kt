@@ -1,7 +1,6 @@
 package com.newmarket.force.ant
 
 import com.newmarket.force.ant.dsl.JUnitReport
-import com.newmarket.force.ant.dsl.TestSuite
 import com.sforce.soap.metadata.RunTestsResult
 import java.time.LocalDateTime
 
@@ -11,9 +10,10 @@ public class Reporter(val dateTimeProvider: () -> LocalDateTime) {
     public fun createJUnitReport(
         runTestsResult: RunTestsResult,
         suiteName: String = "",
-        properties: Map<String, String>? = null): TestSuite {
+        properties: Map<String, String>? = null): JUnitReport {
 
-        return JUnitReport().testSuite(
+        val report = JUnitReport()
+        report.testSuite(
             name = suiteName,
             tests = runTestsResult.numTestsRun - runTestsResult.numFailures,
             failures = runTestsResult.numFailures,
@@ -43,5 +43,6 @@ public class Reporter(val dateTimeProvider: () -> LocalDateTime) {
                 }
             }
         }
+        return report
     }
 }
