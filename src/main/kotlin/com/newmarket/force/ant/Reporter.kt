@@ -1,7 +1,9 @@
 package com.newmarket.force.ant
 
+import com.newmarket.force.ant.dsl.Classes
 import com.newmarket.force.ant.dsl.CoberturaReport
 import com.newmarket.force.ant.dsl.JUnitReport
+import com.sforce.soap.metadata.CodeCoverageResult
 import com.sforce.soap.metadata.RunTestsResult
 import java.time.LocalDateTime
 
@@ -53,11 +55,28 @@ public class Reporter(val dateTimeProvider: () -> LocalDateTime) {
         val report = CoberturaReport()
         report.coverage {
             packages {
-                coverageTypes.forEach {
-                    packageTag(name = it.key)
+                coverageTypes.forEach { coverageType ->
+                    packageTag(name = coverageType.key) {
+                        classes {
+                            coverageType.value.forEach { createClassTags(it) }
+                        }
+                    }
                 }
             }
         }
         return report
+    }
+
+    private fun Classes.createClassTags(result: CodeCoverageResult) {
+        classTag(
+            name = if (result.namespace == null)
+                result.name ?: ""
+            else "${result.namespace}.${result.name ?: ""}") {
+            lines {
+                result.locationsNotCovered?.forEach {
+                    line(number = it.line, hits = it.numExecutions)
+                }
+            }
+        }
     }
 }

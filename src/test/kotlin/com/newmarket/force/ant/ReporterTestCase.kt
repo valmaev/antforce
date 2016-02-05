@@ -1,10 +1,7 @@
 package com.newmarket.force.ant
 
 import com.newmarket.force.ant.dsl.*
-import com.sforce.soap.metadata.CodeCoverageResult
-import com.sforce.soap.metadata.RunTestFailure
-import com.sforce.soap.metadata.RunTestSuccess
-import com.sforce.soap.metadata.RunTestsResult
+import com.sforce.soap.metadata.*
 import org.hamcrest.core.IsEqual.*
 import org.hamcrest.MatcherAssert.*
 import org.testng.annotations.DataProvider
@@ -257,23 +254,118 @@ public class ReporterTestCase {
                     createCodeCoverageResult(type = "Class"),
                     createCodeCoverageResult(type = "Trigger")),
                 Coverage().packages {
-                    packageTag("Class")
-                    packageTag("Trigger")
+                    packageTag("Class") {
+                        classes {
+                            classTag() {
+                                lines()
+                            }
+                        }
+                    }
+                    packageTag("Trigger") {
+                        classes {
+                            classTag() {
+                                lines()
+                            }
+                        }
+                    }
                 },
                 "Should create two packages for two types of CodeCoverageResult"),
             arrayOf(
                 arrayOf(
                     createCodeCoverageResult(type = null)),
                 Coverage().packages {
-                    packageTag(name = "")
+                    packageTag(name = "") {
+                        classes {
+                            classTag() {
+                                lines()
+                            }
+                        }
+                    }
                 },
-                "Should create package with empty name if type of CodeCoverageResult is null"))
+                "Should create package with empty name if type of CodeCoverageResult is null"),
+            arrayOf(
+                arrayOf(
+                    createCodeCoverageResult(
+                        type = "Class",
+                        name = "Book"),
+                    createCodeCoverageResult(
+                        type = "Class",
+                        name = "BookBuilder",
+                        namespace = "foo"),
+                    createCodeCoverageResult(
+                        type = "Trigger",
+                        name = "AccountTrigger"),
+                    createCodeCoverageResult(
+                        type = "Trigger",
+                        name = "BookTrigger",
+                        namespace = "bar")),
+                Coverage().packages {
+                    packageTag("Class") {
+                        classes {
+                            classTag(name = "Book") {
+                                lines()
+                            }
+                            classTag(name = "foo.BookBuilder") {
+                                lines()
+                            }
+                        }
+                    }
+                    packageTag("Trigger") {
+                        classes {
+                            classTag(name = "AccountTrigger") {
+                                lines()
+                            }
+                            classTag(name = "bar.BookTrigger") {
+                                lines()
+                            }
+                        }
+                    }
+                },
+                "Should create class tag using name and namespace of CodeCoverageResult"),
+            arrayOf(
+                arrayOf(
+                    createCodeCoverageResult(
+                        name = "BookBuilder",
+                        type = "Class",
+                        locationsNotCovered = arrayOf(
+                            createCodeLocation(line = 1, numExecutions = 0),
+                            createCodeLocation(line = 2, numExecutions = 0),
+                            createCodeLocation(line = 245, numExecutions = 3)))),
+                Coverage().packages {
+                    packageTag("Class") {
+                        classes {
+                            classTag("BookBuilder") {
+                                lines {
+                                    line(number = 1, hits = 0)
+                                    line(number = 2, hits = 0)
+                                    line(number = 245, hits = 3)
+                                }
+                            }
+                        }
+                    }
+                },
+                "Should create line for each not covered location in CodeCoverageResult"))
 
     fun createCodeCoverageResult(
-        type: String? = null): CodeCoverageResult {
+        name: String? = null,
+        namespace: String? = null,
+        type: String? = null,
+        locationsNotCovered: Array<CodeLocation>? = null): CodeCoverageResult {
         val result = CodeCoverageResult()
+        result.name = name
+        result.namespace = namespace
         result.type = type
+        result.locationsNotCovered = locationsNotCovered
         return result
+    }
+
+    fun createCodeLocation(
+        line: Int = 0,
+        numExecutions: Int = 0): CodeLocation {
+        val location = CodeLocation()
+        location.line = line
+        location.numExecutions = numExecutions
+        return location
     }
 
     fun createRunTestSuccess(
