@@ -24,9 +24,9 @@ fun createRunTestsResult(
     numTestsRun: Int = 0,
     numFailures: Int = 0,
     totalTime: Double = 0.0,
-    successes: Array<RunTestSuccess>? = null,
-    failures: Array<RunTestFailure>? = null,
-    codeCoverage: Array<CodeCoverageResult>? = null): RunTestsResult {
+    successes: Array<RunTestSuccess>? = arrayOf(),
+    failures: Array<RunTestFailure>? = arrayOf(),
+    codeCoverage: Array<CodeCoverageResult>? = arrayOf()): RunTestsResult {
 
     val result = RunTestsResult()
     result.numTestsRun = numTestsRun
