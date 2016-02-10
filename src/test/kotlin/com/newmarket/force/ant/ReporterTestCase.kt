@@ -228,12 +228,13 @@ public class ReporterTestCase {
     @Test(dataProvider = "createCoberturaReportPackagesTestData")
     fun createCoberturaReport_forEachCodeCoverageType_shouldCreatePackage(
         codeCoverage: Array<CodeCoverageResult>,
+        projectRootPath: String,
         expected: Packages,
         reason: String) {
 
         val sut = Reporter(dateTimeProvider)
         val testResult = createRunTestsResult(codeCoverage = codeCoverage)
-        val report = sut.createCoberturaReport(testResult)
+        val report = sut.createCoberturaReport(testResult, projectRootPath)
 
         val actual = report
             .children.filterIsInstance<Coverage>().single()
@@ -247,12 +248,14 @@ public class ReporterTestCase {
         arrayOf(
             arrayOf(
                 arrayOf<CodeCoverageResult>(),
+                "",
                 Packages(),
                 "Should create empty packages element for empty array of CodeCoverageResult"),
             arrayOf(
                 arrayOf(
                     createCodeCoverageResult(type = "Class"),
                     createCodeCoverageResult(type = "Trigger")),
+                "",
                 Coverage().packages {
                     packageTag("Class") {
                         classes {
@@ -273,6 +276,7 @@ public class ReporterTestCase {
             arrayOf(
                 arrayOf(
                     createCodeCoverageResult(type = null)),
+                "",
                 Coverage().packages {
                     packageTag(name = "") {
                         classes {
@@ -299,23 +303,32 @@ public class ReporterTestCase {
                         type = "Trigger",
                         name = "BookTrigger",
                         namespace = "bar")),
+                "",
                 Coverage().packages {
                     packageTag("Class") {
                         classes {
-                            classTag(name = "Book") {
+                            classTag(
+                                name = "Book",
+                                fileName = "/classes/Book.cls") {
                                 lines()
                             }
-                            classTag(name = "foo.BookBuilder") {
+                            classTag(
+                                name = "foo.BookBuilder",
+                                fileName = "") {
                                 lines()
                             }
                         }
                     }
                     packageTag("Trigger") {
                         classes {
-                            classTag(name = "AccountTrigger") {
+                            classTag(
+                                name = "AccountTrigger",
+                                fileName = "/triggers/AccountTrigger.cls") {
                                 lines()
                             }
-                            classTag(name = "bar.BookTrigger") {
+                            classTag(
+                                name = "bar.BookTrigger",
+                                fileName = "") {
                                 lines()
                             }
                         }
@@ -331,10 +344,13 @@ public class ReporterTestCase {
                             createCodeLocation(line = 1, numExecutions = 0),
                             createCodeLocation(line = 2, numExecutions = 0),
                             createCodeLocation(line = 245, numExecutions = 3)))),
+                "",
                 Coverage().packages {
                     packageTag("Class") {
                         classes {
-                            classTag("BookBuilder") {
+                            classTag(
+                                name = "BookBuilder",
+                                fileName = "/classes/BookBuilder.cls") {
                                 lines {
                                     line(number = 1, hits = 0)
                                     line(number = 2, hits = 0)
@@ -344,7 +360,94 @@ public class ReporterTestCase {
                         }
                     }
                 },
-                "Should create line for each not covered location in CodeCoverageResult"))
+                "Should create line for each not covered location in CodeCoverageResult"),
+            arrayOf(
+                arrayOf(
+                    createCodeCoverageResult(
+                        name = "BookBuilder",
+                        type = "Class")),
+                "/foo/bar/myDirectory",
+                Coverage().packages {
+                    packageTag("Class") {
+                        classes {
+                            classTag(
+                                fileName = "/foo/bar/myDirectory/classes/BookBuilder.cls",
+                                name = "BookBuilder") { lines() }
+                        }
+                    }
+                },
+                "Should properly construct file names for Classes – {projectRootPath}/classes/{name}.cls"),
+            arrayOf(
+                arrayOf(
+                    createCodeCoverageResult(
+                        name = "BookTrigger",
+                        type = "Trigger")),
+                "/foo/bar/myDirectory",
+                Coverage().packages {
+                    packageTag("Trigger") {
+                        classes {
+                            classTag(
+                                fileName = "/foo/bar/myDirectory/triggers/BookTrigger.cls",
+                                name = "BookTrigger") { lines() }
+                        }
+                    }
+                },
+                "Should properly construct file names for Triggers – {projectRootPath}/triggers/{name}.cls"),
+            arrayOf(
+                arrayOf(
+                    createCodeCoverageResult(
+                        name = "BookBuilder",
+                        namespace = "foo",
+                        type = "Class")),
+                "/foo/bar/myDirectory",
+                Coverage().packages {
+                    packageTag("Class") {
+                        classes {
+                            classTag(
+                                fileName = "",
+                                name = "foo.BookBuilder") { lines() }
+                        }
+                    }
+                },
+                "Should not generate fileName for coverage results with non-empty namespace"),
+            arrayOf(
+                arrayOf(
+                    createCodeCoverageResult(
+                        name = null,
+                        type = "Class"),
+                    createCodeCoverageResult(
+                        name = "",
+                        type = "Class")),
+                "/foo/bar/myDirectory",
+                Coverage().packages {
+                    packageTag("Class") {
+                        classes {
+                            classTag(
+                                fileName = "",
+                                name = "") { lines() }
+                            classTag(
+                                fileName = "",
+                                name = "") { lines() }
+                        }
+                    }
+                },
+                "Should not generate fileName for coverage results with null or empty name"),
+            arrayOf(
+                arrayOf(
+                    createCodeCoverageResult(
+                        name = "Book",
+                        type = "Class")),
+                "/foo/bar/myDirectory/",
+                Coverage().packages {
+                    packageTag("Class") {
+                        classes {
+                            classTag(
+                                name = "Book",
+                                fileName = "/foo/bar/myDirectory/classes/Book.cls") { lines() }
+                        }
+                    }
+                },
+                "Should properly handle trailing slash in projectRootPath"))
 
     fun createCodeCoverageResult(
         name: String? = null,

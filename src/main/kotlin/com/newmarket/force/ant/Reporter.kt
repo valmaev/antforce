@@ -5,6 +5,7 @@ import com.newmarket.force.ant.dsl.CoberturaReport
 import com.newmarket.force.ant.dsl.JUnitReport
 import com.sforce.soap.metadata.CodeCoverageResult
 import com.sforce.soap.metadata.RunTestsResult
+import java.io.File
 import java.time.LocalDateTime
 
 
@@ -49,7 +50,9 @@ public class Reporter(val dateTimeProvider: () -> LocalDateTime) {
         return report
     }
 
-    public fun createCoberturaReport(runTestsResult: RunTestsResult): CoberturaReport {
+    public fun createCoberturaReport(
+        runTestsResult: RunTestsResult,
+        projectRootPath: String? = null): CoberturaReport {
         val coverageTypes = runTestsResult.codeCoverage.groupBy { it.type ?: "" }
 
         val report = CoberturaReport()
@@ -58,7 +61,9 @@ public class Reporter(val dateTimeProvider: () -> LocalDateTime) {
                 coverageTypes.forEach { coverageType ->
                     packageTag(name = coverageType.key) {
                         classes {
-                            coverageType.value.forEach { createClassTags(it) }
+                            coverageType.value.forEach {
+                                createClassTags(it, projectRootPath)
+                            }
                         }
                     }
                 }
@@ -67,16 +72,39 @@ public class Reporter(val dateTimeProvider: () -> LocalDateTime) {
         return report
     }
 
-    private fun Classes.createClassTags(result: CodeCoverageResult) {
+    private fun Classes.createClassTags(
+        result: CodeCoverageResult,
+        projectRootPath: String?) {
         classTag(
-            name = if (result.namespace == null)
-                result.name ?: ""
-            else "${result.namespace}.${result.name ?: ""}") {
+            name = getClassName(result),
+            fileName = getClassFileName(projectRootPath, result)) {
             lines {
                 result.locationsNotCovered?.forEach {
                     line(number = it.line, hits = it.numExecutions)
                 }
             }
+        }
+    }
+
+    private fun getClassName(result: CodeCoverageResult) =
+        if (result.namespace == null)
+            result.name ?: ""
+        else "${result.namespace}.${result.name ?: ""}"
+
+    private fun getClassFileName(
+        projectRootPath: String? = null,
+        result: CodeCoverageResult): String {
+
+        val rootPath = projectRootPath?.dropLastWhile { it == '/' || it == '\\' }
+
+        return if (result.name.isNullOrEmpty())
+            ""
+        else if (!result.namespace.isNullOrEmpty())
+            ""
+        else when (result.type) {
+            "Class" -> "$rootPath${File.separator}classes${File.separator}${result.name}.cls"
+            "Trigger" -> "$rootPath${File.separator}triggers${File.separator}${result.name}.cls"
+            else -> ""
         }
     }
 }
