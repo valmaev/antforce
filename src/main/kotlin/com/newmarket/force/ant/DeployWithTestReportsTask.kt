@@ -12,6 +12,11 @@ import java.util.*
 public class DeployWithTestReportsTask : DeployTask() {
     internal final val tests = HashSet<BatchTest>()
 
+    public val deployRoot: String?
+        get() = DeployTask::class.java.getDeclaredField("deployRoot").accessible {
+            return it.get(this) as String?
+        }
+
     public var reporter = Reporter() { LocalDateTime.now()}
 
     public var junitReportDir: File? = null

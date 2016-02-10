@@ -58,7 +58,7 @@ public class DeployWithTestReportsTaskTestCase {
     @Test fun saveJUnitReportToFile_ifJUnitReportDirIsNotNull_shouldCreateReportFileWithExpectedContent() {
         withTestDirectory { testDirectory ->
             val sut = createSystemUnderTest()
-            sut.reporter = Reporter{ LocalDateTime.MAX }
+            sut.reporter = Reporter { LocalDateTime.MAX }
             sut.junitReportDir = testDirectory
             sut.junitReportName = "TEST-ApexSuite.xml"
             sut.username = "foo"
@@ -79,6 +79,13 @@ public class DeployWithTestReportsTaskTestCase {
             assertTrue(actual.exists(), "Report file wasn't found")
             assertEquals(actual.readText(), expectedContent)
         }
+    }
+
+    @Test fun deployRoot_always_shouldReturnValueFromCorrespondingBaseClassPrivateField() {
+        val sut = createSystemUnderTest()
+        val expected = "foobar"
+        sut.setDeployRoot(expected)
+        assertEquals(sut.deployRoot, expected)
     }
 
     fun withTestDirectory(directoryNamePrefix: String = javaClass.name, test: (File) -> Unit) {
@@ -112,5 +119,5 @@ public class DeployWithTestReportsTaskTestCase {
     fun createTestClassesFileSet(directory: File, fileNames: Iterable<String>): FileSet =
         createFileSet(
             directory,
-            fileNames.map {it + BatchTest.APEX_CLASS_FILE_EXTENSION})
+            fileNames.map { it + BatchTest.APEX_CLASS_FILE_EXTENSION })
 }
