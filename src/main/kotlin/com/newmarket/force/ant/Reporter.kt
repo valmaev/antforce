@@ -9,9 +9,9 @@ import java.io.File
 import java.time.LocalDateTime
 
 
-public class Reporter(val dateTimeProvider: () -> LocalDateTime) {
+class Reporter(val dateTimeProvider: () -> LocalDateTime) {
 
-    public fun createJUnitReport(
+    fun createJUnitReport(
         runTestsResult: RunTestsResult,
         suiteName: String = "",
         properties: Map<String, String>? = null): JUnitReport {
@@ -50,7 +50,7 @@ public class Reporter(val dateTimeProvider: () -> LocalDateTime) {
         return report
     }
 
-    public fun createCoberturaReport(
+    fun createCoberturaReport(
         runTestsResult: RunTestsResult,
         projectRootPath: String? = null): CoberturaReport {
         val coverageTypes = runTestsResult.codeCoverage.groupBy { it.type ?: "" }

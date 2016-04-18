@@ -9,27 +9,27 @@ import java.time.LocalDateTime
 import java.util.*
 
 
-public class DeployWithTestReportsTask : DeployTask() {
+class DeployWithTestReportsTask : DeployTask() {
     internal final val tests = HashSet<BatchTest>()
 
-    public val deployRoot: String?
+    val deployRoot: String?
         get() = DeployTask::class.java.getDeclaredField("deployRoot").accessible {
             return it.get(this) as String?
         }
 
-    public var reporter = Reporter() { LocalDateTime.now()}
+    var reporter = Reporter() { LocalDateTime.now()}
 
-    public var junitReportDir: File? = null
-    public var junitReportName: String = "TEST-Apex.xml"
-    public var junitTestSuiteName: String = "Apex"
+    var junitReportDir: File? = null
+    var junitReportName: String = "TEST-Apex.xml"
+    var junitTestSuiteName: String = "Apex"
 
-    public fun createBatchTest(): BatchTest {
+    fun createBatchTest(): BatchTest {
         val batch = BatchTest(getProject())
         tests.add(batch)
         return batch
     }
 
-    public override fun getRunTests(): Array<out String>? {
+    override fun getRunTests(): Array<out String>? {
         val allTests = super.getRunTests().toMutableList()
         tests.forEach { allTests.addAll(it.getFileNames()) }
         return allTests.toTypedArray()
@@ -45,7 +45,7 @@ public class DeployWithTestReportsTask : DeployTask() {
         super.handleResponse(metadataConnection, response)
     }
 
-    public fun saveJUnitReportToFile(testResult: RunTestsResult) {
+    fun saveJUnitReportToFile(testResult: RunTestsResult) {
         if (junitReportDir == null)
             return
 

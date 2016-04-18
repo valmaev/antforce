@@ -1,8 +1,8 @@
 package com.newmarket.force.ant.dsl
 
 
-public class CoberturaReport : EmptyTag() {
-    public fun coverage(init: Coverage.() -> Unit = {}): Coverage = initTag(Coverage(), init)
+class CoberturaReport : EmptyTag() {
+    fun coverage(init: Coverage.() -> Unit = {}): Coverage = initTag(Coverage(), init)
 
     override fun toString(): String {
         val builder = StringBuilder()
@@ -12,28 +12,28 @@ public class CoberturaReport : EmptyTag() {
     }
 }
 
-public class Coverage: Tag("coverage") {
-    public fun packages(init: Packages.() -> Unit = {}): Packages = initTag(Packages(), init)
+class Coverage: Tag("coverage") {
+    fun packages(init: Packages.() -> Unit = {}): Packages = initTag(Packages(), init)
 }
 
-public class Packages: Tag("packages") {
-    public fun packageTag(name: String = "", init: Package.() -> Unit = {}): Package {
+class Packages: Tag("packages") {
+    fun packageTag(name: String = "", init: Package.() -> Unit = {}): Package {
         val packageTag = initTag(Package(), init)
         packageTag.name = name
         return packageTag
     }
 }
 
-public class Package: Tag("package") {
-    public var name: String
+class Package: Tag("package") {
+    var name: String
         get() = attributes["name"]!!
         set(value) { attributes["name"] = value }
 
-    public fun classes(init: Classes.() -> Unit = {}): Classes = initTag(Classes(), init)
+    fun classes(init: Classes.() -> Unit = {}): Classes = initTag(Classes(), init)
 }
 
-public class Classes: Tag("classes") {
-    public fun classTag(
+class Classes: Tag("classes") {
+    fun classTag(
         name: String = "",
         fileName: String = "",
         init: Class.() -> Unit = {}): Class {
@@ -45,20 +45,20 @@ public class Classes: Tag("classes") {
     }
 }
 
-public class Class: Tag("class") {
-    public var name: String
+class Class: Tag("class") {
+    var name: String
         get() = attributes["name"]!!
         set(value) { attributes["name"] = value }
 
-    public var fileName: String
+    var fileName: String
         get() = attributes["filename"]!!
         set(value) { attributes["filename"] = value }
 
-    public fun lines(init: Lines.() -> Unit = {}): Lines = initTag(Lines(), init)
+    fun lines(init: Lines.() -> Unit = {}): Lines = initTag(Lines(), init)
 }
 
-public class Lines: Tag("lines") {
-    public fun line(number: Int = 0, hits: Int = 0, init: Line.() -> Unit = {}): Line {
+class Lines: Tag("lines") {
+    fun line(number: Int = 0, hits: Int = 0, init: Line.() -> Unit = {}): Line {
         val line = initTag(Line(), init)
         line.number = number
         line.hits = hits
@@ -66,12 +66,12 @@ public class Lines: Tag("lines") {
     }
 }
 
-public class Line: Tag("line") {
-    public var number: Int
+class Line: Tag("line") {
+    var number: Int
         get() = attributes["number"]!!.toInt()
         set(value) { attributes["number"] = value.toString() }
 
-    public var hits: Int
+    var hits: Int
         get() = attributes["hits"]!!.toInt()
         set(value) { attributes["hits"] = value.toString() }
 }

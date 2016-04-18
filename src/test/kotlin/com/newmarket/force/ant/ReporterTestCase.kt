@@ -9,7 +9,7 @@ import org.testng.annotations.Test
 import java.time.LocalDateTime
 
 
-public class ReporterTestCase {
+class ReporterTestCase {
 
     final val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.MIN }
 

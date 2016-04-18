@@ -7,7 +7,7 @@ import org.xmlmatchers.transform.XmlConverters.*
 import java.time.LocalDateTime
 
 
-public class JUnitReportTestCase {
+class JUnitReportTestCase {
 
     @Test fun toString_always_shouldReturnsExpectedResult() {
         val actual = JUnitReport()

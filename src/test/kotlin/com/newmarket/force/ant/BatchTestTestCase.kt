@@ -10,7 +10,7 @@ import org.testng.annotations.Test
 import java.io.File
 
 
-public class BatchTestTestCase() {
+class BatchTestTestCase() {
     private var testDirectory: File? = null
 
     @BeforeMethod

@@ -6,7 +6,7 @@ import org.xmlmatchers.XmlMatchers.*
 import org.xmlmatchers.transform.XmlConverters.*
 
 
-public class CoberturaReportTestCase {
+class CoberturaReportTestCase {
 
     @Test fun toString_always_shouldReturnsExpectedResult() {
         val actual = CoberturaReport()

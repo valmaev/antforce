@@ -11,7 +11,7 @@ import java.io.File
 import java.time.LocalDateTime
 
 
-public class DeployWithTestReportsTaskTestCase {
+class DeployWithTestReportsTaskTestCase {
 
     @Test fun sut_always_shouldDeriveFromTaskClass() =
         assertThat(createSystemUnderTest(), instanceOf(DeployTask::class.java))

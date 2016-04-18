@@ -3,11 +3,11 @@ package com.newmarket.force.ant.dsl
 import java.util.*
 
 
-public interface Element {
+interface Element {
     fun render(builder: StringBuilder, indent: String)
 }
 
-public class CharacterDataElement(val text: String) : Element {
+class CharacterDataElement(val text: String) : Element {
     override fun render(builder: StringBuilder, indent: String) {
         builder.append("$indent<![CDATA[$text]]>\n")
     }
@@ -24,7 +24,7 @@ public class CharacterDataElement(val text: String) : Element {
     override fun hashCode(): Int = text.hashCode()
 }
 
-public abstract class Tag(val tagName: String) : Element {
+abstract class Tag(val tagName: String) : Element {
     val children = arrayListOf<Element>()
     val attributes = hashMapOf<String, String>()
 
@@ -70,12 +70,12 @@ public abstract class Tag(val tagName: String) : Element {
     override fun hashCode(): Int = Objects.hash(tagName, children, attributes)
 }
 
-public abstract class EmptyTag : Tag("") {
+abstract class EmptyTag : Tag("") {
     override fun render(builder: StringBuilder, indent: String) =
         children.forEach { it.render(builder, indent + "  ") }
 }
 
-public abstract class TagWithCharacterData(name: String) : Tag(name) {
+abstract class TagWithCharacterData(name: String) : Tag(name) {
     operator fun String.unaryPlus() {
         children.add(CharacterDataElement(this))
     }
