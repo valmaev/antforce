@@ -30,7 +30,7 @@ public class DeployWithTestReportsTask : DeployTask() {
     }
 
     public override fun getRunTests(): Array<out String>? {
-        val allTests = super.getRunTests().toArrayList()
+        val allTests = super.getRunTests().toMutableList()
         tests.forEach { allTests.addAll(it.getFileNames()) }
         return allTests.toTypedArray()
     }

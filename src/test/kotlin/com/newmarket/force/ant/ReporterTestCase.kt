@@ -67,7 +67,7 @@ public class ReporterTestCase {
         val report = sut.createJUnitReport(input)
         val actual = report.children.filterIsInstance<TestSuite>().single().testCases
 
-        assertThat(actual.collectionSizeOrNull(), equalTo(expected.size))
+        assertThat(actual.count(), equalTo(expected.size))
         expected.forEach { assertThat(reason, actual.contains(it)) }
     }
 
@@ -124,7 +124,7 @@ public class ReporterTestCase {
         val report = sut.createJUnitReport(input)
         val actual = report.children.filterIsInstance<TestSuite>().single().testCases
 
-        assertThat(actual.collectionSizeOrNull(), equalTo(expected.size))
+        assertThat(actual.count(), equalTo(expected.size))
         expected.forEach { assertThat(reason, actual.contains(it)) }
     }
 
@@ -205,7 +205,7 @@ public class ReporterTestCase {
             .children.filterIsInstance<Properties>().single()
             .children.filterIsInstance<Property>()
 
-        assertThat(actual.collectionSizeOrNull(), equalTo(expected.size))
+        assertThat(actual.count(), equalTo(expected.size))
         expected.forEach { assertThat(reason, actual.contains(it)) }
     }
 

@@ -2,7 +2,7 @@ group 'com.newmarket.force.ant'
 version '0.2'
 
 buildscript {
-    ext.kotlin_version = '1.0.0-beta-4584'
+    ext.kotlin_version = '1.0.1-2'
     ext.ant_version = '1.9.6'
     repositories {
         mavenCentral()
@@ -32,5 +32,4 @@ dependencies {
 
 test {
     useTestNG()
-    return true
 }
