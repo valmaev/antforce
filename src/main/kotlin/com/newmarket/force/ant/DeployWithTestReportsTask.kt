@@ -17,7 +17,7 @@ class DeployWithTestReportsTask : DeployTask() {
             return it.get(this) as String?
         }
 
-    var reporter = Reporter() { LocalDateTime.now()}
+    var reporter = Reporter() { LocalDateTime.now() }
 
     var sourceDir: File? = null
     var reportDir: File? = null
@@ -44,15 +44,19 @@ class DeployWithTestReportsTask : DeployTask() {
         val deployResult = metadataConnection!!.checkDeployStatus(response!!.id)
         val testResult = deployResult.runTestResult
         sourceDir = sourceDir ?: File(deployRoot)
-        saveJUnitReportToFile(testResult)
-        saveCoberturaReportToFile(testResult)
+
+        if (reportDir != null) {
+            if (!reportDir!!.exists())
+                reportDir!!.mkdirs()
+
+            saveJUnitReportToFile(testResult)
+            saveCoberturaReportToFile(testResult)
+        }
+
         super.handleResponse(metadataConnection, response)
     }
 
-    fun saveJUnitReportToFile(testResult: RunTestsResult) {
-        if (reportDir == null)
-            return
-
+    internal fun saveJUnitReportToFile(testResult: RunTestsResult) {
         val properties = hashMapOf(
             "username" to (username ?: ""),
             "serverURL" to (serverURL ?: ""),
@@ -67,10 +71,7 @@ class DeployWithTestReportsTask : DeployTask() {
         log("JUnit report created successfully: ${report.absolutePath}")
     }
 
-    fun saveCoberturaReportToFile(testResult: RunTestsResult) {
-        if (reportDir == null)
-            return
-
+    internal fun saveCoberturaReportToFile(testResult: RunTestsResult) {
         val reportContent = reporter.createCoberturaReport(testResult, sourceDir?.path)
         val report = saveToFile(reportDir!!, coberturaReportName, reportContent.toString())
         log("Cobertura report created successfully: ${report.absolutePath}")
