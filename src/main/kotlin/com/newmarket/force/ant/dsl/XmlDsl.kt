@@ -7,6 +7,12 @@ interface Element {
     fun render(builder: StringBuilder, indent: String)
 }
 
+class TextElement(val text: String) : Element {
+    override fun render(builder: StringBuilder, indent: String) {
+        builder.append("$indent$text\n")
+    }
+}
+
 class CharacterDataElement(val text: String) : Element {
     override fun render(builder: StringBuilder, indent: String) {
         builder.append("$indent<![CDATA[$text]]>\n")
@@ -75,8 +81,10 @@ abstract class EmptyTag : Tag("") {
         children.forEach { it.render(builder, indent + "  ") }
 }
 
+abstract class TagWithTextData(name: String) : Tag(name) {
+    operator fun String.unaryPlus() = children.add(TextElement(this))
+}
+
 abstract class TagWithCharacterData(name: String) : Tag(name) {
-    operator fun String.unaryPlus() {
-        children.add(CharacterDataElement(this))
-    }
+    operator fun String.unaryPlus() = children.add(CharacterDataElement(this))
 }

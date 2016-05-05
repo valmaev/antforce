@@ -11,6 +11,9 @@ class CoberturaReportTestCase {
     @Test fun toString_always_shouldReturnsExpectedResult() {
         val actual = CoberturaReport()
         actual.coverage {
+            sources {
+                source { +"/path/to/sourcecode" }
+            }
             packages {
                 packageTag(name = "fooPackage") {
                     classes {
@@ -36,6 +39,9 @@ class CoberturaReportTestCase {
 
         val expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<coverage>" +
+                "<sources>" +
+                    "<source>/path/to/sourcecode</source>" +
+                "</sources>" +
                 "<packages>" +
                     "<package name=\"fooPackage\">" +
                         "<classes>" +

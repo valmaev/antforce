@@ -57,12 +57,15 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
 
         val report = CoberturaReport()
         report.coverage {
+            sources {
+                source { +projectRootPath.orEmpty() }
+            }
             packages {
                 coverageTypes.forEach { coverageType ->
                     packageTag(name = coverageType.key) {
                         classes {
                             coverageType.value.forEach {
-                                createClassTags(it, projectRootPath)
+                                createClassTags(it)
                             }
                         }
                     }
@@ -73,14 +76,18 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
     }
 
     private fun Classes.createClassTags(
-        result: CodeCoverageResult,
-        projectRootPath: String?) {
+        result: CodeCoverageResult) {
         classTag(
             name = getClassName(result),
-            fileName = getClassFileName(projectRootPath, result)) {
+            fileName = getClassFileName(result)) {
             lines {
-                result.locationsNotCovered?.forEach {
-                    line(number = it.line, hits = it.numExecutions)
+                val notCoveredLines = result.locationsNotCovered.orEmpty().associateBy { it.line }
+                for (currentLine in 1..result.numLocations) {
+                    val hits =
+                        if (notCoveredLines.contains(currentLine))
+                            notCoveredLines[currentLine]!!.numExecutions
+                        else 1
+                    line(number = currentLine, hits = hits)
                 }
             }
         }
@@ -92,19 +99,14 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
         else "${result.namespace}.${result.name ?: ""}"
 
     private fun getClassFileName(
-        projectRootPath: String? = null,
-        result: CodeCoverageResult): String {
-
-        val rootPath = projectRootPath?.dropLastWhile { it == '/' || it == '\\' }
-
-        return if (result.name.isNullOrEmpty())
+        result: CodeCoverageResult): String =
+        if (result.name.isNullOrEmpty())
             ""
         else if (!result.namespace.isNullOrEmpty())
             ""
         else when (result.type) {
-            "Class" -> "$rootPath${File.separator}classes${File.separator}${result.name}.cls"
-            "Trigger" -> "$rootPath${File.separator}triggers${File.separator}${result.name}.cls"
+            "Class" -> "classes${File.separator}${result.name}.cls"
+            "Trigger" -> "triggers${File.separator}${result.name}.cls"
             else -> ""
         }
-    }
 }

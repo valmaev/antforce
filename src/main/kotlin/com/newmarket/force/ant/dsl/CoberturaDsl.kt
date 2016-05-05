@@ -12,11 +12,18 @@ class CoberturaReport : EmptyTag() {
     }
 }
 
-class Coverage: Tag("coverage") {
+class Coverage : Tag("coverage") {
+    fun sources(init: Sources.() -> Unit = {}): Sources = initTag(Sources(), init)
     fun packages(init: Packages.() -> Unit = {}): Packages = initTag(Packages(), init)
 }
 
-class Packages: Tag("packages") {
+class Sources : Tag("sources") {
+    fun source(init: Source.() -> Unit = {}): Source = initTag(Source(), init)
+}
+
+class Source : TagWithTextData("source")
+
+class Packages : Tag("packages") {
     fun packageTag(name: String = "", init: Package.() -> Unit = {}): Package {
         val packageTag = initTag(Package(), init)
         packageTag.name = name
@@ -24,7 +31,7 @@ class Packages: Tag("packages") {
     }
 }
 
-class Package: Tag("package") {
+class Package : Tag("package") {
     var name: String
         get() = attributes["name"]!!
         set(value) { attributes["name"] = value }
@@ -32,7 +39,7 @@ class Package: Tag("package") {
     fun classes(init: Classes.() -> Unit = {}): Classes = initTag(Classes(), init)
 }
 
-class Classes: Tag("classes") {
+class Classes : Tag("classes") {
     fun classTag(
         name: String = "",
         fileName: String = "",
@@ -45,7 +52,7 @@ class Classes: Tag("classes") {
     }
 }
 
-class Class: Tag("class") {
+class Class : Tag("class") {
     var name: String
         get() = attributes["name"]!!
         set(value) { attributes["name"] = value }
@@ -57,7 +64,7 @@ class Class: Tag("class") {
     fun lines(init: Lines.() -> Unit = {}): Lines = initTag(Lines(), init)
 }
 
-class Lines: Tag("lines") {
+class Lines : Tag("lines") {
     fun line(number: Int = 0, hits: Int = 0, init: Line.() -> Unit = {}): Line {
         val line = initTag(Line(), init)
         line.number = number
@@ -66,7 +73,7 @@ class Lines: Tag("lines") {
     }
 }
 
-class Line: Tag("line") {
+class Line : Tag("line") {
     var number: Int
         get() = attributes["number"]!!.toInt()
         set(value) { attributes["number"] = value.toString() }

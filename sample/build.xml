@@ -17,8 +17,9 @@
             serverUrl="${sf.server}"
             deployRoot="src"
             rollbackOnError="true"
-            junitReportDir="${outputdir}/test-reports"
-            junitReportName="TEST-MyApexTests.xml">
+            reportDir="${outputdir}/test-reports"
+            junitReportName="TEST-ApexTests.xml"
+            coberturaReportName="Apex-Coverage.xml">
             <batchtest>
                 <fileset dir="src/classes" includes="*TestClass.cls" />
             </batchtest>

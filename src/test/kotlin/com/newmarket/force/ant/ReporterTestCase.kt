@@ -26,8 +26,8 @@ class ReporterTestCase {
     }
 
     @DataProvider
-    fun createJUnitReportTesSuiteData(): Array<Array<Any>> =
-        arrayOf(
+    fun createJUnitReportTesSuiteData(): Array<Array<Any>> {
+        return arrayOf(
             arrayOf(
                 createRunTestsResult(),
                 JUnitReport().testSuite(timestamp = dateTimeProvider()),
@@ -40,6 +40,7 @@ class ReporterTestCase {
                 createRunTestsResult(totalTime = 1000.0),
                 JUnitReport().testSuite(time = 1000.0 / 1000.0, timestamp = dateTimeProvider()),
                 "Should properly calculate time in ms (totalTime / 1000.0)"))
+    }
 
     @Test(dataProvider = "createJUnitReportSuiteNameData")
     fun createJUnitReport_always_shouldUsePassedSuiteNameAsExpected(expected: String) {
@@ -72,8 +73,8 @@ class ReporterTestCase {
     }
 
     @DataProvider
-    fun createJUnitReportTestCaseData(): Array<Array<out Any>> =
-        arrayOf(
+    fun createJUnitReportTestCaseData(): Array<Array<out Any>> {
+        return arrayOf(
             arrayOf<Any>(
                 arrayOf<RunTestSuccess>(),
                 arrayOf<TestCase>(),
@@ -111,6 +112,7 @@ class ReporterTestCase {
                         className = "TestClass")),
                 "Should treat null namespace as empty string " +
                     "(className = name instead of .name or null.name)"))
+    }
 
     @Test(dataProvider = "createJUnitReportTestCaseFailureData")
     fun createJUnitReport_forEachFailure_shouldCreateTestCaseWithFailureInsideTestSuite(
@@ -129,8 +131,8 @@ class ReporterTestCase {
     }
 
     @DataProvider
-    fun createJUnitReportTestCaseFailureData(): Array<Array<out Any>> =
-        arrayOf(
+    fun createJUnitReportTestCaseFailureData(): Array<Array<out Any>> {
+        return arrayOf(
             arrayOf<Any>(
                 arrayOf<RunTestFailure>(),
                 arrayOf<TestCase>(),
@@ -191,6 +193,7 @@ class ReporterTestCase {
                     }),
                 "Should treat null namespace as empty string " +
                     "(className = name instead of .name or null.name)"))
+    }
 
     @Test(dataProvider = "createJUnitReportTestCasePropertiesData")
     fun createJUnitReport_forEachProperty_shouldCreateCorrespondingPropertyElement(
@@ -210,8 +213,8 @@ class ReporterTestCase {
     }
 
     @DataProvider
-    fun createJUnitReportTestCasePropertiesData(): Array<Array<out Any>> =
-        arrayOf(
+    fun createJUnitReportTestCasePropertiesData(): Array<Array<out Any>> {
+        return arrayOf(
             arrayOf(
                 hashMapOf<String, String>(),
                 arrayOf<Property>(),
@@ -224,6 +227,7 @@ class ReporterTestCase {
                     createProperty("foo", "bar"),
                     createProperty("baz", "qux")),
                 "Should create property for each map entry"))
+    }
 
     @Test(dataProvider = "createCoberturaReportPackagesTestData")
     fun createCoberturaReport_forEachCodeCoverageType_shouldCreatePackage(
@@ -244,8 +248,8 @@ class ReporterTestCase {
     }
 
     @DataProvider
-    fun createCoberturaReportPackagesTestData(): Array<Array<out Any>> =
-        arrayOf(
+    fun createCoberturaReportPackagesTestData(): Array<Array<out Any>> {
+        return arrayOf(
             arrayOf(
                 arrayOf<CodeCoverageResult>(),
                 "",
@@ -309,7 +313,7 @@ class ReporterTestCase {
                         classes {
                             classTag(
                                 name = "Book",
-                                fileName = "/classes/Book.cls") {
+                                fileName = "classes/Book.cls") {
                                 lines()
                             }
                             classTag(
@@ -323,7 +327,7 @@ class ReporterTestCase {
                         classes {
                             classTag(
                                 name = "AccountTrigger",
-                                fileName = "/triggers/AccountTrigger.cls") {
+                                fileName = "triggers/AccountTrigger.cls") {
                                 lines()
                             }
                             classTag(
@@ -340,27 +344,35 @@ class ReporterTestCase {
                     createCodeCoverageResult(
                         name = "BookBuilder",
                         type = "Class",
+                        numLocations = 10,
                         locationsNotCovered = arrayOf(
                             createCodeLocation(line = 1, numExecutions = 0),
                             createCodeLocation(line = 2, numExecutions = 0),
-                            createCodeLocation(line = 245, numExecutions = 3)))),
+                            createCodeLocation(line = 4, numExecutions = 3)))),
                 "",
                 Coverage().packages {
                     packageTag("Class") {
                         classes {
                             classTag(
                                 name = "BookBuilder",
-                                fileName = "/classes/BookBuilder.cls") {
+                                fileName = "classes/BookBuilder.cls") {
                                 lines {
                                     line(number = 1, hits = 0)
                                     line(number = 2, hits = 0)
-                                    line(number = 245, hits = 3)
+                                    line(number = 3, hits = 1)
+                                    line(number = 4, hits = 3)
+                                    line(number = 5, hits = 1)
+                                    line(number = 6, hits = 1)
+                                    line(number = 7, hits = 1)
+                                    line(number = 8, hits = 1)
+                                    line(number = 9, hits = 1)
+                                    line(number = 10, hits = 1)
                                 }
                             }
                         }
                     }
                 },
-                "Should create line for each not covered location in CodeCoverageResult"),
+                "Should create line for each not covered location in CodeCoverageResult and for each covered location"),
             arrayOf(
                 arrayOf(
                     createCodeCoverageResult(
@@ -371,7 +383,7 @@ class ReporterTestCase {
                     packageTag("Class") {
                         classes {
                             classTag(
-                                fileName = "/foo/bar/myDirectory/classes/BookBuilder.cls",
+                                fileName = "classes/BookBuilder.cls",
                                 name = "BookBuilder") { lines() }
                         }
                     }
@@ -387,7 +399,7 @@ class ReporterTestCase {
                     packageTag("Trigger") {
                         classes {
                             classTag(
-                                fileName = "/foo/bar/myDirectory/triggers/BookTrigger.cls",
+                                fileName = "triggers/BookTrigger.cls",
                                 name = "BookTrigger") { lines() }
                         }
                     }
@@ -443,22 +455,26 @@ class ReporterTestCase {
                         classes {
                             classTag(
                                 name = "Book",
-                                fileName = "/foo/bar/myDirectory/classes/Book.cls") { lines() }
+                                fileName = "classes/Book.cls") { lines() }
                         }
                     }
                 },
                 "Should properly handle trailing slash in projectRootPath"))
+    }
 
     fun createCodeCoverageResult(
         name: String? = null,
         namespace: String? = null,
         type: String? = null,
-        locationsNotCovered: Array<CodeLocation>? = null): CodeCoverageResult {
+        locationsNotCovered: Array<CodeLocation>? = null,
+        numLocations: Int = 0): CodeCoverageResult {
         val result = CodeCoverageResult()
         result.name = name
         result.namespace = namespace
         result.type = type
         result.locationsNotCovered = locationsNotCovered
+        result.numLocationsNotCovered = locationsNotCovered?.size ?: 0
+        result.numLocations = numLocations
         return result
     }
 

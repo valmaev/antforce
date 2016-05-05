@@ -19,7 +19,7 @@ class DeployWithTestReportsTaskTestCase {
     @Test fun createBatchTest_always_shouldAddNewBatchTestToTests() {
         val sut = createSystemUnderTest()
         val actual = sut.createBatchTest()
-        assertThat(sut.tests, contains(actual))
+        assertThat(sut.batchTests, contains(actual))
         assertThat(sut.getProject(), sameInstance(actual.project))
     }
 
@@ -59,7 +59,7 @@ class DeployWithTestReportsTaskTestCase {
         withTestDirectory { testDirectory ->
             val sut = createSystemUnderTest()
             sut.reporter = Reporter { LocalDateTime.MAX }
-            sut.junitReportDir = testDirectory
+            sut.reportDir = testDirectory
             sut.junitReportName = "TEST-ApexSuite.xml"
             sut.username = "foo"
             sut.serverURL = "bar"
