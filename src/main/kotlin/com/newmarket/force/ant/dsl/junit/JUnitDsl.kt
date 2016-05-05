@@ -1,5 +1,6 @@
-package com.newmarket.force.ant.dsl
+package com.newmarket.force.ant.dsl.junit
 
+import com.newmarket.force.ant.dsl.xml.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 

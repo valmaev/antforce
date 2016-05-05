@@ -1,8 +1,8 @@
 package com.newmarket.force.ant
 
-import com.newmarket.force.ant.dsl.Classes
-import com.newmarket.force.ant.dsl.CoberturaReport
-import com.newmarket.force.ant.dsl.JUnitReport
+import com.newmarket.force.ant.dsl.cobertura.Classes
+import com.newmarket.force.ant.dsl.cobertura.CoberturaReport
+import com.newmarket.force.ant.dsl.junit.JUnitReport
 import com.sforce.soap.metadata.CodeCoverageResult
 import com.sforce.soap.metadata.RunTestsResult
 import java.io.File

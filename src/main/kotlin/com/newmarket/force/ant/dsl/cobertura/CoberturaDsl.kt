@@ -1,4 +1,6 @@
-package com.newmarket.force.ant.dsl
+package com.newmarket.force.ant.dsl.cobertura
+
+import com.newmarket.force.ant.dsl.xml.*
 
 
 class CoberturaReport : EmptyTag() {

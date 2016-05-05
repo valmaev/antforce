@@ -1,5 +1,6 @@
 package com.newmarket.force.ant.dsl
 
+import com.newmarket.force.ant.dsl.cobertura.CoberturaReport
 import org.hamcrest.MatcherAssert.*
 import org.testng.annotations.Test
 import org.xmlmatchers.XmlMatchers.*

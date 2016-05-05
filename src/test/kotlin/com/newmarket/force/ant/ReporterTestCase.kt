@@ -1,6 +1,7 @@
 package com.newmarket.force.ant
 
-import com.newmarket.force.ant.dsl.*
+import com.newmarket.force.ant.dsl.cobertura.*
+import com.newmarket.force.ant.dsl.junit.*
 import com.sforce.soap.metadata.*
 import org.hamcrest.core.IsEqual.*
 import org.hamcrest.MatcherAssert.*
