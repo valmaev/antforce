@@ -8,7 +8,7 @@
     <taskdef
         uri="antlib:com.newmarket.force.ant"
         resource="com/newmarket/force/ant/antlib.xml"
-        classpath="./../build/libs/ForceAntTasks-0.4.1-all.jar" />
+        classpath="./../build/libs/ForceAntTasks-0.4.2-all.jar" />
 
     <target name="deploy">
         <sfcontrib:deploy

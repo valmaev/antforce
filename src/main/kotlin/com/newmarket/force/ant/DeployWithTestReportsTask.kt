@@ -47,7 +47,7 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         val testResult = deployResult.details.runTestResult
         sourceDir = sourceDir ?: File(deployRoot)
 
-        if (reportDir != null) {
+        if (reportDir != null && testLevel != null && testLevel != TestLevel.NoTestRun.name) {
             if (!reportDir!!.exists())
                 reportDir!!.mkdirs()
 
