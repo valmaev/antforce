@@ -1,12 +1,14 @@
 package com.newmarket.force.ant
 
 import com.salesforce.ant.DeployTask
+import com.sforce.soap.metadata.TestLevel
 import org.apache.tools.ant.Project
 import org.apache.tools.ant.types.FileSet
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.*
 import org.testng.annotations.Test
 import org.testng.Assert.*
+import org.testng.annotations.DataProvider
 import java.io.File
 import java.time.LocalDateTime
 
@@ -31,8 +33,20 @@ class DeployWithTestReportsTaskTestCase {
             startsWith("create"))
     }
 
-    @Test fun getRunTests_always_shouldContainAllNestedRunTestElements() {
-        val sut = createSystemUnderTest()
+    @Test(dataProvider = "getRunTestsEmptyArrayTestLevels")
+    fun getRunTests_forAnyOtherTestLevel_shouldReturnEmptyArray(testLevel: TestLevel) {
+        val sut = createSystemUnderTest(testLevel = testLevel)
+        assertThat(sut.runTests!!.asList(), hasSize(equalTo(0)))
+    }
+
+    @DataProvider
+    fun getRunTestsEmptyArrayTestLevels(): Array<Array<Any>> = TestLevel.values()
+        .filter { it != TestLevel.RunSpecifiedTests }
+        .map { arrayOf<Any>(it)}
+        .toTypedArray()
+
+    @Test fun getRunTests_forRunSpecifiedTestsTestLevel_shouldContainAllNestedRunTestElements() {
+        val sut = createSystemUnderTest(testLevel = TestLevel.RunSpecifiedTests)
         val expected = listOf("foo", "bar", "baz")
         expected.forEach { sut.addRunTest(createRunTestElement(it)) }
 
@@ -41,9 +55,9 @@ class DeployWithTestReportsTaskTestCase {
         expected.forEach { assertThat(actual, hasItemInArray(it)) }
     }
 
-    @Test fun getRunTests_always_shouldContainAllFileNamesOfBatchTests() {
+    @Test fun getRunTests_forRunSpecifiedTestsTestLevel_shouldContainAllFileNamesOfBatchTests() {
         withTestDirectory { testDirectory ->
-            val sut = createSystemUnderTest()
+            val sut = createSystemUnderTest(testLevel = TestLevel.RunSpecifiedTests)
             val batchTest = sut.createBatchTest()
             val expected = listOf("foo", "bar", "baz")
             val fileSet = createTestClassesFileSet(testDirectory, expected)
@@ -98,9 +112,12 @@ class DeployWithTestReportsTaskTestCase {
         }
     }
 
-    fun createSystemUnderTest(project: Project = createProject()): DeployWithTestReportsTask {
+    fun createSystemUnderTest(
+        project: Project = createProject(),
+        testLevel: TestLevel = TestLevel.RunSpecifiedTests): DeployWithTestReportsTask {
         val sut = DeployWithTestReportsTask()
         sut.setProject(project)
+        sut.testLevel = testLevel.name
         return sut
     }
 

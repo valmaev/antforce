@@ -1,15 +1,17 @@
 package com.newmarket.force.ant
 
 import com.salesforce.ant.DeployTask
+import com.salesforce.ant.DeployTaskAdapter
 import com.sforce.soap.metadata.AsyncResult
 import com.sforce.soap.metadata.MetadataConnection
 import com.sforce.soap.metadata.RunTestsResult
+import com.sforce.soap.metadata.TestLevel
 import java.io.File
 import java.time.LocalDateTime
 import java.util.*
 
 
-class DeployWithTestReportsTask : DeployTask() {
+class DeployWithTestReportsTask : DeployTaskAdapter() {
     final val batchTests = HashSet<BatchTest>()
 
     val deployRoot: String?
@@ -31,18 +33,18 @@ class DeployWithTestReportsTask : DeployTask() {
         return batch
     }
 
-    override fun getRunTests(): Array<out String>? {
-        val allTests = super.getRunTests().toMutableList()
-        batchTests.forEach { allTests.addAll(it.getFileNames()) }
-        return allTests.toTypedArray()
+    override fun getRunTests(): Array<out String>? = when (testLevel) {
+        TestLevel.RunSpecifiedTests.name ->
+            super.getRunTests().union(batchTests.flatMap { it.getFileNames() }).toTypedArray()
+        else -> emptyArray()
     }
 
     override fun handleResponse(
         metadataConnection: MetadataConnection?,
         response: AsyncResult?) {
 
-        val deployResult = metadataConnection!!.checkDeployStatus(response!!.id)
-        val testResult = deployResult.runTestResult
+        val deployResult = metadataConnection!!.checkDeployStatus(response!!.id, true)
+        val testResult = deployResult.details.runTestResult
         sourceDir = sourceDir ?: File(deployRoot)
 
         if (reportDir != null) {
