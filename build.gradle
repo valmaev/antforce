@@ -1,5 +1,5 @@
 group 'com.newmarket.force.ant'
-version '0.4'
+version '0.4.1'
 
 buildscript {
     ext.kotlin_version = '1.0.1-2'
@@ -32,6 +32,12 @@ dependencies {
 
 test {
     useTestNG()
+}
+
+jar {
+    from('src/main/kotlin') {
+        include '**/antlib.xml'
+    }
 }
 
 task fatJar(type: Jar) {

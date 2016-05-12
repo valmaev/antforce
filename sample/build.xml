@@ -1,28 +1,29 @@
 <?xml version="1.0"?>
 
-<project default="deploy">
-    <property file="build.properties"/>
+<project xmlns:sfcontrib="antlib:com.newmarket.force.ant" default="deploy">
+    <property file="build.properties" />
     <property name="sf.server" value="https://login.salesforce.com" />
     <property name="outputdir" value="artifacts" />
 
     <taskdef
-        name="runApexTestsWithReports"
-        classname="com.newmarket.force.ant.DeployWithTestReportsTask"
-        classpath="${lib.dir}"/>
+        uri="antlib:com.newmarket.force.ant"
+        resource="com/newmarket/force/ant/antlib.xml"
+        classpath="./../build/libs/ForceAntTasks-0.4.1-all.jar" />
 
     <target name="deploy">
-        <runApexTestsWithReports
+        <sfcontrib:deploy
             username="${sf.username}"
             password="${sf.password}${sf.token}"
             serverUrl="${sf.server}"
             deployRoot="src"
             rollbackOnError="true"
+            testLevel="RunSpecifiedTests"
             reportDir="${outputdir}/test-reports"
             junitReportName="TEST-ApexTests.xml"
             coberturaReportName="Apex-Coverage.xml">
             <batchtest>
                 <fileset dir="src/classes" includes="*TestClass.cls" />
             </batchtest>
-        </runApexTestsWithReports>
+        </sfcontrib:deploy>
     </target>
 </project>
