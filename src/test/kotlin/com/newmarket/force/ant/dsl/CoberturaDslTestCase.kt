@@ -1,16 +1,16 @@
 package com.newmarket.force.ant.dsl
 
-import com.newmarket.force.ant.dsl.cobertura.CoberturaReport
+import com.newmarket.force.ant.dsl.cobertura.CoberturaReportRoot
 import org.hamcrest.MatcherAssert.*
 import org.testng.annotations.Test
 import org.xmlmatchers.XmlMatchers.*
 import org.xmlmatchers.transform.XmlConverters.*
 
 
-class CoberturaReportTestCase {
+class CoberturaDslTestCase {
 
     @Test fun toString_always_shouldReturnsExpectedResult() {
-        val actual = CoberturaReport()
+        val actual = CoberturaReportRoot()
         actual.coverage {
             sources {
                 source { +"/path/to/sourcecode" }

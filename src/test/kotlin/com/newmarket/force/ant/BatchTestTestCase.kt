@@ -1,6 +1,8 @@
 package com.newmarket.force.ant
 
 import org.apache.tools.ant.Project
+import org.hamcrest.MatcherAssert
+import org.hamcrest.Matchers
 import org.testng.Assert.assertEquals
 import org.testng.Assert.assertTrue
 import org.testng.annotations.AfterMethod
@@ -21,6 +23,13 @@ class BatchTestTestCase() {
     @AfterMethod
     fun removeTestDirectory() = testDirectory?.deleteRecursively()
 
+    @Test fun addFileSet_always_shouldFollowAntNamingConventions() {
+        MatcherAssert.assertThat(
+            "Prefix 'add' is one of the Ant's conventions for nested elements declaration. " +
+                "See the manual: http://ant.apache.org/manual/develop.html#nested-elements",
+            BatchTest::addFileSet.name,
+            Matchers.startsWith("add"))
+    }
 
     @Test fun addFileSet_always_shouldFillProjectPropertyOfPassedValue() {
         val sut = createSystemUnderTest()

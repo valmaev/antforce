@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
-class JUnitReport : EmptyTag() {
+class JUnitReportRoot : EmptyTag() {
     fun testSuite(
         name: String = "",
         tests: Int = 0,

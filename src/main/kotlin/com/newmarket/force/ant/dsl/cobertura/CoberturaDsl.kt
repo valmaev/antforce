@@ -3,7 +3,7 @@ package com.newmarket.force.ant.dsl.cobertura
 import com.newmarket.force.ant.dsl.xml.*
 
 
-class CoberturaReport : EmptyTag() {
+class CoberturaReportRoot : EmptyTag() {
     fun coverage(init: Coverage.() -> Unit = {}): Coverage = initTag(Coverage(), init)
 
     override fun toString(): String {

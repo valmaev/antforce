@@ -22,15 +22,31 @@ class DeployWithTestReportsTaskTestCase {
         val sut = createSystemUnderTest()
         val actual = sut.createBatchTest()
         assertThat(sut.batchTests, contains(actual))
-        assertThat(sut.getProject(), sameInstance(actual.project))
+        assertThat(sut.project, sameInstance(actual.project))
     }
 
-    @Test fun createBatchTest_always_shouldCreatePrefixInName() {
+    @Test fun createBatchTest_always_shouldFollowAntNamingConventions() {
         assertThat(
             "Prefix 'create' is one of the Ant's conventions for nested elements declaration. " +
                 "See the manual: http://ant.apache.org/manual/develop.html#nested-elements",
             DeployWithTestReportsTask::createBatchTest.name,
             startsWith("create"))
+    }
+
+    @Test fun addJUnitReport_always_shouldFollowAntNamingConventions() {
+        assertThat(
+            "Prefix 'add' is one of the Ant's conventions for nested elements declaration. " +
+                "See the manual: http://ant.apache.org/manual/develop.html#nested-elements",
+            DeployWithTestReportsTask::addJUnitReport.name,
+            startsWith("add"))
+    }
+
+    @Test fun addCoberturaReport_always_shouldFollowAntNamingConventions() {
+        assertThat(
+            "Prefix 'add' is one of the Ant's conventions for nested elements declaration. " +
+                "See the manual: http://ant.apache.org/manual/develop.html#nested-elements",
+            DeployWithTestReportsTask::addCoberturaReport.name,
+            startsWith("add"))
     }
 
     @Test(dataProvider = "getRunTestsEmptyArrayTestLevels")
@@ -42,7 +58,7 @@ class DeployWithTestReportsTaskTestCase {
     @DataProvider
     fun getRunTestsEmptyArrayTestLevels(): Array<Array<Any>> = TestLevel.values()
         .filter { it != TestLevel.RunSpecifiedTests }
-        .map { arrayOf<Any>(it)}
+        .map { arrayOf<Any>(it) }
         .toTypedArray()
 
     @Test fun getRunTests_forRunSpecifiedTestsTestLevel_shouldContainAllNestedRunTestElements() {
@@ -69,27 +85,56 @@ class DeployWithTestReportsTaskTestCase {
         }
     }
 
-    @Test fun saveJUnitReportToFile_ifJUnitReportDirIsNotNull_shouldCreateReportFileWithExpectedContent() {
+    @Test fun saveJUnitReportToFile_ifReportDirIsNotNull_shouldCreateReportFileWithExpectedContent() {
         withTestDirectory { testDirectory ->
+            // Arrange
             val sut = createSystemUnderTest()
             sut.reporter = Reporter { LocalDateTime.MAX }
             sut.reportDir = testDirectory
-            sut.junitReportName = "TEST-ApexSuite.xml"
             sut.username = "foo"
             sut.serverURL = "bar"
             sut.apiVersion = 35.0
+
+            val report = JUnitReport(file = "TEST-ApexSuite.xml", suiteName = "TestSuite")
+            sut.addJUnitReport(report)
+
             val input = createRunTestsResult()
             val expectedContent = sut.reporter.createJUnitReport(
                 input,
-                sut.junitTestSuiteName,
+                report.suiteName,
                 hashMapOf(
                     "username" to sut.username,
                     "serverURL" to sut.serverURL,
                     "apiVersion" to sut.apiVersion.toString())).toString()
 
-            sut.saveJUnitReportToFile(createRunTestsResult())
+            // Act
+            sut.saveJUnitReportToFile(input)
 
-            val actual = testDirectory.listFiles().single { it.name == sut.junitReportName }
+            // Assert
+            val actual = testDirectory.listFiles().single { it.name == report.file }
+            assertTrue(actual.exists(), "Report file wasn't found")
+            assertEquals(actual.readText(), expectedContent)
+        }
+    }
+
+    @Test fun saveCoberturaReportToFile_ifReportDirIsNotNull_shouldCreateReportFileWithExpectedContent() {
+        withTestDirectory { testDirectory ->
+            // Arrange
+            val sut = createSystemUnderTest()
+            sut.reporter = Reporter { LocalDateTime.MAX }
+            sut.reportDir = testDirectory
+
+            val report = CoberturaReport(file = "Cobertura.xml")
+            sut.addCoberturaReport(report)
+
+            val input = createRunTestsResult()
+            val expectedContent = sut.reporter.createCoberturaReport(input).toString()
+
+            // Act
+            sut.saveCoberturaReportToFile(input)
+
+            // Assert
+            val actual = testDirectory.listFiles().single { it.name == report.file }
             assertTrue(actual.exists(), "Report file wasn't found")
             assertEquals(actual.readText(), expectedContent)
         }
@@ -116,7 +161,7 @@ class DeployWithTestReportsTaskTestCase {
         project: Project = createProject(),
         testLevel: TestLevel = TestLevel.RunSpecifiedTests): DeployWithTestReportsTask {
         val sut = DeployWithTestReportsTask()
-        sut.setProject(project)
+        sut.project = project
         sut.testLevel = testLevel.name
         return sut
     }

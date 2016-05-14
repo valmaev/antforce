@@ -28,3 +28,6 @@ class BatchTest(val project: Project) {
             prefix + testClassName
         }
 }
+
+data class JUnitReport(var file: String = "TEST-Apex.xml", var suiteName: String = "Apex")
+data class CoberturaReport(var file: String = "Apex-Coverage.xml")

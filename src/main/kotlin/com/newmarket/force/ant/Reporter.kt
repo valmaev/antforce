@@ -1,8 +1,8 @@
 package com.newmarket.force.ant
 
 import com.newmarket.force.ant.dsl.cobertura.Classes
-import com.newmarket.force.ant.dsl.cobertura.CoberturaReport
-import com.newmarket.force.ant.dsl.junit.JUnitReport
+import com.newmarket.force.ant.dsl.cobertura.CoberturaReportRoot
+import com.newmarket.force.ant.dsl.junit.JUnitReportRoot
 import com.sforce.soap.metadata.CodeCoverageResult
 import com.sforce.soap.metadata.RunTestsResult
 import java.io.File
@@ -14,9 +14,9 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
     fun createJUnitReport(
         runTestsResult: RunTestsResult,
         suiteName: String = "",
-        properties: Map<String, String>? = null): JUnitReport {
+        properties: Map<String, String>? = null): JUnitReportRoot {
 
-        val report = JUnitReport()
+        val report = JUnitReportRoot()
         report.testSuite(
             name = suiteName,
             tests = runTestsResult.numTestsRun - runTestsResult.numFailures,
@@ -52,10 +52,10 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
 
     fun createCoberturaReport(
         runTestsResult: RunTestsResult,
-        projectRootPath: String? = null): CoberturaReport {
+        projectRootPath: String? = null): CoberturaReportRoot {
         val coverageTypes = runTestsResult.codeCoverage.groupBy { it.type ?: "" }
 
-        val report = CoberturaReport()
+        val report = CoberturaReportRoot()
         report.coverage {
             sources {
                 source { +projectRootPath.orEmpty() }

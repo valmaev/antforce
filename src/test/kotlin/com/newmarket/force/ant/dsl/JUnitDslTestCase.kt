@@ -1,6 +1,6 @@
 package com.newmarket.force.ant.dsl
 
-import com.newmarket.force.ant.dsl.junit.JUnitReport
+import com.newmarket.force.ant.dsl.junit.JUnitReportRoot
 import org.testng.annotations.Test
 import org.hamcrest.MatcherAssert.assertThat
 import org.xmlmatchers.XmlMatchers.*
@@ -8,10 +8,10 @@ import org.xmlmatchers.transform.XmlConverters.*
 import java.time.LocalDateTime
 
 
-class JUnitReportTestCase {
+class JUnitDslTestCase {
 
     @Test fun toString_always_shouldReturnsExpectedResult() {
-        val actual = JUnitReport()
+        val actual = JUnitReportRoot()
         actual.testSuite(name = "TestSuite",
             tests = 5,
             errors = 2,

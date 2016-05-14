@@ -3,12 +3,14 @@
 <project xmlns:sfcontrib="antlib:com.newmarket.force.ant" default="deploy">
     <property file="build.properties" />
     <property name="sf.server" value="https://login.salesforce.com" />
+    <property name="sf.testLevel" value="RunSpecifiedTests" />
     <property name="outputdir" value="artifacts" />
 
     <taskdef
         uri="antlib:com.newmarket.force.ant"
-        resource="com/newmarket/force/ant/antlib.xml"
-        classpath="./../build/libs/ForceAntTasks-0.4.2-all.jar" />
+        name="deploy"
+        classname="com.newmarket.force.ant.DeployWithTestReportsTask"
+        classpath="${lib.dir}" />
 
     <target name="deploy">
         <sfcontrib:deploy
@@ -17,13 +19,13 @@
             serverUrl="${sf.server}"
             deployRoot="src"
             rollbackOnError="true"
-            testLevel="RunSpecifiedTests"
-            reportDir="${outputdir}/test-reports"
-            junitReportName="TEST-ApexTests.xml"
-            coberturaReportName="Apex-Coverage.xml">
+            testLevel="${sf.testLevel}"
+            reportDir="${outputdir}/test-reports">
             <batchtest>
                 <fileset dir="src/classes" includes="*TestClass.cls" />
             </batchtest>
+            <junitReport file="TEST-ApexTests.xml" suiteName="Apex" />
+            <coberturaReport file="Apex-Coverage.xml" />
         </sfcontrib:deploy>
     </target>
 </project>

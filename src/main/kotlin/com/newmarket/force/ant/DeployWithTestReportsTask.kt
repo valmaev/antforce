@@ -12,6 +12,9 @@ import java.util.*
 
 
 class DeployWithTestReportsTask : DeployTaskAdapter() {
+    private var _junitReport: JUnitReport? = null
+    private var _coberturaReport: CoberturaReport? = null
+
     final val batchTests = HashSet<BatchTest>()
 
     val deployRoot: String?
@@ -23,9 +26,15 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
 
     var sourceDir: File? = null
     var reportDir: File? = null
-    var junitReportName: String = "TEST-Apex.xml"
-    var junitTestSuiteName: String = "Apex"
-    var coberturaReportName: String = "Apex-Coverage.xml"
+
+
+    fun addJUnitReport(report: JUnitReport) {
+        _junitReport = report
+    }
+
+    fun addCoberturaReport(report: CoberturaReport) {
+        _coberturaReport = report
+    }
 
     fun createBatchTest(): BatchTest {
         val batch = BatchTest(getProject())
@@ -39,10 +48,7 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         else -> emptyArray()
     }
 
-    override fun handleResponse(
-        metadataConnection: MetadataConnection?,
-        response: AsyncResult?) {
-
+    override fun handleResponse(metadataConnection: MetadataConnection?, response: AsyncResult?) {
         val deployResult = metadataConnection!!.checkDeployStatus(response!!.id, true)
         val testResult = deployResult.details.runTestResult
         sourceDir = sourceDir ?: File(deployRoot)
@@ -59,6 +65,9 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
     }
 
     internal fun saveJUnitReportToFile(testResult: RunTestsResult) {
+        if (_junitReport == null)
+            return
+
         val properties = hashMapOf(
             "username" to (username ?: ""),
             "serverURL" to (serverURL ?: ""),
@@ -66,16 +75,19 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
 
         val reportContent = reporter.createJUnitReport(
             testResult,
-            junitTestSuiteName,
+            _junitReport!!.suiteName,
             properties)
 
-        val report = saveToFile(reportDir!!, junitReportName, reportContent.toString())
+        val report = saveToFile(reportDir!!, _junitReport!!.file, reportContent.toString())
         log("JUnit report created successfully: ${report.absolutePath}")
     }
 
     internal fun saveCoberturaReportToFile(testResult: RunTestsResult) {
+        if (_coberturaReport == null)
+            return
+
         val reportContent = reporter.createCoberturaReport(testResult, sourceDir?.path)
-        val report = saveToFile(reportDir!!, coberturaReportName, reportContent.toString())
+        val report = saveToFile(reportDir!!, _coberturaReport!!.file, reportContent.toString())
         log("Cobertura report created successfully: ${report.absolutePath}")
     }
 
