@@ -105,8 +105,8 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
         else if (!result.namespace.isNullOrEmpty())
             ""
         else when (result.type) {
-            "Class" -> "classes${File.separator}${result.name}.cls"
-            "Trigger" -> "triggers${File.separator}${result.name}.cls"
+            "Class" -> "classes${File.separator}${result.name}${Constants.APEX_CLASS_FILE_EXTENSION}"
+            "Trigger" -> "triggers${File.separator}${result.name}${Constants.APEX_CLASS_FILE_EXTENSION}"
             else -> ""
         }
 }

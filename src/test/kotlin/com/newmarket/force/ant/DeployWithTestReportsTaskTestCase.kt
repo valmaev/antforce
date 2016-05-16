@@ -181,5 +181,5 @@ class DeployWithTestReportsTaskTestCase {
     fun createTestClassesFileSet(directory: File, fileNames: Iterable<String>): FileSet =
         createFileSet(
             directory,
-            fileNames.map { it + BatchTest.APEX_CLASS_FILE_EXTENSION })
+            fileNames.map { it + Constants.APEX_CLASS_FILE_EXTENSION })
 }

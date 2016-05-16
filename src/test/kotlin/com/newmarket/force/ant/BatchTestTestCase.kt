@@ -76,14 +76,14 @@ class BatchTestTestCase() {
         ),
         arrayOf(
             "",
-            listOf("foo.pdf", "bar.trigger", "baz${BatchTest.APEX_CLASS_FILE_EXTENSION}"),
+            listOf("foo.pdf", "bar.trigger", "baz${Constants.APEX_CLASS_FILE_EXTENSION}"),
             listOf("baz"),
-            "Should return only names (without extensions) of files that have ${BatchTest.APEX_CLASS_FILE_EXTENSION} extension"
+            "Should return only names (without extensions) of files that have ${Constants.APEX_CLASS_FILE_EXTENSION} extension"
         ),
         arrayOf(
             "namespace",
-            listOf("foo${BatchTest.APEX_CLASS_FILE_EXTENSION}"),
-            listOf("namespace${BatchTest.NAMESPACE_SEPARATOR}foo"),
+            listOf("foo${Constants.APEX_CLASS_FILE_EXTENSION}"),
+            listOf("namespace${Constants.NAMESPACE_SEPARATOR}foo"),
             "Should add namespace to file names"
         ));
 
