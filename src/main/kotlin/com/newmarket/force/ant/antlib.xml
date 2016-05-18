@@ -2,4 +2,5 @@
 
 <antlib>
     <taskdef name="deploy" classname="com.newmarket.force.ant.DeployWithTestReportsTask" />
+    <taskdef name="executeApex" classname="com.newmarket.force.ant.ExecuteAnonymousApexTask" />
 </antlib>

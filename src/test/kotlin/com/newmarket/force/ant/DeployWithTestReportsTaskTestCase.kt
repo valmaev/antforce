@@ -15,7 +15,7 @@ import java.time.LocalDateTime
 
 class DeployWithTestReportsTaskTestCase {
 
-    @Test fun sut_always_shouldDeriveFromTaskClass() =
+    @Test fun sut_always_shouldDeriveFromProperBaseClass() =
         assertThat(createSystemUnderTest(), instanceOf(DeployTask::class.java))
 
     @Test fun createBatchTest_always_shouldAddNewBatchTestToTests() {
@@ -164,12 +164,6 @@ class DeployWithTestReportsTaskTestCase {
         sut.project = project
         sut.testLevel = testLevel.name
         return sut
-    }
-
-    fun createProject(name: String = "TestProject"): Project {
-        val project = Project()
-        project.name = name
-        return project
     }
 
     fun createRunTestElement(text: String = ""): DeployTask.CodeNameElement {

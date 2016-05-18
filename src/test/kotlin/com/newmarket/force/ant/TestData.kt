@@ -4,6 +4,7 @@ import com.sforce.soap.metadata.CodeCoverageResult
 import com.sforce.soap.metadata.RunTestFailure
 import com.sforce.soap.metadata.RunTestSuccess
 import com.sforce.soap.metadata.RunTestsResult
+import org.apache.tools.ant.Project
 import org.apache.tools.ant.types.FileSet
 import java.io.File
 
@@ -36,4 +37,10 @@ fun createRunTestsResult(
     result.failures = failures
     result.codeCoverage = codeCoverage
     return result
+}
+
+fun createProject(name: String = "TestProject"): Project {
+    val project = Project()
+    project.name = name
+    return project
 }

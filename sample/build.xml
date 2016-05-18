@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project xmlns:sfcontrib="antlib:com.newmarket.force.ant" default="deploy">
+<project xmlns:sfcontrib="antlib:com.newmarket.force.ant" default="executeApex">
     <property file="build.properties" />
     <property name="sf.server" value="https://login.salesforce.com" />
     <property name="sf.testLevel" value="RunSpecifiedTests" />
@@ -10,6 +10,11 @@
         uri="antlib:com.newmarket.force.ant"
         name="deploy"
         classname="com.newmarket.force.ant.DeployWithTestReportsTask"
+        classpath="${lib.dir}" />
+    <taskdef
+        uri="antlib:com.newmarket.force.ant"
+        name="executeApex"
+        classname="com.newmarket.force.ant.ExecuteAnonymousApexTask"
         classpath="${lib.dir}" />
 
     <target name="deploy">
@@ -27,5 +32,15 @@
             <junitReport file="TEST-ApexTests.xml" suiteName="Apex" />
             <coberturaReport file="Apex-Coverage.xml" />
         </sfcontrib:deploy>
+    </target>
+
+    <target name="executeApex">
+        <sfcontrib:executeApex
+            username="${sf.username}"
+            password="${sf.password}${sf.token}"
+            serverUrl="${sf.server}"
+            expandProperties="true">
+                System.debug('Hello from ${sf.username}!');
+        </sfcontrib:executeApex>
     </target>
 </project>
