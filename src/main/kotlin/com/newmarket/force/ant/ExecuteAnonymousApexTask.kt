@@ -7,6 +7,10 @@ import org.apache.tools.ant.Location
 
 
 class ExecuteAnonymousApexTask : SFDCAntTask() {
+    companion object {
+        final val ERROR_HEADER = "*********** APEX EXECUTION FAILED ***********"
+    }
+
     private var _code = ""
     var expandProperties: Boolean = true
 
@@ -39,21 +43,27 @@ class ExecuteAnonymousApexTask : SFDCAntTask() {
     }
 
     private fun ExecuteAnonymousResult.toCompilerError() =
-        "*********** APEX EXECUTION FAILED ***********${System.lineSeparator()}" +
-            "Error: ${this.compileProblem}" +
-            " (line ${this.line}, column ${this.column})${System.lineSeparator()}" //+
+        "$ERROR_HEADER${System.lineSeparator()}" +
+            "Error: ${this.compileProblem} (line ${this.line}, column ${this.column})}"
 
     private fun ExecuteAnonymousResult.toExceptionMessage() =
-        "*********** APEX EXECUTION FAILED ***********${System.lineSeparator()}" +
+        "$ERROR_HEADER${System.lineSeparator()}" +
             "${this.exceptionMessage}${System.lineSeparator()}" +
             "Stack trace: ${this.exceptionStackTrace}"
 
     private fun getBuildFileErrorLocation(result: ExecuteAnonymousResult): Location {
         val lines = _code.lines()
         val linesCount = lines.count()
-        val lineOffset = lines.takeWhile { it.isBlank() }.count()
-        val codeLineNumber = if (result.line > linesCount) linesCount else (result.line - 1)
-        val lineNumber = getLocation().lineNumber + lineOffset + codeLineNumber
+        val emptyLinesBeforeCodeCount = lines.takeWhile { it.isBlank() }.count()
+        val emptyLinesAfterCodeCount = lines.reversed().takeWhile { it.isBlank() }.count()
+        val codeLinesCount = linesCount - emptyLinesBeforeCodeCount - emptyLinesAfterCodeCount
+
+        val lineOffset = when {
+            codeLinesCount + emptyLinesAfterCodeCount < result.line -> linesCount - 1
+            else -> emptyLinesBeforeCodeCount + result.line - 1
+        }
+
+        val lineNumber = getLocation().lineNumber + lineOffset
         return Location(getLocation().fileName, lineNumber, result.column)
     }
 }
