@@ -14,9 +14,10 @@ object Constants {
 class BatchTest(val project: Project) {
     final val resources = Resources()
     var namespace = ""
-    private val prefix =
-        if (namespace.isBlank()) ""
-        else "${namespace.trim()}${Constants.NAMESPACE_SEPARATOR}"
+    private val prefix: String
+        get() =
+            if (namespace.isBlank()) ""
+            else "${namespace.trim()}${Constants.NAMESPACE_SEPARATOR}"
 
     fun addFileSet(fileSet: FileSet) {
         fileSet.project = project
