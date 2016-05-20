@@ -1,6 +1,5 @@
-package com.newmarket.force.ant.dsl
+package com.newmarket.force.ant.dsl.junit
 
-import com.newmarket.force.ant.dsl.junit.JUnitReportRoot
 import org.testng.annotations.Test
 import org.hamcrest.MatcherAssert.assertThat
 import org.xmlmatchers.XmlMatchers.*
