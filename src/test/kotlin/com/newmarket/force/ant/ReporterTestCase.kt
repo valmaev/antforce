@@ -334,7 +334,7 @@ class ReporterTestCase {
                         classes {
                             `class`(
                                 name = "AccountTrigger",
-                                fileName = "triggers/AccountTrigger.cls") {
+                                fileName = "triggers/AccountTrigger.trigger") {
                                 lines()
                             }
                             `class`(
@@ -406,12 +406,12 @@ class ReporterTestCase {
                     `package`("Trigger") {
                         classes {
                             `class`(
-                                fileName = "triggers/BookTrigger.cls",
+                                fileName = "triggers/BookTrigger.trigger",
                                 name = "BookTrigger") { lines() }
                         }
                     }
                 },
-                "Should properly construct file names for Triggers – {projectRootPath}/triggers/{name}.cls"),
+                "Should properly construct file names for Triggers – {projectRootPath}/triggers/{name}.trigger"),
             arrayOf(
                 arrayOf(
                     createCodeCoverageResult(

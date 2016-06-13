@@ -22,7 +22,7 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
         val report = JUnitReportRoot()
         report.testSuite(
             name = suiteName,
-            tests = runTestsResult.numTestsRun - runTestsResult.numFailures,
+            tests = runTestsResult.numSuccesses,
             failures = runTestsResult.numFailures,
             time = runTestsResult.totalTime / 1000,
             timestamp = dateTimeProvider()) {
@@ -35,14 +35,14 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
 
             runTestsResult.successes.forEach {
                 testCase(
-                    className = if (it.namespace == null) it.name else "${it.namespace}.${it.name}",
+                    className = it.qualifiedClassName,
                     name = it.methodName,
                     time = it.time / 1000)
             }
 
             runTestsResult.failures.forEach {
                 testCase(
-                    className = if (it.namespace == null) it.name else "${it.namespace}.${it.name}",
+                    className = it.qualifiedClassName,
                     name = it.methodName,
                     time = it.time / 1000) {
 
@@ -82,7 +82,7 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
         result: CodeCoverageResult) {
         `class`(
             name = result.qualifiedClassName,
-            fileName = getClassFileName(result)) {
+            fileName = result.classFileName) {
             lines {
                 val notCoveredLines = result.locationsNotCovered.orEmpty().associateBy { it.line }
                 for (currentLine in 1..result.numLocations) {
@@ -95,19 +95,6 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
             }
         }
     }
-
-
-    private fun getClassFileName(
-        result: CodeCoverageResult): String =
-        if (result.name.isNullOrEmpty())
-            ""
-        else if (!result.namespace.isNullOrEmpty())
-            ""
-        else when (result.type) {
-            "Class" -> "classes${File.separator}${result.name}${Constants.APEX_CLASS_FILE_EXTENSION}"
-            "Trigger" -> "triggers${File.separator}${result.name}${Constants.APEX_CLASS_FILE_EXTENSION}"
-            else -> ""
-        }
 
     fun createHtmlCoverageReport(runTestsResult: RunTestsResult): HtmlReportRoot {
         val coverageResultsByType = runTestsResult.codeCoverage

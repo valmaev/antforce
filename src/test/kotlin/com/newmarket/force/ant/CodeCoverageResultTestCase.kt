@@ -3,9 +3,10 @@ package com.newmarket.force.ant
 import org.testng.annotations.Test
 import org.testng.Assert.*
 import org.testng.annotations.DataProvider
+import java.io.File
 
 
-class CodeCoverageResultExtensionsTestCase() {
+class CodeCoverageResultTestCase {
     @Test(dataProvider = "numLocationsCoveredTestData")
     fun numLocationsCovered_always_shouldReturnDifferenceBetweenNumLocationsAndNumLocationsNotCovered(
         numLocations: Int,
@@ -57,4 +58,45 @@ class CodeCoverageResultExtensionsTestCase() {
             numLocationsNotCovered = numLocationsNotCovered)
         assertEquals(sut.coveragePercentage, sut.coverage * 100)
     }
+
+    @Test(dataProvider = "qualifiedClassNameTestData")
+    fun qualifiedClassName_always_shouldReturnExpectedResult(
+        namespace: String?,
+        name: String?,
+        expected: String) {
+
+        val sut = createCodeCoverageResult(name = name, namespace = namespace)
+        assertEquals(sut.qualifiedClassName, expected)
+    }
+
+    @DataProvider
+    fun qualifiedClassNameTestData() = qualifiedClassNameCommonTestData()
+
+    @Test(dataProvider = "classFileNameTestData")
+    fun classFileName_always_shouldReturnExpectedResult(
+        namespace: String?,
+        name: String?,
+        type: String?,
+        expected: String) {
+
+        val sut = createCodeCoverageResult(name = name, namespace = namespace, type = type)
+        assertEquals(sut.classFileName, expected)
+    }
+
+    @DataProvider
+    fun classFileNameTestData(): Array<Array<Any?>> = arrayOf(
+        arrayOf<Any?>(null, null, null, ""),
+        arrayOf<Any?>("", null, null, ""),
+        arrayOf<Any?>(null, "", null, ""),
+        arrayOf<Any?>(null, null, "", ""),
+        arrayOf<Any?>("", "", null, ""),
+        arrayOf<Any?>(null, "", "", ""),
+        arrayOf<Any?>("", null, "", ""),
+        arrayOf<Any?>("", "", "", ""),
+        arrayOf<Any?>(null, "MyClass", "Class", "classes${File.separator}MyClass${Constants.APEX_CLASS_FILE_EXTENSION}"),
+        arrayOf<Any?>("", "MyClass", "Class", "classes${File.separator}MyClass${Constants.APEX_CLASS_FILE_EXTENSION}"),
+        arrayOf<Any?>("foo", "MyClass", "Class", ""),
+        arrayOf<Any?>(null, "MyTrigger", "Trigger", "triggers${File.separator}MyTrigger${Constants.APEX_TRIGGER_FILE_EXTENSION}"),
+        arrayOf<Any?>("", "MyTrigger", "Trigger", "triggers${File.separator}MyTrigger${Constants.APEX_TRIGGER_FILE_EXTENSION}"),
+        arrayOf<Any?>("foo", "MyTrigger", "Trigger", ""))
 }

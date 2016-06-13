@@ -80,8 +80,8 @@ fun createCodeLocation(
 
 fun createRunTestSuccess(
     namespace: String? = "",
-    name: String = "",
-    methodName: String = "",
+    name: String? = "",
+    methodName: String? = "",
     time: Double = 0.0): RunTestSuccess {
 
     val success = RunTestSuccess()
@@ -94,11 +94,11 @@ fun createRunTestSuccess(
 
 fun createRunTestFailure(
     namespace: String? = "",
-    name: String = "",
-    methodName: String = "",
-    message: String = "",
-    type: String = "",
-    stackTrace: String = "",
+    name: String? = "",
+    methodName: String? = "",
+    message: String? = "",
+    type: String? = "",
+    stackTrace: String? = "",
     time: Double = 0.0): RunTestFailure {
 
     val failure = RunTestFailure()
@@ -130,3 +130,13 @@ fun createProperty(name: String = "", value: String = ""): Property {
     property.value = value
     return property
 }
+
+fun qualifiedClassNameCommonTestData(): Array<Array<Any?>> = arrayOf(
+    arrayOf<Any?>(null, null, ""),
+    arrayOf<Any?>(null, "", ""),
+    arrayOf<Any?>("", null, ""),
+    arrayOf<Any?>("", "", ""),
+    arrayOf<Any?>("foo", "", "foo."),
+    arrayOf<Any?>("", "Class", "Class"),
+    arrayOf<Any?>(null, "Class", "Class"),
+    arrayOf<Any?>("foo", "Class", "foo.Class"))

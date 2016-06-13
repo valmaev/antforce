@@ -5,7 +5,7 @@ import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 import org.testng.Assert.*
 
-class RunTestsResultsTestCase() {
+class RunTestsResultsTestCase {
     @Test(dataProvider = "coverageTestData")
     fun averageCoverage_always_shouldReturnAverageCoverageForAllCodeCoverageResults(
         codeCoverage: Array<CodeCoverageResult>) {

@@ -8,6 +8,7 @@ import org.apache.tools.ant.types.resources.Resources
 
 object Constants {
     const val APEX_CLASS_FILE_EXTENSION = ".cls"
+    const val APEX_TRIGGER_FILE_EXTENSION = ".trigger"
     const val NAMESPACE_SEPARATOR = "."
 }
 
