@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project xmlns:sfcontrib="antlib:com.newmarket.force.ant" default="executeApex">
+<project xmlns:sfcontrib="antlib:com.newmarket.force.ant" default="deploy">
     <property file="build.properties" />
     <property name="sf.server" value="https://login.salesforce.com" />
     <property name="sf.testLevel" value="RunSpecifiedTests" />
@@ -31,6 +31,7 @@
             </batchtest>
             <junitReport file="TEST-ApexTests.xml" suiteName="Apex" />
             <coberturaReport file="Apex-Coverage.xml" />
+            <htmlCoverageReport file="coverage.html" />
         </sfcontrib:deploy>
     </target>
 

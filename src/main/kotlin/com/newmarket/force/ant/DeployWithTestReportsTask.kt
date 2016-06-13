@@ -14,6 +14,7 @@ import java.util.*
 class DeployWithTestReportsTask : DeployTaskAdapter() {
     private var _junitReport: JUnitReport? = null
     private var _coberturaReport: CoberturaReport? = null
+    private var _htmlCoverageReport: HtmlCoverageReport? = null
 
     final val batchTests = HashSet<BatchTest>()
 
@@ -36,6 +37,10 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         _coberturaReport = report
     }
 
+    fun addHtmlCoverageReport(report: HtmlCoverageReport) {
+        _htmlCoverageReport = report
+    }
+
     fun createBatchTest(): BatchTest {
         val batch = BatchTest(getProject())
         batchTests.add(batch)
@@ -52,13 +57,13 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         val deployResult = metadataConnection!!.checkDeployStatus(response!!.id, true)
         val testResult = deployResult.details.runTestResult
         sourceDir = sourceDir ?: File(deployRoot)
-
         if (reportDir != null && testLevel != null && testLevel != TestLevel.NoTestRun.name) {
             if (!reportDir!!.exists())
                 reportDir!!.mkdirs()
 
             saveJUnitReportToFile(testResult)
             saveCoberturaReportToFile(testResult)
+            saveHtmlCoverageReportToFile(testResult)
         }
 
         super.handleResponse(metadataConnection, response)
@@ -89,6 +94,15 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         val reportContent = reporter.createCoberturaReport(testResult, sourceDir?.path)
         val report = saveToFile(reportDir!!, _coberturaReport!!.file, reportContent.toString())
         log("Cobertura report created successfully: ${report.absolutePath}")
+    }
+
+    internal fun saveHtmlCoverageReportToFile(testResult: RunTestsResult) {
+        if (_htmlCoverageReport == null)
+            return
+
+        val reportContent = reporter.createHtmlCoverageReport(testResult)
+        val report = saveToFile(reportDir!!, _htmlCoverageReport!!.file, reportContent.toString())
+        log("HTML Coverage report created successfully: ${report.absolutePath}")
     }
 
     private fun saveToFile(

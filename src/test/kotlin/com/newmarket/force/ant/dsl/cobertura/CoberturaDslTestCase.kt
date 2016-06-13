@@ -15,18 +15,18 @@ class CoberturaDslTestCase {
                 source { +"/path/to/sourcecode" }
             }
             packages {
-                packageTag(name = "fooPackage") {
+                `package`(name = "fooPackage") {
                     classes {
-                        classTag(name = "fooClass", fileName = "/c/bar/baz/fooClass.bar") {
+                        `class`(name = "fooClass", fileName = "/c/bar/baz/fooClass.bar") {
                             lines {
                                 line(number = 1, hits = 2)
                             }
                         }
                     }
                 }
-                packageTag(name = "barPackage") {
+                `package`(name = "barPackage") {
                     classes {
-                        classTag(name = "barClass", fileName = "/c/qux/baz/barClass.bar") {
+                        `class`(name = "barClass", fileName = "/c/qux/baz/barClass.bar") {
                             lines {
                                 line(number = 3, hits = 4)
                                 line(number = 5, hits = 6)

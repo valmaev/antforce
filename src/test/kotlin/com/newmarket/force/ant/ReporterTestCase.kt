@@ -4,9 +4,15 @@ import com.newmarket.force.ant.dsl.cobertura.*
 import com.newmarket.force.ant.dsl.junit.*
 import com.sforce.soap.metadata.*
 import org.hamcrest.core.IsEqual.*
+import org.hamcrest.core.StringContains.*
+import org.hamcrest.collection.IsIterableContainingInAnyOrder.*
+import org.hamcrest.collection.IsIn.*
 import org.hamcrest.MatcherAssert.*
+import org.jsoup.Jsoup
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
+import org.testng.Assert.assertEquals
+import java.io.File
 import java.time.LocalDateTime
 
 
@@ -262,16 +268,16 @@ class ReporterTestCase {
                     createCodeCoverageResult(type = "Trigger")),
                 "",
                 Coverage().packages {
-                    packageTag("Class") {
+                    `package`("Class") {
                         classes {
-                            classTag() {
+                            `class`() {
                                 lines()
                             }
                         }
                     }
-                    packageTag("Trigger") {
+                    `package`("Trigger") {
                         classes {
-                            classTag() {
+                            `class`() {
                                 lines()
                             }
                         }
@@ -283,9 +289,9 @@ class ReporterTestCase {
                     createCodeCoverageResult(type = null)),
                 "",
                 Coverage().packages {
-                    packageTag(name = "") {
+                    `package`(name = "") {
                         classes {
-                            classTag() {
+                            `class`() {
                                 lines()
                             }
                         }
@@ -310,28 +316,28 @@ class ReporterTestCase {
                         namespace = "bar")),
                 "",
                 Coverage().packages {
-                    packageTag("Class") {
+                    `package`("Class") {
                         classes {
-                            classTag(
+                            `class`(
                                 name = "Book",
                                 fileName = "classes/Book.cls") {
                                 lines()
                             }
-                            classTag(
+                            `class`(
                                 name = "foo.BookBuilder",
                                 fileName = "") {
                                 lines()
                             }
                         }
                     }
-                    packageTag("Trigger") {
+                    `package`("Trigger") {
                         classes {
-                            classTag(
+                            `class`(
                                 name = "AccountTrigger",
                                 fileName = "triggers/AccountTrigger.cls") {
                                 lines()
                             }
-                            classTag(
+                            `class`(
                                 name = "bar.BookTrigger",
                                 fileName = "") {
                                 lines()
@@ -352,9 +358,9 @@ class ReporterTestCase {
                             createCodeLocation(line = 4, numExecutions = 3)))),
                 "",
                 Coverage().packages {
-                    packageTag("Class") {
+                    `package`("Class") {
                         classes {
-                            classTag(
+                            `class`(
                                 name = "BookBuilder",
                                 fileName = "classes/BookBuilder.cls") {
                                 lines {
@@ -381,9 +387,9 @@ class ReporterTestCase {
                         type = "Class")),
                 "/foo/bar/myDirectory",
                 Coverage().packages {
-                    packageTag("Class") {
+                    `package`("Class") {
                         classes {
-                            classTag(
+                            `class`(
                                 fileName = "classes/BookBuilder.cls",
                                 name = "BookBuilder") { lines() }
                         }
@@ -397,9 +403,9 @@ class ReporterTestCase {
                         type = "Trigger")),
                 "/foo/bar/myDirectory",
                 Coverage().packages {
-                    packageTag("Trigger") {
+                    `package`("Trigger") {
                         classes {
-                            classTag(
+                            `class`(
                                 fileName = "triggers/BookTrigger.cls",
                                 name = "BookTrigger") { lines() }
                         }
@@ -414,9 +420,9 @@ class ReporterTestCase {
                         type = "Class")),
                 "/foo/bar/myDirectory",
                 Coverage().packages {
-                    packageTag("Class") {
+                    `package`("Class") {
                         classes {
-                            classTag(
+                            `class`(
                                 fileName = "",
                                 name = "foo.BookBuilder") { lines() }
                         }
@@ -433,12 +439,12 @@ class ReporterTestCase {
                         type = "Class")),
                 "/foo/bar/myDirectory",
                 Coverage().packages {
-                    packageTag("Class") {
+                    `package`("Class") {
                         classes {
-                            classTag(
+                            `class`(
                                 fileName = "",
                                 name = "") { lines() }
-                            classTag(
+                            `class`(
                                 fileName = "",
                                 name = "") { lines() }
                         }
@@ -452,9 +458,9 @@ class ReporterTestCase {
                         type = "Class")),
                 "/foo/bar/myDirectory/",
                 Coverage().packages {
-                    packageTag("Class") {
+                    `package`("Class") {
                         classes {
-                            classTag(
+                            `class`(
                                 name = "Book",
                                 fileName = "classes/Book.cls") { lines() }
                         }
@@ -463,81 +469,163 @@ class ReporterTestCase {
                 "Should properly handle trailing slash in projectRootPath"))
     }
 
-    fun createCodeCoverageResult(
-        name: String? = null,
-        namespace: String? = null,
-        type: String? = null,
-        locationsNotCovered: Array<CodeLocation>? = null,
-        numLocations: Int = 0): CodeCoverageResult {
-        val result = CodeCoverageResult()
-        result.name = name
-        result.namespace = namespace
-        result.type = type
-        result.locationsNotCovered = locationsNotCovered
-        result.numLocationsNotCovered = locationsNotCovered?.size ?: 0
-        result.numLocations = numLocations
-        return result
+    @Test(dataProvider = "createHtmlCoverageReportTestData")
+    fun createHtmlCoverageReport_always_shouldContainAverageCoveragePercentage(
+        codeCoverage: Array<CodeCoverageResult>) {
+        // Arrange
+        val sut = Reporter(dateTimeProvider)
+        val runTestsResult = createRunTestsResult(codeCoverage = codeCoverage)
+
+        // Act
+        val report = sut.createHtmlCoverageReport(runTestsResult)
+
+        // Assert
+        val html = Jsoup.parse(report.toString())
+        val actualAverageCoveragePercentage = html.getElementById("averageCoveragePercentage").ownText()
+        val expectedAverageCoveragePercentage = "${runTestsResult.averageCoveragePercentage.format(2)}%"
+        assertThat(actualAverageCoveragePercentage, equalTo(expectedAverageCoveragePercentage));
     }
 
-    fun createCodeLocation(
-        line: Int = 0,
-        numExecutions: Int = 0): CodeLocation {
-        val location = CodeLocation()
-        location.line = line
-        location.numExecutions = numExecutions
-        return location
+    @Test(dataProvider = "createHtmlCoverageReportTestData")
+    fun createHtmlCoverageReport_always_shouldContainTotalLinesCoverage(
+        codeCoverage: Array<CodeCoverageResult>) {
+        // Arrange
+        val sut = Reporter(dateTimeProvider)
+        val runTestsResult = createRunTestsResult(codeCoverage = codeCoverage)
+
+        // Act
+        val report = sut.createHtmlCoverageReport(runTestsResult)
+
+        // Assert
+        val html = Jsoup.parse(report.toString())
+        val actualAverageCoveragePercentage = html.getElementById("totalLinesCoverage").ownText()
+        val expectedAverageCoveragePercentage =
+            "${runTestsResult.totalNumLocationsCovered}/${runTestsResult.totalNumLocations}"
+        assertThat(actualAverageCoveragePercentage, equalTo(expectedAverageCoveragePercentage));
     }
 
-    fun createRunTestSuccess(
-        namespace: String? = "",
-        name: String = "",
-        methodName: String = "",
-        time: Double = 0.0): RunTestSuccess {
-
-        val success = RunTestSuccess()
-        success.namespace = namespace
-        success.name = name
-        success.methodName = methodName
-        success.time = time
-        return success
+    @DataProvider
+    fun createHtmlCoverageReportTestData(): Array<Array<Any>> {
+        return arrayOf(
+            arrayOf<Any>(
+                arrayOf(createCodeCoverageResult(
+                    name = "ControllerCls",
+                    type = "Class",
+                    numLocations = 100))))
     }
 
-    fun createRunTestFailure(
-        namespace: String? = "",
-        name: String = "",
-        methodName: String = "",
-        message: String = "",
-        type: String = "",
-        stackTrace: String = "",
-        time: Double = 0.0): RunTestFailure {
+    @Test(dataProvider = "createHtmlCoverageReportTestData")
+    fun createHtmlCoverageReport_always_shouldContainTableWithAllCoverageResults(
+        codeCoverage: Array<CodeCoverageResult>) {
+        // Arrange
+        val sut = Reporter(dateTimeProvider)
+        val runTestsResult = createRunTestsResult(codeCoverage = codeCoverage)
 
-        val failure = RunTestFailure()
-        failure.namespace = namespace
-        failure.name = name
-        failure.methodName = methodName
-        failure.message = message
-        failure.type = type
-        failure.stackTrace = stackTrace
-        failure.time = time
-        return failure
+        // Act
+        val report = sut.createHtmlCoverageReport(runTestsResult)
+
+        // Assert
+        val html = Jsoup.parse(report.toString())
+        val coverageRows = html
+            .getElementsByClass("coverage-summary").single()
+            .getElementsByTag("tbody").single()
+            .getElementsByTag("tr")
+        val actual = coverageRows.map {
+            val cells = it.getElementsByTag("td")
+            CoverageRow(
+                type = cells[0].ownText(),
+                className = cells[1].ownText(),
+                linesPercent = it.getElementsByClass("pct").single().ownText(),
+                lines = it.getElementsByClass("abs").single().ownText())
+        }
+
+        val expected = codeCoverage.map {
+            CoverageRow(
+                type = it.type,
+                className = it.qualifiedClassName,
+                linesPercent = "${it.coveragePercentage.format(2)}%",
+                lines = "${it.numLocationsCovered}/${it.numLocations}")
+        }
+
+        expected.forEach { assertThat(actual, containsInAnyOrder(it)) }
     }
 
-    fun createTestCase(
-        className: String = "",
-        name: String = "",
-        time: Double = 0.0): TestCase {
+    data class CoverageRow(
+        val type: String,
+        val className: String,
+        val linesPercent: String,
+        val lines: String)
 
-        val testCase = TestCase()
-        testCase.className = className
-        testCase.name = name
-        testCase.time = time
-        return testCase
+    @Test(dataProvider = "createHtmlCoverageReportHighlightingTestData")
+    fun createHtmlCoverageReport_always_shouldProperlySetCssStyleToClassCoverageRow(
+        codeCoverageResult: CodeCoverageResult,
+        expected: String) {
+        // Arrange
+        val sut = Reporter(dateTimeProvider)
+        val runTestsResult = createRunTestsResult(codeCoverage = arrayOf(codeCoverageResult))
+
+        // Act
+        val report = sut.createHtmlCoverageReport(runTestsResult)
+
+        // Assert
+        val html = Jsoup.parse(report.toString())
+        val coverageCells = html
+            .getElementsByClass("coverage-summary").single()
+            .getElementsByTag("tbody").single()
+            .getElementsByTag("tr").single()
+            .getElementsByTag("td")
+        coverageCells.forEach {
+            assertThat(expected, isIn(it.classNames()))
+        }
     }
 
-    fun createProperty(name: String = "", value: String = ""): Property {
-        val property = Property()
-        property.name = name
-        property.value = value
-        return property
+    @DataProvider
+    fun createHtmlCoverageReportHighlightingTestData(): Array<Array<Any>> {
+        return arrayOf(
+            arrayOf(
+                createCodeCoverageResult(
+                    numLocationsNotCovered = 0,
+                    numLocations = 0),
+                "high"),
+            arrayOf(
+                createCodeCoverageResult(
+                    numLocationsNotCovered = 25,
+                    numLocations = 100),
+                "high"),
+            arrayOf(
+                createCodeCoverageResult(
+                    numLocationsNotCovered = 26,
+                    numLocations = 100),
+                "low"),
+            arrayOf(
+                createCodeCoverageResult(
+                    numLocationsNotCovered = 100,
+                    numLocations = 100),
+                "low"))
+    }
+
+    @Test
+    fun createHtmlCoverageReport_always_shouldContainFooterWithCreationDate() {
+        val expected = LocalDateTime.now()
+        val sut = Reporter { expected }
+
+        val report = sut.createHtmlCoverageReport(createRunTestsResult())
+
+        val html = Jsoup.parse(report.toString())
+        val actual = html.getElementsByClass("footer").single().ownText()
+        assertThat(actual, containsString(expected.toString()))
+    }
+
+    @Test
+    fun createHtmlCoverageReport_always_shouldEmbedCssFromResources() {
+        val sut = Reporter { LocalDateTime.now() }
+
+        val report = sut.createHtmlCoverageReport(createRunTestsResult())
+
+        val html = Jsoup.parse(report.toString())
+        val actual = html.getElementsByTag("style").first().data().trim()
+        val expected = File(javaClass.classLoader.getResource("coverage-report.css").file)
+            .readText().trim()
+        assertEquals(actual, expected)
     }
 }

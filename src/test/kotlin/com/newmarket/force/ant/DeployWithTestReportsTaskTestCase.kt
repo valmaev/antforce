@@ -15,6 +15,9 @@ import java.time.LocalDateTime
 
 class DeployWithTestReportsTaskTestCase {
 
+    private fun nestedElementConvention(prefix: String) =
+        "Prefix '$prefix' is one of the Ant's conventions for nested elements declaration. See the manual: http://ant.apache.org/manual/develop.html#nested-elements"
+
     @Test fun sut_always_shouldDeriveFromProperBaseClass() =
         assertThat(createSystemUnderTest(), instanceOf(DeployTask::class.java))
 
@@ -27,25 +30,29 @@ class DeployWithTestReportsTaskTestCase {
 
     @Test fun createBatchTest_always_shouldFollowAntNamingConventions() {
         assertThat(
-            "Prefix 'create' is one of the Ant's conventions for nested elements declaration. " +
-                "See the manual: http://ant.apache.org/manual/develop.html#nested-elements",
+            nestedElementConvention("create"),
             DeployWithTestReportsTask::createBatchTest.name,
             startsWith("create"))
     }
 
     @Test fun addJUnitReport_always_shouldFollowAntNamingConventions() {
         assertThat(
-            "Prefix 'add' is one of the Ant's conventions for nested elements declaration. " +
-                "See the manual: http://ant.apache.org/manual/develop.html#nested-elements",
+            nestedElementConvention("add"),
             DeployWithTestReportsTask::addJUnitReport.name,
             startsWith("add"))
     }
 
     @Test fun addCoberturaReport_always_shouldFollowAntNamingConventions() {
         assertThat(
-            "Prefix 'add' is one of the Ant's conventions for nested elements declaration. " +
-                "See the manual: http://ant.apache.org/manual/develop.html#nested-elements",
+            nestedElementConvention("add"),
             DeployWithTestReportsTask::addCoberturaReport.name,
+            startsWith("add"))
+    }
+
+    @Test fun addHtmlCoverageReport_always_shouldFollowAntNamingConventions() {
+        assertThat(
+            nestedElementConvention("add"),
+            DeployWithTestReportsTask::addHtmlCoverageReport.name,
             startsWith("add"))
     }
 
@@ -132,6 +139,29 @@ class DeployWithTestReportsTaskTestCase {
 
             // Act
             sut.saveCoberturaReportToFile(input)
+
+            // Assert
+            val actual = testDirectory.listFiles().single { it.name == report.file }
+            assertTrue(actual.exists(), "Report file wasn't found")
+            assertEquals(actual.readText(), expectedContent)
+        }
+    }
+
+    @Test fun saveHtmlCoverageReportToFile_ifReportDirIsNotNull_shouldCreateReportFileWithExpectedContent() {
+        withTestDirectory { testDirectory ->
+            // Arrange
+            val sut = createSystemUnderTest()
+            sut.reporter = Reporter { LocalDateTime.MAX }
+            sut.reportDir = testDirectory
+
+            val report = HtmlCoverageReport(file = "Coverage.html")
+            sut.addHtmlCoverageReport(report)
+
+            val input = createRunTestsResult()
+            val expectedContent = sut.reporter.createHtmlCoverageReport(input).toString()
+
+            // Act
+            sut.saveHtmlCoverageReportToFile(input)
 
             // Assert
             val actual = testDirectory.listFiles().single { it.name == report.file }

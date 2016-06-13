@@ -26,7 +26,7 @@ class Sources : Tag("sources") {
 class Source : TagWithTextData("source")
 
 class Packages : Tag("packages") {
-    fun packageTag(name: String = "", init: Package.() -> Unit = {}): Package {
+    fun `package`(name: String = "", init: Package.() -> Unit = {}): Package {
         val packageTag = initTag(Package(), init)
         packageTag.name = name
         return packageTag
@@ -42,7 +42,7 @@ class Package : Tag("package") {
 }
 
 class Classes : Tag("classes") {
-    fun classTag(
+    fun `class`(
         name: String = "",
         fileName: String = "",
         init: Class.() -> Unit = {}): Class {

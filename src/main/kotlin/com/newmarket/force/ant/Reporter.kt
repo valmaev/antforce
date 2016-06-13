@@ -2,11 +2,14 @@ package com.newmarket.force.ant
 
 import com.newmarket.force.ant.dsl.cobertura.Classes
 import com.newmarket.force.ant.dsl.cobertura.CoberturaReportRoot
+import com.newmarket.force.ant.dsl.html.BodyTag
+import com.newmarket.force.ant.dsl.html.HtmlReportRoot
 import com.newmarket.force.ant.dsl.junit.JUnitReportRoot
 import com.sforce.soap.metadata.CodeCoverageResult
 import com.sforce.soap.metadata.RunTestsResult
 import java.io.File
 import java.time.LocalDateTime
+import java.util.*
 
 
 class Reporter(val dateTimeProvider: () -> LocalDateTime) {
@@ -62,7 +65,7 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
             }
             packages {
                 coverageTypes.forEach { coverageType ->
-                    packageTag(name = coverageType.key) {
+                    `package`(name = coverageType.key) {
                         classes {
                             coverageType.value.forEach {
                                 createClassTags(it)
@@ -77,8 +80,8 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
 
     private fun Classes.createClassTags(
         result: CodeCoverageResult) {
-        classTag(
-            name = getClassName(result),
+        `class`(
+            name = result.qualifiedClassName,
             fileName = getClassFileName(result)) {
             lines {
                 val notCoveredLines = result.locationsNotCovered.orEmpty().associateBy { it.line }
@@ -93,10 +96,6 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
         }
     }
 
-    private fun getClassName(result: CodeCoverageResult) =
-        if (result.namespace == null)
-            result.name ?: ""
-        else "${result.namespace}.${result.name ?: ""}"
 
     private fun getClassFileName(
         result: CodeCoverageResult): String =
@@ -109,4 +108,139 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
             "Trigger" -> "triggers${File.separator}${result.name}${Constants.APEX_CLASS_FILE_EXTENSION}"
             else -> ""
         }
+
+    fun createHtmlCoverageReport(runTestsResult: RunTestsResult): HtmlReportRoot {
+        val coverageResultsByType = runTestsResult.codeCoverage
+            .sortedBy { it.qualifiedClassName }
+            .groupBy { it.type ?: "" }
+
+        val css = File(javaClass.classLoader.getResource("coverage-report.css").file).readText()
+
+        val report = HtmlReportRoot()
+        report.html {
+            val title = "Code Coverage report for Apex code"
+
+            head {
+                title { +title }
+                style {
+                    type = "text/css"
+
+                    +css
+                }
+            }
+
+            body {
+                div {
+                    `class` = "wrapper"
+
+                    div {
+                        `class` = "pad1"
+                        h1 { +title }
+                        div {
+                            `class` = "clearfix"
+                            div {
+                                `class` = "fl pad1y space-right2"
+                                span {
+                                    id = "averageCoveragePercentage"
+                                    `class` = "strong"
+                                    +"${runTestsResult.averageCoveragePercentage.format(2)}%"
+                                }
+                                span {
+                                    `class` = "quiet"
+                                    +"Lines"
+                                }
+                                span {
+                                    id = "totalLinesCoverage"
+                                    `class` = "fraction"
+                                    +"${runTestsResult.totalNumLocationsCovered}/${runTestsResult.totalNumLocations}"
+                                }
+                            }
+                        }
+                    }
+
+                    div { `class` = "status-line medium"; +"" }
+
+                    div {
+                        `class` = "pad1"
+                        table {
+                            `class` = "coverage-summary"
+                            thead {
+                                th { +"Type" }
+                                th { +"File" }
+                                th { `class` = "pic" }
+                                th {
+                                    `class` = "pict"
+                                    +"Lines"
+                                }
+                            }
+
+                            tbody {
+                                coverageResultsByType.forEach {
+                                    val (type, coverageResults) = it
+                                    coverageResults.forEach {
+                                        val coverage = it.coverage
+                                        val coverageLevel = when {
+                                            coverage < 0 -> ""
+                                            0 <= coverage && coverage < 0.75 -> "low"
+                                            else -> "high"
+                                        }
+
+                                        tr {
+                                            td {
+                                                `class` = coverageLevel
+                                                +type
+                                            }
+                                            td {
+                                                `class` = coverageLevel
+                                                +it.qualifiedClassName
+                                            }
+                                            td {
+                                                `class` = "pic $coverageLevel"
+                                                createCoverageChart(it)
+                                            }
+                                            td {
+                                                `class` = "pct $coverageLevel"
+                                                +"${it.coveragePercentage.format(2)}%"
+                                            }
+                                            td {
+                                                `class` = "abs $coverageLevel"
+                                                +"${it.numLocationsCovered}/${it.numLocations}"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    div { `class` = "push"; +"" }
+                }
+
+                div {
+                    `class` = "footer quiet pad2 space-top1 center small"
+                    +"Code coverage generated by ForceAntTasks at ${dateTimeProvider()}"
+                }
+            }
+        }
+        return report
+    }
+
+    private fun BodyTag.createCoverageChart(result: CodeCoverageResult) {
+        val coveragePercentage = result.coveragePercentage
+        div {
+            `class` = "chart"
+            div {
+                `class` = "cover-fill cover-full"
+                style = "width: ${coveragePercentage.format(2)}%;"
+                +""
+            }
+            div {
+                `class` = "cover-empty"
+                style = "left: ${coveragePercentage.format(2)}%; width: ${(100.0 - coveragePercentage).format(2)}%;"
+                +""
+            }
+        }
+    }
 }
+
+fun Double.format(digits: Int) = String.format(Locale.US, "%.${digits}f", this)

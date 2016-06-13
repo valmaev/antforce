@@ -1,9 +1,8 @@
 package com.newmarket.force.ant
 
-import com.sforce.soap.metadata.CodeCoverageResult
-import com.sforce.soap.metadata.RunTestFailure
-import com.sforce.soap.metadata.RunTestSuccess
-import com.sforce.soap.metadata.RunTestsResult
+import com.newmarket.force.ant.dsl.junit.Property
+import com.newmarket.force.ant.dsl.junit.TestCase
+import com.sforce.soap.metadata.*
 import org.apache.tools.ant.Project
 import org.apache.tools.ant.types.FileSet
 import java.io.File
@@ -43,4 +42,91 @@ fun createProject(name: String = "TestProject"): Project {
     val project = Project()
     project.name = name
     return project
+}
+
+fun createCodeCoverageResult(
+    numLocations: Int = 0,
+    numLocationsNotCovered: Int = 0): CodeCoverageResult {
+    val result = CodeCoverageResult()
+    result.numLocations = numLocations
+    result.numLocationsNotCovered = numLocationsNotCovered
+    return result
+}
+
+fun createCodeCoverageResult(
+    name: String? = null,
+    namespace: String? = null,
+    type: String? = null,
+    locationsNotCovered: Array<CodeLocation>? = null,
+    numLocations: Int = 0): CodeCoverageResult {
+    val result = CodeCoverageResult()
+    result.name = name
+    result.namespace = namespace
+    result.type = type
+    result.locationsNotCovered = locationsNotCovered
+    result.numLocationsNotCovered = locationsNotCovered?.size ?: 0
+    result.numLocations = numLocations
+    return result
+}
+
+fun createCodeLocation(
+    line: Int = 0,
+    numExecutions: Int = 0): CodeLocation {
+    val location = CodeLocation()
+    location.line = line
+    location.numExecutions = numExecutions
+    return location
+}
+
+fun createRunTestSuccess(
+    namespace: String? = "",
+    name: String = "",
+    methodName: String = "",
+    time: Double = 0.0): RunTestSuccess {
+
+    val success = RunTestSuccess()
+    success.namespace = namespace
+    success.name = name
+    success.methodName = methodName
+    success.time = time
+    return success
+}
+
+fun createRunTestFailure(
+    namespace: String? = "",
+    name: String = "",
+    methodName: String = "",
+    message: String = "",
+    type: String = "",
+    stackTrace: String = "",
+    time: Double = 0.0): RunTestFailure {
+
+    val failure = RunTestFailure()
+    failure.namespace = namespace
+    failure.name = name
+    failure.methodName = methodName
+    failure.message = message
+    failure.type = type
+    failure.stackTrace = stackTrace
+    failure.time = time
+    return failure
+}
+
+fun createTestCase(
+    className: String = "",
+    name: String = "",
+    time: Double = 0.0): TestCase {
+
+    val testCase = TestCase()
+    testCase.className = className
+    testCase.name = name
+    testCase.time = time
+    return testCase
+}
+
+fun createProperty(name: String = "", value: String = ""): Property {
+    val property = Property()
+    property.name = name
+    property.value = value
+    return property
 }

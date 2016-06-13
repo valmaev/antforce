@@ -42,15 +42,21 @@ abstract class Tag(val tagName: String) : Element {
 
     override fun render(builder: StringBuilder, indent: String) {
         if (children.isEmpty())
-            builder.append("$indent<$tagName${renderAttributes()} />\n")
-        else {
-            builder.append("$indent<$tagName${renderAttributes()}>\n")
-            children.forEach { it.render(builder, indent + "  ") }
-            builder.append("$indent</$tagName>\n")
-        }
+            renderAsSelfClosing(builder, indent)
+        else
+            renderWithChildren(builder, indent)
     }
 
-    private fun renderAttributes(): String? {
+    protected fun renderAsSelfClosing(builder: StringBuilder, indent: String) =
+        builder.append("$indent<$tagName${renderAttributes()} />\n")
+
+    protected fun renderWithChildren(builder: StringBuilder, indent: String) {
+        builder.append("$indent<$tagName${renderAttributes()}>\n")
+        children.forEach { it.render(builder, indent + "  ") }
+        builder.append("$indent</$tagName>\n")
+    }
+
+    protected fun renderAttributes(): String? {
         val builder = StringBuilder()
         attributes.keys.forEach { builder.append(" $it=\"${attributes[it]}\"") }
         return builder.toString()
