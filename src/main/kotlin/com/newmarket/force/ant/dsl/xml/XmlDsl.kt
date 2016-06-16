@@ -32,7 +32,7 @@ class CharacterDataElement(val text: String) : Element {
 
 abstract class Tag(val tagName: String) : Element {
     val children = arrayListOf<Element>()
-    val attributes = hashMapOf<String, String>()
+    val attributes = hashMapOf<String, Any?>()
 
     protected fun <T : Element> initTag(tag: T, init: T.() -> Unit): T {
         tag.init()

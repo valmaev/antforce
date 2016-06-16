@@ -118,7 +118,7 @@ fun createTestCase(
     time: Double = 0.0): TestCase {
 
     val testCase = TestCase()
-    testCase.className = className
+    testCase.classname = className
     testCase.name = name
     testCase.time = time
     return testCase

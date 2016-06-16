@@ -35,14 +35,14 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
 
             runTestsResult.successes.forEach {
                 testCase(
-                    className = it.qualifiedClassName,
+                    classname = it.qualifiedClassName,
                     name = it.methodName,
                     time = it.time / 1000)
             }
 
             runTestsResult.failures.forEach {
                 testCase(
-                    className = it.qualifiedClassName,
+                    classname = it.qualifiedClassName,
                     name = it.methodName,
                     time = it.time / 1000) {
 
@@ -82,7 +82,7 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
         result: CodeCoverageResult) {
         `class`(
             name = result.qualifiedClassName,
-            fileName = result.classFileName) {
+            filename = result.classFileName) {
             lines {
                 val notCoveredLines = result.locationsNotCovered.orEmpty().associateBy { it.line }
                 for (currentLine in 1..result.numLocations) {

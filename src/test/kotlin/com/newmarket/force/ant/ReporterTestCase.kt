@@ -164,7 +164,7 @@ class ReporterTestCase {
                         time = 2000.0)),
                 arrayOf(
                     TestSuite().testCase(
-                        className = "foo.MyTestClass",
+                        classname = "foo.MyTestClass",
                         name = "testMethodName",
                         time = 1000.0 / 1000.0) {
 
@@ -175,7 +175,7 @@ class ReporterTestCase {
                         }
                     },
                     TestSuite().testCase(
-                        className = "bar.OtherTestClass",
+                        classname = "bar.OtherTestClass",
                         name = "someTestMethodName",
                         time = 2000.0 / 1000.0) {
 
@@ -195,7 +195,7 @@ class ReporterTestCase {
                         name = "MyTestClass")),
                 arrayOf(
                     TestSuite().testCase(
-                        className = "MyTestClass") {
+                        classname = "MyTestClass") {
                         failure() { +"" }
                     }),
                 "Should treat null namespace as empty string " +
@@ -320,12 +320,12 @@ class ReporterTestCase {
                         classes {
                             `class`(
                                 name = "Book",
-                                fileName = "classes/Book.cls") {
+                                filename = "classes/Book.cls") {
                                 lines()
                             }
                             `class`(
                                 name = "foo.BookBuilder",
-                                fileName = "") {
+                                filename = "") {
                                 lines()
                             }
                         }
@@ -334,12 +334,12 @@ class ReporterTestCase {
                         classes {
                             `class`(
                                 name = "AccountTrigger",
-                                fileName = "triggers/AccountTrigger.trigger") {
+                                filename = "triggers/AccountTrigger.trigger") {
                                 lines()
                             }
                             `class`(
                                 name = "bar.BookTrigger",
-                                fileName = "") {
+                                filename = "") {
                                 lines()
                             }
                         }
@@ -362,7 +362,7 @@ class ReporterTestCase {
                         classes {
                             `class`(
                                 name = "BookBuilder",
-                                fileName = "classes/BookBuilder.cls") {
+                                filename = "classes/BookBuilder.cls") {
                                 lines {
                                     line(number = 1, hits = 0)
                                     line(number = 2, hits = 0)
@@ -390,7 +390,7 @@ class ReporterTestCase {
                     `package`("Class") {
                         classes {
                             `class`(
-                                fileName = "classes/BookBuilder.cls",
+                                filename = "classes/BookBuilder.cls",
                                 name = "BookBuilder") { lines() }
                         }
                     }
@@ -406,7 +406,7 @@ class ReporterTestCase {
                     `package`("Trigger") {
                         classes {
                             `class`(
-                                fileName = "triggers/BookTrigger.trigger",
+                                filename = "triggers/BookTrigger.trigger",
                                 name = "BookTrigger") { lines() }
                         }
                     }
@@ -423,7 +423,7 @@ class ReporterTestCase {
                     `package`("Class") {
                         classes {
                             `class`(
-                                fileName = "",
+                                filename = "",
                                 name = "foo.BookBuilder") { lines() }
                         }
                     }
@@ -442,10 +442,10 @@ class ReporterTestCase {
                     `package`("Class") {
                         classes {
                             `class`(
-                                fileName = "",
+                                filename = "",
                                 name = "") { lines() }
                             `class`(
-                                fileName = "",
+                                filename = "",
                                 name = "") { lines() }
                         }
                     }
@@ -462,7 +462,7 @@ class ReporterTestCase {
                         classes {
                             `class`(
                                 name = "Book",
-                                fileName = "classes/Book.cls") { lines() }
+                                filename = "classes/Book.cls") { lines() }
                         }
                     }
                 },

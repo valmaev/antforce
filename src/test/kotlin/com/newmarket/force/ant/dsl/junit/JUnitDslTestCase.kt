@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 
 class JUnitDslTestCase {
 
-    @Test fun toString_always_shouldReturnsExpectedResult() {
+    @Test fun toString_always_shouldReturnExpectedXml() {
         val actual = JUnitReportRoot()
         actual.testSuite(name = "TestSuite",
             tests = 5,
@@ -23,9 +23,9 @@ class JUnitDslTestCase {
                 fromMap(hashMapOf("baz" to "qux", "quux" to "fnag"))
             }
 
-            testCase(className = "FooTestClass", name = "test1", time = 0.25)
-            testCase(className = "BarTestClass", name = "test2", time = 0.12)
-            testCase(className = "baz.BazTestClass", name = "test3", time = 1.067) {
+            testCase(classname = "FooTestClass", name = "test1", time = 0.25)
+            testCase(classname = "BarTestClass", name = "test2", time = 0.12)
+            testCase(classname = "baz.BazTestClass", name = "test3", time = 1.067) {
                 failure(message = "System.AssertionError", type = "SomeType") {
                     + "baz.BazTestClass.test3: line 9, column 1"
                 }

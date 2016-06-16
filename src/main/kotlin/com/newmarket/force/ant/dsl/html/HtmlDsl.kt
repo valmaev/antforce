@@ -26,29 +26,12 @@ class Head() : TagWithTextData("head") {
         val style = initTag(Style(), init)
         style.type = type
     }
-
-    fun link(rel: String, href: String, init: Link.() -> Unit) {
-        val link = initTag(Link(), init)
-        link.rel = rel
-        link.href = href
-    }
 }
 
 class Title() : TagWithTextData("title")
 
-class Link() : Tag("link") {
-    var rel: String
-        get() = attributes["rel"]!!
-        set(value) { attributes["rel"] = value }
-    var href: String
-        get() = attributes["href"]!!
-        set(value) { attributes["href"] = value }
-}
-
 class Style() : TagWithTextData("style") {
-    var type: String
-        get() = attributes["type"]!!
-        set(value) { attributes["type"] = value }
+    var type by attributes
 }
 
 abstract class BodyTag(name: String) : TagWithTextData(name) {
@@ -58,17 +41,9 @@ abstract class BodyTag(name: String) : TagWithTextData(name) {
     fun span(init: Span.() -> Unit) = initTag(Span(), init)
     fun h1(init: H1.() -> Unit) = initTag(H1(), init)
 
-    var id: String
-        get() = attributes["id"]!!
-        set(value) { attributes["id"] = value }
-
-    var `class`: String
-        get() = attributes["class"]!!
-        set(value) { attributes["class"] = value }
-
-    var style: String
-        get() = attributes["style"]!!
-        set(value) { attributes["style"] = value }
+    var id by attributes
+    var `class` by attributes
+    var style by attributes
 }
 
 class Body() : BodyTag("body")

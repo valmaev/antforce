@@ -34,9 +34,7 @@ class Packages : Tag("packages") {
 }
 
 class Package : Tag("package") {
-    var name: String
-        get() = attributes["name"]!!
-        set(value) { attributes["name"] = value }
+    var name: String by attributes
 
     fun classes(init: Classes.() -> Unit = {}): Classes = initTag(Classes(), init)
 }
@@ -44,24 +42,19 @@ class Package : Tag("package") {
 class Classes : Tag("classes") {
     fun `class`(
         name: String = "",
-        fileName: String = "",
+        filename: String = "",
         init: Class.() -> Unit = {}): Class {
 
         val classTag = initTag(Class(), init)
         classTag.name = name
-        classTag.fileName = fileName
+        classTag.filename = filename
         return classTag
     }
 }
 
 class Class : Tag("class") {
-    var name: String
-        get() = attributes["name"]!!
-        set(value) { attributes["name"] = value }
-
-    var fileName: String
-        get() = attributes["filename"]!!
-        set(value) { attributes["filename"] = value }
+    var name: String by attributes
+    var filename: String by attributes
 
     fun lines(init: Lines.() -> Unit = {}): Lines = initTag(Lines(), init)
 }
@@ -76,11 +69,6 @@ class Lines : Tag("lines") {
 }
 
 class Line : Tag("line") {
-    var number: Int
-        get() = attributes["number"]!!.toInt()
-        set(value) { attributes["number"] = value.toString() }
-
-    var hits: Int
-        get() = attributes["hits"]!!.toInt()
-        set(value) { attributes["hits"] = value.toString() }
+    var number: Int by attributes
+    var hits: Int by attributes
 }

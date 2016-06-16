@@ -2,7 +2,6 @@ package com.newmarket.force.ant.dsl.junit
 
 import com.newmarket.force.ant.dsl.xml.*
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 
 class JUnitReportRoot : EmptyTag() {
@@ -37,41 +36,24 @@ class TestSuite : Tag("testsuite") {
     final val testCases: Iterable<TestCase>
         get() = children.filterIsInstance<TestCase>()
 
-    var errors: Int
-        get() = attributes["errors"]!!.toInt()
-        set(value) { attributes["errors"] = value.toString() }
-
-    var failures: Int
-        get() = attributes["failures"]!!.toInt()
-        set(value) { attributes["failures"] = value.toString() }
-
-    var tests: Int
-        get() = attributes["tests"]!!.toInt()
-        set(value) { attributes["tests"] = value.toString() }
-
-    var name: String
-        get() = attributes["name"]!!
-        set(value) { attributes["name"] = value }
-
-    var time: Double
-        get() = attributes["time"]!!.toDouble()
-        set(value) { attributes["time"] = value.toString() }
-
-    var timestamp: LocalDateTime
-        get() = LocalDateTime.parse(attributes["timestamp"]!!, DateTimeFormatter.ISO_DATE_TIME)
-        set(value) { attributes["timestamp"] = DateTimeFormatter.ISO_DATE_TIME.format(value) }
+    var errors: Int by attributes
+    var failures: Int by attributes
+    var tests: Int by attributes
+    var name: String by attributes
+    var time: Double by attributes
+    var timestamp: LocalDateTime by attributes
 
     fun properties(init: Properties.() -> Unit = {}): Properties =
         initTag(Properties(), init)
 
     fun testCase(
-        className: String = "",
+        classname: String = "",
         name: String = "",
         time: Double = 0.0,
         init: TestCase.() -> Unit = {}): TestCase {
 
         val case = initTag(TestCase(), init)
-        case.className = className
+        case.classname = classname
         case.name = name
         case.time = time
         return case
@@ -95,27 +77,14 @@ class Properties: Tag("properties") {
 }
 
 class Property: Tag("property") {
-    var name: String
-        get() = attributes["name"]!!
-        set(value) { attributes["name"] = value }
-
-    var value: String
-        get() = attributes["value"]!!
-        set(value) { attributes["value"] = value }
+    var name: String by attributes
+    var value: String by attributes
 }
 
 class TestCase : Tag("testcase") {
-    var className: String
-        get() = attributes["classname"]!!
-        set(value) { attributes["classname"] = value }
-
-    var name: String
-        get() = attributes["name"]!!
-        set(value) { attributes["name"] = value }
-
-    var time: Double
-        get() = attributes["time"]!!.toDouble()
-        set(value) { attributes["time"] = value.toString() }
+    var classname: String by attributes
+    var name: String by attributes
+    var time: Double? by attributes
 
     fun failure(
         message: String = "",
@@ -130,11 +99,6 @@ class TestCase : Tag("testcase") {
 }
 
 class Failure: TagWithCharacterData("failure") {
-    var message: String
-        get() = attributes["message"]!!
-        set(value) { attributes["message"] = value }
-
-    var type: String
-        get() = attributes["type"]!!
-        set(value) { attributes["type"] = value }
+    var message: String by attributes
+    var type: String by attributes
 }
