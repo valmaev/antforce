@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
 
-<project xmlns:sfcontrib="antlib:com.newmarket.force.ant" default="deploy">
+<project xmlns:sfcontrib="antlib:com.aquivalabs.force.ant" default="deploy">
     <property file="build.properties" />
     <property name="sf.server" value="https://login.salesforce.com" />
     <property name="sf.testLevel" value="RunSpecifiedTests" />
     <property name="outputdir" value="artifacts" />
 
     <taskdef
-        uri="antlib:com.newmarket.force.ant"
+        uri="antlib:com.aquivalabs.force.ant"
         name="deploy"
-        classname="com.newmarket.force.ant.DeployWithTestReportsTask"
+        classname="com.aquivalabs.force.ant.DeployWithTestReportsTask"
         classpath="${lib.dir}" />
     <taskdef
-        uri="antlib:com.newmarket.force.ant"
+        uri="antlib:com.aquivalabs.force.ant"
         name="executeApex"
-        classname="com.newmarket.force.ant.ExecuteAnonymousApexTask"
+        classname="com.aquivalabs.force.ant.ExecuteAnonymousApexTask"
         classpath="${lib.dir}" />
 
     <target name="deploy">

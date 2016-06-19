@@ -1,4 +1,4 @@
-group 'com.newmarket.force.ant'
+group 'com.aquivalabs.force.ant'
 version '0.6'
 
 buildscript {

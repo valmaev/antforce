@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<antlib>
+    <taskdef name="deploy" classname="com.aquivalabs.force.ant.DeployWithTestReportsTask" />
+    <taskdef name="executeApex" classname="com.aquivalabs.force.ant.ExecuteAnonymousApexTask" />
+</antlib>
