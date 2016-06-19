@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project xmlns:sfcontrib="antlib:com.aquivalabs.force.ant" default="deploy">
+<project xmlns:antforce="antlib:com.aquivalabs.force.ant" default="deploy">
     <property file="build.properties" />
     <property name="sf.server" value="https://login.salesforce.com" />
     <property name="sf.testLevel" value="RunSpecifiedTests" />
@@ -18,7 +18,7 @@
         classpath="${lib.dir}" />
 
     <target name="deploy">
-        <sfcontrib:deploy
+        <antforce:deploy
             username="${sf.username}"
             password="${sf.password}${sf.token}"
             serverUrl="${sf.server}"
@@ -32,16 +32,16 @@
             <junitReport file="TEST-ApexTests.xml" suiteName="Apex" />
             <coberturaReport file="Apex-Coverage.xml" />
             <htmlCoverageReport file="coverage.html" />
-        </sfcontrib:deploy>
+        </antforce:deploy>
     </target>
 
     <target name="executeApex">
-        <sfcontrib:executeApex
+        <antforce:executeApex
             username="${sf.username}"
             password="${sf.password}${sf.token}"
             serverUrl="${sf.server}"
             expandProperties="true">
                 System.debug('Hello from ${sf.username}!');
-        </sfcontrib:executeApex>
+        </antforce:executeApex>
     </target>
 </project>
