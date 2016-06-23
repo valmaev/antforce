@@ -39,7 +39,13 @@ abstract class BodyTag(name: String) : TagWithTextData(name) {
     fun table(init: Table.() -> Unit) = initTag(Table(), init)
 
     fun span(init: Span.() -> Unit) = initTag(Span(), init)
+
     fun h1(init: H1.() -> Unit) = initTag(H1(), init)
+    fun h2(init: H2.() -> Unit) = initTag(H2(), init)
+    fun h3(init: H3.() -> Unit) = initTag(H3(), init)
+
+    fun ul(init: UL.() -> Unit) = initTag(UL(), init)
+    fun ol(init: OL.() -> Unit) = initTag(OL(), init)
 
     var id by attributes
     var `class` by attributes
@@ -50,6 +56,17 @@ class Body() : BodyTag("body")
 class Div() : BodyTag("div")
 class Span() : BodyTag("span")
 class H1() : BodyTag("h1")
+class H2() : BodyTag("h2")
+class H3() : BodyTag("h3")
+
+class UL() : BodyTag("ul") {
+    fun li(init: LI.() -> Unit) = initTag(LI(), init)
+}
+class OL() : BodyTag("ol") {
+    fun li(init: LI.() -> Unit) = initTag(LI(), init)
+}
+
+class LI() : BodyTag("li")
 
 class Table() : BodyTag("table") {
     fun thead(init: THead.() -> Unit) = initTag(THead(), init)

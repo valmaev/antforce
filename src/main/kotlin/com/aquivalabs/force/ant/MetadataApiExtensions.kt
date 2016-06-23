@@ -1,12 +1,9 @@
 package com.aquivalabs.force.ant
 
-import com.sforce.soap.metadata.CodeCoverageResult
-import com.sforce.soap.metadata.RunTestFailure
-import com.sforce.soap.metadata.RunTestSuccess
-import com.sforce.soap.metadata.RunTestsResult
+import com.sforce.soap.metadata.*
 import java.io.File
 
-fun qualifiedClassName(name: String?, namespace: String?) =
+fun qualifiedName(name: String?, namespace: String?) =
     if (namespace.isNullOrEmpty())
         name ?: ""
     else "$namespace.${name ?: ""}"
@@ -17,8 +14,8 @@ val CodeCoverageResult.coverage: Double
     get() = if (numLocations == 0) 1.0 else numLocationsCovered.toDouble() / numLocations
 val CodeCoverageResult.coveragePercentage: Double
     get() = coverage * 100
-val CodeCoverageResult.qualifiedClassName: String
-    get() = qualifiedClassName(name, namespace)
+val CodeCoverageResult.qualifiedName: String
+    get() = qualifiedName(name, namespace)
 val CodeCoverageResult.classFileName: String
     get() = if (name.isNullOrEmpty()) ""
     else if (!namespace.isNullOrEmpty()) ""
@@ -27,6 +24,9 @@ val CodeCoverageResult.classFileName: String
         "Trigger" -> "triggers${File.separator}$name${Constants.APEX_TRIGGER_FILE_EXTENSION}"
         else -> ""
     }
+
+val CodeCoverageWarning.qualifiedName: String
+    get() = qualifiedName(name, namespace)
 
 val RunTestsResult.numSuccesses: Int
     get() = numTestsRun - numFailures
@@ -42,7 +42,7 @@ val RunTestsResult.totalNumLocations: Int
     get() = codeCoverage.map { it.numLocations }.sum()
 
 val RunTestSuccess.qualifiedClassName: String
-    get() = qualifiedClassName(name, namespace)
+    get() = qualifiedName(name, namespace)
 
 val RunTestFailure.qualifiedClassName: String
-    get() = qualifiedClassName(name, namespace)
+    get() = qualifiedName(name, namespace)

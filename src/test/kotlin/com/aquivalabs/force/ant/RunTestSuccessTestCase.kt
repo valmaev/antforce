@@ -18,7 +18,7 @@ class RunTestSuccessTestCase {
     }
 
     @DataProvider
-    fun qualifiedClassNameTestData() = qualifiedClassNameCommonTestData()
+    fun qualifiedClassNameTestData() = qualifiedNameCommonTestData()
 }
 
 class RunTestFailureTestCase {
@@ -34,5 +34,5 @@ class RunTestFailureTestCase {
     }
 
     @DataProvider
-    fun qualifiedClassNameTestData() = qualifiedClassNameCommonTestData()
+    fun qualifiedClassNameTestData() = qualifiedNameCommonTestData()
 }

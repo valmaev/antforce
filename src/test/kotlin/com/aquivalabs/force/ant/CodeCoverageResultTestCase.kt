@@ -59,18 +59,18 @@ class CodeCoverageResultTestCase {
         assertEquals(sut.coveragePercentage, sut.coverage * 100)
     }
 
-    @Test(dataProvider = "qualifiedClassNameTestData")
-    fun qualifiedClassName_always_shouldReturnExpectedResult(
+    @Test(dataProvider = "qualifiedNameTestData")
+    fun qualifiedName_always_shouldReturnExpectedResult(
         namespace: String?,
         name: String?,
         expected: String) {
 
         val sut = createCodeCoverageResult(name = name, namespace = namespace)
-        assertEquals(sut.qualifiedClassName, expected)
+        assertEquals(sut.qualifiedName, expected)
     }
 
     @DataProvider
-    fun qualifiedClassNameTestData() = qualifiedClassNameCommonTestData()
+    fun qualifiedNameTestData() = qualifiedNameCommonTestData()
 
     @Test(dataProvider = "classFileNameTestData")
     fun classFileName_always_shouldReturnExpectedResult(

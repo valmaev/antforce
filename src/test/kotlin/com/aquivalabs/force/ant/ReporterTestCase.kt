@@ -542,7 +542,7 @@ class ReporterTestCase {
         val expected = codeCoverage.map {
             CoverageRow(
                 type = it.type,
-                className = it.qualifiedClassName,
+                className = it.qualifiedName,
                 linesPercent = "${it.coveragePercentage.format(2)}%",
                 lines = "${it.numLocationsCovered}/${it.numLocations}")
         }

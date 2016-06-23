@@ -131,7 +131,7 @@ fun createProperty(name: String = "", value: String = ""): Property {
     return property
 }
 
-fun qualifiedClassNameCommonTestData(): Array<Array<Any?>> = arrayOf(
+fun qualifiedNameCommonTestData(): Array<Array<Any?>> = arrayOf(
     arrayOf<Any?>(null, null, ""),
     arrayOf<Any?>(null, "", ""),
     arrayOf<Any?>("", null, ""),
