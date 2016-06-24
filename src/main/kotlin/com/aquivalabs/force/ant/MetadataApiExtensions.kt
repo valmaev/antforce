@@ -30,10 +30,8 @@ val CodeCoverageWarning.qualifiedName: String
 
 val RunTestsResult.numSuccesses: Int
     get() = numTestsRun - numFailures
-val RunTestsResult.averageCoverage: Double
-    get() = codeCoverage.map { it.coverage }.average()
-val RunTestsResult.averageCoveragePercentage: Double
-    get() = codeCoverage.map { it.coveragePercentage }.average()
+val RunTestsResult.totalCoveragePercentage: Double
+    get() = totalNumLocationsCovered.toDouble() / totalNumLocations
 val RunTestsResult.totalNumLocationsCovered: Int
     get() = codeCoverage.map { it.numLocationsCovered }.sum()
 val RunTestsResult.totalNumLocationsNotCovered: Int

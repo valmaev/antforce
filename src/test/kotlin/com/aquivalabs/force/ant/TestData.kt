@@ -26,7 +26,8 @@ fun createRunTestsResult(
     totalTime: Double = 0.0,
     successes: Array<RunTestSuccess>? = arrayOf(),
     failures: Array<RunTestFailure>? = arrayOf(),
-    codeCoverage: Array<CodeCoverageResult>? = arrayOf()): RunTestsResult {
+    codeCoverage: Array<CodeCoverageResult>? = arrayOf(),
+    codeCoverageWarnings: Array<CodeCoverageWarning>? = arrayOf()): RunTestsResult {
 
     val result = RunTestsResult()
     result.numTestsRun = numTestsRun
@@ -35,6 +36,7 @@ fun createRunTestsResult(
     result.successes = successes
     result.failures = failures
     result.codeCoverage = codeCoverage
+    result.codeCoverageWarnings = codeCoverageWarnings
     return result
 }
 
@@ -67,6 +69,17 @@ fun createCodeCoverageResult(
     result.numLocationsNotCovered = locationsNotCovered?.size ?: 0
     result.numLocations = numLocations
     return result
+}
+
+fun createCodeCoverageWarning(
+    name: String? = null,
+    namespace: String? = null,
+    message: String? = null): CodeCoverageWarning {
+    val warning = CodeCoverageWarning()
+    warning.name = name
+    warning.namespace = namespace
+    warning.message = message
+    return warning
 }
 
 fun createCodeLocation(

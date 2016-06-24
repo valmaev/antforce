@@ -7,22 +7,12 @@ import org.testng.Assert.*
 
 class RunTestsResultsTestCase {
     @Test(dataProvider = "coverageTestData")
-    fun averageCoverage_always_shouldReturnAverageCoverageForAllCodeCoverageResults(
+    fun totalCoveragePercentage_always_shouldReturnAverageCoveragePercentageForAllCodeCoverageResults(
         codeCoverage: Array<CodeCoverageResult>) {
 
         val sut = createRunTestsResult(codeCoverage = codeCoverage)
         assertEquals(
-            sut.averageCoverage,
-            sut.codeCoverage.map { it.coverage }.average())
-    }
-
-    @Test(dataProvider = "coverageTestData")
-    fun averageCoveragePercentage_always_shouldReturnAverageCoveragePercentageForAllCodeCoverageResults(
-        codeCoverage: Array<CodeCoverageResult>) {
-
-        val sut = createRunTestsResult(codeCoverage = codeCoverage)
-        assertEquals(
-            sut.averageCoveragePercentage,
+            sut.totalCoveragePercentage,
             sut.codeCoverage.map { it.coveragePercentage }.average())
     }
 

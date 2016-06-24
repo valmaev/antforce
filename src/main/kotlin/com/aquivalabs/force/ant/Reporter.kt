@@ -130,9 +130,9 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
                             div {
                                 `class` = "fl pad1y space-right2"
                                 span {
-                                    id = "averageCoveragePercentage"
+                                    id = "totalCoveragePercentage"
                                     `class` = "strong"
-                                    +"${runTestsResult.averageCoveragePercentage.format(2)}%"
+                                    +"${runTestsResult.totalCoveragePercentage.format(2)}%"
                                 }
                                 span {
                                     `class` = "quiet"
@@ -149,7 +149,7 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
                                 span {
                                     id = "totalCoverageWarnings"
                                     `class` = "strong"
-                                    +"${runTestsResult.codeCoverageWarnings.count()}"
+                                    +"${runTestsResult.codeCoverageWarnings.orEmpty().count()}"
                                 }
                                 span {
                                     `class` = "quiet"
@@ -247,13 +247,14 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
     }
 
     private fun BodyTag.createCoverageWarningsList(result: RunTestsResult) {
-        if (result.codeCoverageWarnings.count() == 0)
+        if (result.codeCoverageWarnings.orEmpty().count() == 0)
             return
 
         div {
             `class` = "pad1"
             h3 { +"Coverage Warnings" }
             ol {
+                id = "coverageWarningsList"
                 result.codeCoverageWarnings.sortBy { it.qualifiedName }
                 result.codeCoverageWarnings.forEach {
                     li {
@@ -262,7 +263,11 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
                             `class` = "coverage-warning-name"
                             +it.qualifiedName
                         }
-                        +": ${it.message}"
+                        +": "
+                        span {
+                            `class` = "coverage-warning-message"
+                            +"${it.message}"
+                        }
                     }
                 }
             }

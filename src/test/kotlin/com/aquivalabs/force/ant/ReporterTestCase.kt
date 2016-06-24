@@ -3,6 +3,7 @@ package com.aquivalabs.force.ant
 import com.aquivalabs.force.ant.dsl.cobertura.*
 import com.aquivalabs.force.ant.dsl.junit.*
 import com.sforce.soap.metadata.*
+import org.hamcrest.core.IsNull.*
 import org.hamcrest.core.IsEqual.*
 import org.hamcrest.core.StringContains.*
 import org.hamcrest.collection.IsIterableContainingInAnyOrder.*
@@ -470,7 +471,7 @@ class ReporterTestCase {
     }
 
     @Test(dataProvider = "createHtmlCoverageReportTestData")
-    fun createHtmlCoverageReport_always_shouldContainAverageCoveragePercentage(
+    fun createHtmlCoverageReport_always_shouldContainTotalCoveragePercentage(
         codeCoverage: Array<CodeCoverageResult>) {
         // Arrange
         val sut = Reporter(dateTimeProvider)
@@ -481,9 +482,9 @@ class ReporterTestCase {
 
         // Assert
         val html = Jsoup.parse(report.toString())
-        val actualAverageCoveragePercentage = html.getElementById("averageCoveragePercentage").ownText()
-        val expectedAverageCoveragePercentage = "${runTestsResult.averageCoveragePercentage.format(2)}%"
-        assertThat(actualAverageCoveragePercentage, equalTo(expectedAverageCoveragePercentage));
+        val actual = html.getElementById("totalCoveragePercentage").ownText()
+        val expected = "${runTestsResult.totalCoveragePercentage.format(2)}%"
+        assertThat(actual, equalTo(expected));
     }
 
     @Test(dataProvider = "createHtmlCoverageReportTestData")
@@ -498,10 +499,10 @@ class ReporterTestCase {
 
         // Assert
         val html = Jsoup.parse(report.toString())
-        val actualAverageCoveragePercentage = html.getElementById("totalLinesCoverage").ownText()
-        val expectedAverageCoveragePercentage =
+        val actual = html.getElementById("totalLinesCoverage").ownText()
+        val expected =
             "${runTestsResult.totalNumLocationsCovered}/${runTestsResult.totalNumLocations}"
-        assertThat(actualAverageCoveragePercentage, equalTo(expectedAverageCoveragePercentage));
+        assertThat(actual, equalTo(expected));
     }
 
     @DataProvider
@@ -512,6 +513,106 @@ class ReporterTestCase {
                     name = "ControllerCls",
                     type = "Class",
                     numLocations = 100))))
+    }
+
+    @Test(dataProvider = "createHtmlCoverageReportWarningsTestData")
+    fun createHtmlCoverageReport_always_shouldContainTotalNumberOfCoverageWarnings(
+        codeCoverageWarnings: Array<CodeCoverageWarning>?) {
+        // Arrange
+        val sut = Reporter(dateTimeProvider)
+        val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
+
+        // Act
+        val report = sut.createHtmlCoverageReport(runTestsResult)
+
+        // Assert
+        val html = Jsoup.parse(report.toString())
+        val actual = html.getElementById("totalCoverageWarnings").ownText()
+        val expected = "${runTestsResult.codeCoverageWarnings.orEmpty().count()}"
+        assertThat(actual, equalTo(expected))
+    }
+
+    @DataProvider
+    fun createHtmlCoverageReportWarningsTestData(): Array<Array<Any?>> =
+        emptyCoverageWarningTestData()
+            .plus(nonEmptyCoverageWarningsTestData())
+            .plus(arrayOf(arrayOf<Any?>(
+                arrayOf(
+                    createCodeCoverageWarning()))))
+
+    @DataProvider
+    fun emptyCoverageWarningTestData(): Array<Array<Any?>> {
+        return arrayOf(
+            arrayOf<Any?>(null),
+            arrayOf<Any?>(
+                arrayOf<CodeCoverageWarning>()))
+    }
+
+    @DataProvider
+    fun nonEmptyCoverageWarningsTestData(): Array<Array<Any?>> {
+        return arrayOf(
+            arrayOf<Any?>(
+                arrayOf(
+                    createCodeCoverageWarning(
+                        name = "Book",
+                        namespace = "fdc",
+                        message = "Test coverage of selected Apex Class is 0%, at least 75% test coverage is required"),
+                    createCodeCoverageWarning(
+                        name = "bar",
+                        namespace = "",
+                        message = "Test coverage of selected Apex Class is 20%, at least 75% test coverage is required"),
+                    createCodeCoverageWarning(
+                        name = "baz",
+                        namespace = "fdc",
+                        message = "Test coverage of selected Apex Class is 66%, at least 75% test coverage is required"))))
+    }
+
+    @Test(dataProvider = "nonEmptyCoverageWarningsTestData")
+    fun createHtmlCoverageReport_ifCoverageWarningsExist_shouldContainAllOfThem(
+        codeCoverageWarnings: Array<CodeCoverageWarning>) {
+        // Arrange
+        val sut = Reporter(dateTimeProvider)
+        val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
+
+        // Act
+        val report = sut.createHtmlCoverageReport(runTestsResult)
+
+        // Assert
+        val html = Jsoup.parse(report.toString())
+        val coverageWarningListItems = html
+            .getElementById("coverageWarningsList")
+            .getElementsByTag("li")
+        val actual = coverageWarningListItems.map {
+            CoverageWarning(
+                qualifiedName = it.getElementsByClass("coverage-warning-name").single().ownText(),
+                message = it.getElementsByClass("coverage-warning-message").single().ownText())
+        }
+
+        val expected = codeCoverageWarnings.map {
+            CoverageWarning(
+                qualifiedName = it.qualifiedName,
+                message = it.message)
+        }
+
+        assertThat(actual, equalTo(expected))
+    }
+
+    data class CoverageWarning(val qualifiedName: String?, val message: String?)
+
+    @Test(dataProvider = "emptyCoverageWarningTestData")
+    fun createHtmlCoverageReport_ifNoCoverageWarningsExist_shouldNotIncludeThem(
+        codeCoverageWarnings: Array<CodeCoverageWarning>?) {
+        // Arrange
+        val sut = Reporter(dateTimeProvider)
+        val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
+
+        // Act
+        val report = sut.createHtmlCoverageReport(runTestsResult)
+
+        // Assert
+        val html = Jsoup.parse(report.toString())
+        val actual = html.getElementById("coverageWarningsList")
+        assertThat(actual, nullValue())
     }
 
     @Test(dataProvider = "createHtmlCoverageReportTestData")
