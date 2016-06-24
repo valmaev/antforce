@@ -103,7 +103,10 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
             .sortedBy { it.qualifiedName }
             .groupBy { it.type ?: "" }
 
-        val css = File(javaClass.classLoader.getResource("coverage-report.css").file).readText()
+        var css = ""
+        javaClass.getResourceAsStream("/coverage-report.css").reader().use {
+            css = it.readText()
+        }
 
         val report = HtmlReportRoot()
         report.html {
@@ -113,7 +116,6 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
                 title { +title }
                 style {
                     type = "text/css"
-
                     +css
                 }
             }
