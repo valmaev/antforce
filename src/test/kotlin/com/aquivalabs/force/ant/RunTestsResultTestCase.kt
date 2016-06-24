@@ -5,15 +5,21 @@ import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 import org.testng.Assert.*
 
-class RunTestsResultsTestCase {
-    @Test(dataProvider = "coverageTestData")
-    fun totalCoveragePercentage_always_shouldReturnAverageCoveragePercentageForAllCodeCoverageResults(
+class RunTestsResultTestCase {
+    @Test(dataProvider = "nonEmptyCoverageTestData")
+    fun totalCoveragePercentage_ifTotalNumLocationsMoreThan0_shouldReturnAverageCoveragePercentageForAllCodeCoverageResults(
         codeCoverage: Array<CodeCoverageResult>) {
 
         val sut = createRunTestsResult(codeCoverage = codeCoverage)
         assertEquals(
             sut.totalCoveragePercentage,
-            sut.codeCoverage.map { it.coveragePercentage }.average())
+            sut.totalNumLocationsCovered.toDouble() * 100 / sut.totalNumLocations)
+    }
+
+    @Test
+    fun totalCoveragePercentage_ifTotalNumLocationsEquals0_shouldReturn100() {
+        val sut = createRunTestsResult()
+        assertEquals(sut.totalCoveragePercentage, 100.0)
     }
 
     @Test(dataProvider = "coverageTestData")
@@ -47,9 +53,12 @@ class RunTestsResultsTestCase {
     }
 
     @DataProvider
-    fun coverageTestData(): Array<Array<Any>> = arrayOf(
+    fun coverageTestData(): Array<Array<Any>> = nonEmptyCoverageTestData().plus(
         arrayOf<Any>(
-            arrayOf<CodeCoverageResult>()),
+            arrayOf<CodeCoverageResult>()))
+
+    @DataProvider
+    fun nonEmptyCoverageTestData(): Array<Array<Any>> = arrayOf(
         arrayOf<Any>(
             arrayOf(
                 createCodeCoverageResult(numLocations = 0, numLocationsNotCovered = 0),
