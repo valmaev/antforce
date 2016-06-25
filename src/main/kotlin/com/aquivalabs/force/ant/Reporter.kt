@@ -3,18 +3,17 @@ package com.aquivalabs.force.ant
 import com.aquivalabs.force.ant.dsl.cobertura.Classes
 import com.aquivalabs.force.ant.dsl.cobertura.CoberturaReportRoot
 import com.aquivalabs.force.ant.dsl.html.BodyTag
-import com.aquivalabs.force.ant.dsl.html.Div
 import com.aquivalabs.force.ant.dsl.html.HtmlReportRoot
 import com.aquivalabs.force.ant.dsl.junit.JUnitReportRoot
 import com.sforce.soap.metadata.CodeCoverageResult
-import com.sforce.soap.metadata.CodeCoverageWarning
 import com.sforce.soap.metadata.RunTestsResult
-import java.io.File
 import java.time.LocalDateTime
 import java.util.*
 
 
-class Reporter(val dateTimeProvider: () -> LocalDateTime) {
+class Reporter(
+    val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.now() },
+    val systemEnvironment: (String) -> String? = { System.getenv(it) }) {
 
     fun createJUnitReport(
         runTestsResult: RunTestsResult,
@@ -296,6 +295,18 @@ class Reporter(val dateTimeProvider: () -> LocalDateTime) {
                 }
             }
         }
+    }
+
+    fun reportToTeamCity(runTestsResult: RunTestsResult, log: (String) -> Unit) {
+        if (systemEnvironment("TEAMCITY_PROJECT_NAME") == null)
+            return
+
+        log("##teamcity[message text='Apex Code Coverage is ${runTestsResult.totalCoveragePercentage}%']")
+        log("##teamcity[blockOpened name='Apex Code Coverage Summary']")
+        log("##teamcity[buildStatisticValue key='CodeCoverageAbsLCovered' value='${runTestsResult.totalNumLocationsCovered}']")
+        log("##teamcity[buildStatisticValue key='CodeCoverageAbsLTotal' value='${runTestsResult.totalNumLocations}']")
+        log("##teamcity[buildStatisticValue key='CodeCoverageL' value='${runTestsResult.totalCoveragePercentage}']")
+        log("##teamcity[blockClosed name='Apex Code Coverage Summary']")
     }
 }
 

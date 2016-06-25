@@ -96,7 +96,7 @@ class DeployWithTestReportsTaskTestCase {
         withTestDirectory { testDirectory ->
             // Arrange
             val sut = createSystemUnderTest()
-            sut.reporter = Reporter { LocalDateTime.MAX }
+            sut.reporter = Reporter({ LocalDateTime.MAX })
             sut.reportDir = testDirectory
             sut.username = "foo"
             sut.serverURL = "bar"
@@ -128,7 +128,7 @@ class DeployWithTestReportsTaskTestCase {
         withTestDirectory { testDirectory ->
             // Arrange
             val sut = createSystemUnderTest()
-            sut.reporter = Reporter { LocalDateTime.MAX }
+            sut.reporter = Reporter({ LocalDateTime.MAX })
             sut.reportDir = testDirectory
 
             val report = CoberturaReport(file = "Cobertura.xml")
@@ -151,7 +151,7 @@ class DeployWithTestReportsTaskTestCase {
         withTestDirectory { testDirectory ->
             // Arrange
             val sut = createSystemUnderTest()
-            sut.reporter = Reporter { LocalDateTime.MAX }
+            sut.reporter = Reporter({ LocalDateTime.MAX })
             sut.reportDir = testDirectory
 
             val report = HtmlCoverageReport(file = "Coverage.html")

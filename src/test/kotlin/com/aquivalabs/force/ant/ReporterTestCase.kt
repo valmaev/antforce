@@ -8,11 +8,13 @@ import org.hamcrest.core.IsEqual.*
 import org.hamcrest.core.StringContains.*
 import org.hamcrest.collection.IsIterableContainingInAnyOrder.*
 import org.hamcrest.collection.IsIn.*
+import org.hamcrest.collection.IsEmptyCollection.*
 import org.hamcrest.MatcherAssert.*
 import org.jsoup.Jsoup
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 import org.testng.Assert.assertEquals
+import org.testng.Assert.assertTrue
 import java.io.File
 import java.time.LocalDateTime
 
@@ -27,7 +29,7 @@ class ReporterTestCase {
         expected: TestSuite,
         reason: String) {
 
-        val sut = Reporter(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider)
         val report = sut.createJUnitReport(input)
         val actual = report.children.filterIsInstance<TestSuite>().single()
         assertThat(reason, actual, equalTo(expected))
@@ -52,7 +54,7 @@ class ReporterTestCase {
 
     @Test(dataProvider = "createJUnitReportSuiteNameData")
     fun createJUnitReport_always_shouldUsePassedSuiteNameAsExpected(expected: String) {
-        val sut = Reporter(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider)
         val report = sut.createJUnitReport(createRunTestsResult(), suiteName = expected)
         val actual = report.children.filterIsInstance<TestSuite>().single()
         assertThat(actual.name, equalTo(expected))
@@ -70,7 +72,7 @@ class ReporterTestCase {
         expected: Array<TestCase>,
         reason: String) {
 
-        val sut = Reporter(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider)
         val input = createRunTestsResult(successes = successes)
 
         val report = sut.createJUnitReport(input)
@@ -128,7 +130,7 @@ class ReporterTestCase {
         expected: Array<TestCase>,
         reason: String) {
 
-        val sut = Reporter(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider)
         val input = createRunTestsResult(failures = failures)
 
         val report = sut.createJUnitReport(input)
@@ -209,7 +211,7 @@ class ReporterTestCase {
         expected: Array<Property>,
         reason: String) {
 
-        val sut = Reporter(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider)
         val report = sut.createJUnitReport(createRunTestsResult(), properties = properties)
         val suite = report.children.filterIsInstance<TestSuite>().single()
         val actual = suite
@@ -244,7 +246,7 @@ class ReporterTestCase {
         expected: Packages,
         reason: String) {
 
-        val sut = Reporter(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider)
         val testResult = createRunTestsResult(codeCoverage = codeCoverage)
         val report = sut.createCoberturaReport(testResult, projectRootPath)
 
@@ -474,7 +476,7 @@ class ReporterTestCase {
     fun createHtmlCoverageReport_always_shouldContainTotalCoveragePercentage(
         codeCoverage: Array<CodeCoverageResult>) {
         // Arrange
-        val sut = Reporter(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider)
         val runTestsResult = createRunTestsResult(codeCoverage = codeCoverage)
 
         // Act
@@ -491,7 +493,7 @@ class ReporterTestCase {
     fun createHtmlCoverageReport_always_shouldContainTotalLinesCoverage(
         codeCoverage: Array<CodeCoverageResult>) {
         // Arrange
-        val sut = Reporter(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider)
         val runTestsResult = createRunTestsResult(codeCoverage = codeCoverage)
 
         // Act
@@ -519,7 +521,7 @@ class ReporterTestCase {
     fun createHtmlCoverageReport_always_shouldContainTotalNumberOfCoverageWarnings(
         codeCoverageWarnings: Array<CodeCoverageWarning>?) {
         // Arrange
-        val sut = Reporter(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider)
         val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
@@ -571,7 +573,7 @@ class ReporterTestCase {
     fun createHtmlCoverageReport_ifCoverageWarningsExist_shouldContainAllOfThem(
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
-        val sut = Reporter(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider)
         val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
@@ -603,7 +605,7 @@ class ReporterTestCase {
     fun createHtmlCoverageReport_ifNoCoverageWarningsExist_shouldNotIncludeThem(
         codeCoverageWarnings: Array<CodeCoverageWarning>?) {
         // Arrange
-        val sut = Reporter(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider)
         val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
@@ -619,7 +621,7 @@ class ReporterTestCase {
     fun createHtmlCoverageReport_always_shouldContainTableWithAllCoverageResults(
         codeCoverage: Array<CodeCoverageResult>) {
         // Arrange
-        val sut = Reporter(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider)
         val runTestsResult = createRunTestsResult(codeCoverage = codeCoverage)
 
         // Act
@@ -662,7 +664,7 @@ class ReporterTestCase {
         codeCoverageResult: CodeCoverageResult,
         expected: String) {
         // Arrange
-        val sut = Reporter(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider)
         val runTestsResult = createRunTestsResult(codeCoverage = arrayOf(codeCoverageResult))
 
         // Act
@@ -708,7 +710,7 @@ class ReporterTestCase {
     @Test
     fun createHtmlCoverageReport_always_shouldContainFooterWithCreationDate() {
         val expected = LocalDateTime.now()
-        val sut = Reporter { expected }
+        val sut = createSystemUnderTest(dateTimeProvider = { expected })
 
         val report = sut.createHtmlCoverageReport(createRunTestsResult())
 
@@ -719,7 +721,7 @@ class ReporterTestCase {
 
     @Test
     fun createHtmlCoverageReport_always_shouldEmbedCssFromResources() {
-        val sut = Reporter { LocalDateTime.now() }
+        val sut = createSystemUnderTest(dateTimeProvider = { LocalDateTime.now() })
 
         val report = sut.createHtmlCoverageReport(createRunTestsResult())
 
@@ -729,4 +731,46 @@ class ReporterTestCase {
             .readText().trim()
         assertEquals(actual, expected)
     }
+
+    @Test(dataProvider = "createHtmlCoverageReportWarningsTestData")
+    fun reportToTeamCity_ifTeamCityDetected_shouldLogCoverageMessages(
+        codeCoverageWarnings: Array<CodeCoverageWarning>?) {
+        // Arrange
+        val env = hashMapOf("TEAMCITY_PROJECT_NAME" to "foo")
+        val sut = createSystemUnderTest(systemEnvironment = { env[it] })
+        val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
+        val actual = mutableListOf<String>()
+
+        // Act
+        sut.reportToTeamCity(runTestsResult, {actual.add(it)})
+
+        // Assert
+        assertTrue(
+            actual.contains("##teamcity[message text='Apex Code Coverage is ${runTestsResult.totalCoveragePercentage}%']"))
+        assertTrue(
+            actual.contains("##teamcity[buildStatisticValue key='CodeCoverageAbsLCovered' value='${runTestsResult.totalNumLocationsCovered}']"))
+        assertTrue(
+            actual.contains("##teamcity[buildStatisticValue key='CodeCoverageAbsLTotal' value='${runTestsResult.totalNumLocations}']"))
+        assertTrue(
+            actual.contains("##teamcity[buildStatisticValue key='CodeCoverageL' value='${runTestsResult.totalCoveragePercentage}']"))
+    }
+
+    @Test
+    fun reportToTeamCity_ifTeamCityNotDetected_shouldNotLogAnything() {
+        // Arrange
+        val sut = createSystemUnderTest(systemEnvironment = { null })
+        val runTestsResult = createRunTestsResult()
+        val actual = mutableListOf<String>()
+
+        // Act
+        sut.reportToTeamCity(runTestsResult, {actual.add(it)})
+
+        // Assert
+        assertThat(actual, empty())
+    }
+
+    fun createSystemUnderTest(
+        dateTimeProvider: () -> LocalDateTime = this.dateTimeProvider,
+        systemEnvironment: (String) -> String? = { null }) =
+        Reporter(dateTimeProvider, systemEnvironment)
 }

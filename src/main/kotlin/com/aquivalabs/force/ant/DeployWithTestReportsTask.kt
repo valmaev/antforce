@@ -21,7 +21,7 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
             return it.get(this) as String?
         }
 
-    var reporter = Reporter() { LocalDateTime.now() }
+    var reporter = Reporter({ LocalDateTime.now() }, { System.getenv(it) })
 
     var sourceDir: File? = null
     var reportDir: File? = null
@@ -64,6 +64,7 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
             saveHtmlCoverageReportToFile(testResult)
         }
 
+        reporter.reportToTeamCity(testResult) { log(it) }
         super.handleResponse(metadataConnection, response)
     }
 
