@@ -1,5 +1,5 @@
 group 'com.aquivalabs.force.ant'
-version '0.7.2'
+version '0.8'
 
 buildscript {
     ext.kotlin_version = '1.0.2-1'
