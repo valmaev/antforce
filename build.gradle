@@ -2,7 +2,7 @@ group 'com.aquivalabs.force.ant'
 version '0.7.2'
 
 buildscript {
-    ext.kotlin_version = '1.0.2'
+    ext.kotlin_version = '1.0.2-1'
     ext.ant_version = '1.9.6'
     repositories {
         mavenCentral()
