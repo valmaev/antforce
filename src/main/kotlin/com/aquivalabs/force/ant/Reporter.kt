@@ -301,6 +301,26 @@ class Reporter(
         if (systemEnvironment("TEAMCITY_PROJECT_NAME") == null)
             return
 
+        log("##teamcity[testSuiteStarted name='Apex']")
+        runTestsResult.successes.forEach {
+            log("##teamcity[testStarted name='${it.qualifiedClassName}.${it.methodName}']")
+            log("##teamcity[testFinished " +
+                "name='${it.qualifiedClassName}.${it.methodName}' " +
+                "duration='${it.time / 1000}']")
+        }
+        runTestsResult.failures.forEach {
+            log("##teamcity[testStarted name='${it.qualifiedClassName}.${it.methodName}']")
+            log("##teamcity[testFailed " +
+                "name='${it.qualifiedClassName}.${it.methodName}' " +
+                "message='${it.message}' " +
+                "details='${it.stackTrace}' " +
+                "type='${it.type}']")
+            log("##teamcity[testFinished " +
+                "name='${it.qualifiedClassName}.${it.methodName}' " +
+                "duration='${it.time / 1000}']")
+        }
+        log("##teamcity[testSuiteFinished name='Apex' duration='${runTestsResult.totalTime / 1000}']")
+
         log("##teamcity[message text='Apex Code Coverage is ${runTestsResult.totalCoveragePercentage}%']")
         log("##teamcity[blockOpened name='Apex Code Coverage Summary']")
         log("##teamcity[buildStatisticValue key='CodeCoverageAbsLCovered' value='${runTestsResult.totalNumLocationsCovered}']")

@@ -769,6 +769,86 @@ class ReporterTestCase {
         assertThat(actual, empty())
     }
 
+    @Test
+    fun reportToTeamCity_ifTeamCityDetected_shouldLogAboutTestSuite() {
+        // Arrange
+        val env = hashMapOf("TEAMCITY_PROJECT_NAME" to "foo")
+        val sut = createSystemUnderTest(systemEnvironment = { env[it] })
+        val runTestsResult = createRunTestsResult(totalTime = 2000.0)
+        val actual = mutableListOf<String>()
+
+        // Act
+        sut.reportToTeamCity(runTestsResult, {actual.add(it)})
+
+        // Assert
+        assertTrue(actual.contains("##teamcity[testSuiteStarted name='Apex']"))
+        assertTrue(
+            actual.contains("##teamcity[testSuiteFinished name='Apex' duration='${runTestsResult.totalTime / 1000}']"))
+    }
+
+    @Test
+    fun reportToTeamCity_ifTeamCityDetected_shouldLogAboutEachSuccess() {
+        // Arrange
+        val env = hashMapOf("TEAMCITY_PROJECT_NAME" to "foo")
+        val sut = createSystemUnderTest(systemEnvironment = { env[it] })
+        val runTestsResult = createRunTestsResult(successes = arrayOf(
+            createRunTestSuccess(namespace = "foo", name = "BookTestClass", methodName = "testMethod", time = 2500.0),
+            createRunTestSuccess(namespace = "bar", name = "BarTestClass", methodName = "testAnotherMethod", time = 300.0),
+            createRunTestSuccess(name = "BookTestClass", methodName = "testMethod", time = 100.0)))
+        val actual = mutableListOf<String>()
+
+        // Act
+        sut.reportToTeamCity(runTestsResult, {actual.add(it)})
+
+        // Assert
+        runTestsResult.successes.forEach {
+            actual.contains("##teamcity[testStarted name='${it.qualifiedClassName}.${it.methodName}']")
+            actual.contains("##teamcity[testFinished " +
+                "name='${it.qualifiedClassName}.${it.methodName}' " +
+                "duration='${it.time / 1000}']")
+        }
+    }
+
+    @Test
+    fun reportToTeamCity_ifTeamCityDetected_shouldLogAboutEachFailure() {
+        // Arrange
+        val env = hashMapOf("TEAMCITY_PROJECT_NAME" to "foo")
+        val sut = createSystemUnderTest(systemEnvironment = { env[it] })
+        val runTestsResult = createRunTestsResult(failures = arrayOf(
+            createRunTestFailure(
+                namespace = "foo",
+                name = "BookTestClass",
+                methodName = "testMethod",
+                time = 2500.0,
+                type = "Error",
+                message = "Exception was thrown",
+                stackTrace = "long stacktrace"),
+            createRunTestFailure(
+                name = "barTestClass",
+                methodName = "testAnotherMethod",
+                time = 143.0,
+                type = "Exception",
+                message = "System.Exception was thrown",
+                stackTrace = "very long stacktrace")))
+        val actual = mutableListOf<String>()
+
+        // Act
+        sut.reportToTeamCity(runTestsResult, {actual.add(it)})
+
+        // Assert
+        runTestsResult.failures.forEach {
+            actual.contains("##teamcity[testStarted name='${it.qualifiedClassName}.${it.methodName}']")
+            actual.contains("##teamcity[testFailed " +
+                "name='${it.qualifiedClassName}.${it.methodName}' " +
+                "message='${it.message}' " +
+                "details='${it.stackTrace}' " +
+                "type='${it.type}']")
+            actual.contains("##teamcity[testFinished " +
+                "name='${it.qualifiedClassName}.${it.methodName}' " +
+                "duration='${it.time / 1000}']")
+        }
+    }
+
     fun createSystemUnderTest(
         dateTimeProvider: () -> LocalDateTime = this.dateTimeProvider,
         systemEnvironment: (String) -> String? = { null }) =
