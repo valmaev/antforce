@@ -1,104 +1,18 @@
-package com.aquivalabs.force.ant
+package com.aquivalabs.force.ant.dsl
 
-import com.aquivalabs.force.ant.dsl.cobertura.Classes
-import com.aquivalabs.force.ant.dsl.cobertura.CoberturaReportRoot
+import com.aquivalabs.force.ant.*
 import com.aquivalabs.force.ant.dsl.html.BodyTag
 import com.aquivalabs.force.ant.dsl.html.HtmlReportRoot
-import com.aquivalabs.force.ant.dsl.junit.JUnitReportRoot
 import com.sforce.soap.metadata.CodeCoverageResult
 import com.sforce.soap.metadata.RunTestsResult
 import java.time.LocalDateTime
-import java.util.*
 
 
-class Reporter(
-    val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.now() },
-    val systemEnvironment: (String) -> String? = { System.getenv(it) }) {
+class HtmlCoverageReporter(
+    val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.now() }) : Reporter<HtmlReportRoot> {
 
-    fun createJUnitReport(
-        runTestsResult: RunTestsResult,
-        suiteName: String = "",
-        properties: Map<String, String>? = null): JUnitReportRoot {
-
-        val report = JUnitReportRoot()
-        report.testSuite(
-            name = suiteName,
-            tests = runTestsResult.numSuccesses,
-            failures = runTestsResult.numFailures,
-            time = runTestsResult.totalTime / 1000,
-            timestamp = dateTimeProvider()) {
-
-            if (properties != null) {
-                properties {
-                    properties.forEach { property(name = it.key, value = it.value) }
-                }
-            }
-
-            runTestsResult.successes.forEach {
-                testCase(
-                    classname = it.qualifiedClassName,
-                    name = it.methodName,
-                    time = it.time / 1000)
-            }
-
-            runTestsResult.failures.forEach {
-                testCase(
-                    classname = it.qualifiedClassName,
-                    name = it.methodName,
-                    time = it.time / 1000) {
-
-                    failure(message = it.message, type = it.type) { +it.stackTrace }
-                }
-            }
-        }
-        return report
-    }
-
-    fun createCoberturaReport(
-        runTestsResult: RunTestsResult,
-        projectRootPath: String? = null): CoberturaReportRoot {
-        val coverageTypes = runTestsResult.codeCoverage.groupBy { it.type ?: "" }
-
-        val report = CoberturaReportRoot()
-        report.coverage {
-            sources {
-                source { +projectRootPath.orEmpty() }
-            }
-            packages {
-                coverageTypes.forEach { coverageType ->
-                    `package`(name = coverageType.key) {
-                        classes {
-                            coverageType.value.forEach {
-                                createClassTags(it)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return report
-    }
-
-    private fun Classes.createClassTags(
-        result: CodeCoverageResult) {
-        `class`(
-            name = result.qualifiedName,
-            filename = result.classFileName) {
-            lines {
-                val notCoveredLines = result.locationsNotCovered.orEmpty().associateBy { it.line }
-                for (currentLine in 1..result.numLocations) {
-                    val hits =
-                        if (notCoveredLines.contains(currentLine))
-                            notCoveredLines[currentLine]!!.numExecutions
-                        else 1
-                    line(number = currentLine, hits = hits)
-                }
-            }
-        }
-    }
-
-    fun createHtmlCoverageReport(runTestsResult: RunTestsResult): HtmlReportRoot {
-        val coverageResultsByType = runTestsResult.codeCoverage
+    override fun createReport(result: RunTestsResult): HtmlReportRoot {
+        val coverageResultsByType = result.codeCoverage
             .sortedBy { it.qualifiedName }
             .groupBy { it.type ?: "" }
 
@@ -109,7 +23,7 @@ class Reporter(
 
         val report = HtmlReportRoot()
         report.html {
-            val title = "Code Coverage report for Apex code"
+            val title = "Code Coverage reportSettings for Apex code"
 
             head {
                 title { +title }
@@ -133,7 +47,7 @@ class Reporter(
                                 span {
                                     id = "totalCoveragePercentage"
                                     `class` = "strong"
-                                    +"${runTestsResult.totalCoveragePercentage.format(2)}%"
+                                    +"${result.totalCoveragePercentage.format(2)}%"
                                 }
                                 span {
                                     `class` = "quiet"
@@ -142,7 +56,7 @@ class Reporter(
                                 span {
                                     id = "totalLinesCoverage"
                                     `class` = "fraction"
-                                    +"${runTestsResult.totalNumLocationsCovered}/${runTestsResult.totalNumLocations}"
+                                    +"${result.totalNumLocationsCovered}/${result.totalNumLocations}"
                                 }
                             }
                             div {
@@ -150,7 +64,7 @@ class Reporter(
                                 span {
                                     id = "totalCoverageWarnings"
                                     `class` = "strong"
-                                    +"${runTestsResult.codeCoverageWarnings.orEmpty().count()}"
+                                    +"${result.codeCoverageWarnings.orEmpty().count()}"
                                 }
                                 span {
                                     `class` = "quiet"
@@ -215,7 +129,7 @@ class Reporter(
                         }
                     }
 
-                    createCoverageWarningsList(runTestsResult)
+                    createCoverageWarningsList(result)
                     createCoverageCalculationNotes()
 
                     div { `class` = "push"; +"" }
@@ -296,38 +210,4 @@ class Reporter(
             }
         }
     }
-
-    fun reportToTeamCity(runTestsResult: RunTestsResult, log: (String) -> Unit) {
-        if (systemEnvironment("TEAMCITY_PROJECT_NAME") == null)
-            return
-
-        log("##teamcity[testSuiteStarted name='Apex']")
-        runTestsResult.successes.forEach {
-            log("##teamcity[testStarted name='${it.qualifiedClassName}.${it.methodName}']")
-            log("##teamcity[testFinished " +
-                "name='${it.qualifiedClassName}.${it.methodName}' " +
-                "duration='${it.time / 1000}']")
-        }
-        runTestsResult.failures.forEach {
-            log("##teamcity[testStarted name='${it.qualifiedClassName}.${it.methodName}']")
-            log("##teamcity[testFailed " +
-                "name='${it.qualifiedClassName}.${it.methodName}' " +
-                "message='${it.message}' " +
-                "details='${it.stackTrace}' " +
-                "type='${it.type}']")
-            log("##teamcity[testFinished " +
-                "name='${it.qualifiedClassName}.${it.methodName}' " +
-                "duration='${it.time / 1000}']")
-        }
-        log("##teamcity[testSuiteFinished name='Apex' duration='${runTestsResult.totalTime / 1000}']")
-
-        log("##teamcity[message text='Apex Code Coverage is ${runTestsResult.totalCoveragePercentage}%']")
-        log("##teamcity[blockOpened name='Apex Code Coverage Summary']")
-        log("##teamcity[buildStatisticValue key='CodeCoverageAbsLCovered' value='${runTestsResult.totalNumLocationsCovered}']")
-        log("##teamcity[buildStatisticValue key='CodeCoverageAbsLTotal' value='${runTestsResult.totalNumLocations}']")
-        log("##teamcity[buildStatisticValue key='CodeCoverageL' value='${runTestsResult.totalCoveragePercentage}']")
-        log("##teamcity[blockClosed name='Apex Code Coverage Summary']")
-    }
 }
-
-fun Double.format(digits: Int) = String.format(Locale.US, "%.${digits}f", this)

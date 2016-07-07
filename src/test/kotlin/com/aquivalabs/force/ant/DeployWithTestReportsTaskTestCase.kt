@@ -1,5 +1,8 @@
 package com.aquivalabs.force.ant
 
+import com.aquivalabs.force.ant.dsl.CoberturaCoverageReporter
+import com.aquivalabs.force.ant.dsl.HtmlCoverageReporter
+import com.aquivalabs.force.ant.dsl.JUnitReporter
 import com.salesforce.ant.DeployTask
 import com.sforce.soap.metadata.TestLevel
 import org.apache.tools.ant.Project
@@ -96,7 +99,7 @@ class DeployWithTestReportsTaskTestCase {
         withTestDirectory { testDirectory ->
             // Arrange
             val sut = createSystemUnderTest()
-            sut.reporter = Reporter({ LocalDateTime.MAX })
+            sut.jUnitReporter = JUnitReporter(dateTimeProvider = { LocalDateTime.MAX })
             sut.reportDir = testDirectory
             sut.username = "foo"
             sut.serverURL = "bar"
@@ -106,18 +109,12 @@ class DeployWithTestReportsTaskTestCase {
             sut.addJUnitReport(report)
 
             val input = createRunTestsResult()
-            val expectedContent = sut.reporter.createJUnitReport(
-                input,
-                report.suiteName,
-                hashMapOf(
-                    "username" to sut.username,
-                    "serverURL" to sut.serverURL,
-                    "apiVersion" to sut.apiVersion.toString())).toString()
 
             // Act
             sut.saveJUnitReportToFile(input)
 
             // Assert
+            val expectedContent = sut.jUnitReporter.createReport(input).toString()
             val actual = testDirectory.listFiles().single { it.name == report.file }
             assertTrue(actual.exists(), "Report file wasn't found")
             assertEquals(actual.readText(), expectedContent)
@@ -128,14 +125,14 @@ class DeployWithTestReportsTaskTestCase {
         withTestDirectory { testDirectory ->
             // Arrange
             val sut = createSystemUnderTest()
-            sut.reporter = Reporter({ LocalDateTime.MAX })
+            sut.coberturaReporter = CoberturaCoverageReporter()
             sut.reportDir = testDirectory
 
             val report = CoberturaReport(file = "Cobertura.xml")
             sut.addCoberturaReport(report)
 
             val input = createRunTestsResult()
-            val expectedContent = sut.reporter.createCoberturaReport(input).toString()
+            val expectedContent = sut.coberturaReporter.createReport(input).toString()
 
             // Act
             sut.saveCoberturaReportToFile(input)
@@ -151,14 +148,14 @@ class DeployWithTestReportsTaskTestCase {
         withTestDirectory { testDirectory ->
             // Arrange
             val sut = createSystemUnderTest()
-            sut.reporter = Reporter({ LocalDateTime.MAX })
+            sut.htmlCoverageReporter = HtmlCoverageReporter(dateTimeProvider = { LocalDateTime.MAX })
             sut.reportDir = testDirectory
 
             val report = HtmlCoverageReport(file = "Coverage.html")
             sut.addHtmlCoverageReport(report)
 
             val input = createRunTestsResult()
-            val expectedContent = sut.reporter.createHtmlCoverageReport(input).toString()
+            val expectedContent = sut.htmlCoverageReporter.createReport(input).toString()
 
             // Act
             sut.saveHtmlCoverageReportToFile(input)

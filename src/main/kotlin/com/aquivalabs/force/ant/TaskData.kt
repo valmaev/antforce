@@ -13,7 +13,7 @@ object Constants {
 }
 
 class BatchTest(val project: Project) {
-    final val resources = Resources()
+    val resources = Resources()
     var namespace = ""
     private val prefix: String
         get() =

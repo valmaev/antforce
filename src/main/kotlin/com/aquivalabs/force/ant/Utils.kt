@@ -1,6 +1,7 @@
 package com.aquivalabs.force.ant
 
 import java.lang.reflect.Field
+import java.util.*
 
 
 internal inline fun <T> Field.accessible(body: (Field) -> T): T {
@@ -12,3 +13,5 @@ internal inline fun <T> Field.accessible(body: (Field) -> T): T {
         isAccessible = oldValue
     }
 }
+
+internal fun Double.format(digits: Int) = String.format(Locale.US, "%.${digits}f", this)

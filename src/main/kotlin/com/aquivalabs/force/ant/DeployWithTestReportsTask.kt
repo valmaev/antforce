@@ -1,12 +1,12 @@
 package com.aquivalabs.force.ant
 
+import com.aquivalabs.force.ant.dsl.*
 import com.salesforce.ant.DeployTaskAdapter
 import com.sforce.soap.metadata.AsyncResult
 import com.sforce.soap.metadata.MetadataConnection
 import com.sforce.soap.metadata.RunTestsResult
 import com.sforce.soap.metadata.TestLevel
 import java.io.File
-import java.time.LocalDateTime
 
 
 class DeployWithTestReportsTask : DeployTaskAdapter() {
@@ -14,14 +14,17 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
     private var _coberturaReport: CoberturaReport? = null
     private var _htmlCoverageReport: HtmlCoverageReport? = null
 
-    final val batchTests = java.util.HashSet<BatchTest>()
+    val batchTests = java.util.HashSet<BatchTest>()
 
     val deployRoot: String?
         get() = com.salesforce.ant.DeployTask::class.java.getDeclaredField("deployRoot").accessible {
             return it.get(this) as String?
         }
 
-    var reporter = Reporter({ LocalDateTime.now() }, { System.getenv(it) })
+    var jUnitReporter = JUnitReporter()
+    var coberturaReporter = CoberturaCoverageReporter()
+    var htmlCoverageReporter = HtmlCoverageReporter()
+    var teamCityReporter = TeamCityReporter()
 
     var sourceDir: File? = null
     var reportDir: File? = null
@@ -64,7 +67,7 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
             saveHtmlCoverageReportToFile(testResult)
         }
 
-        reporter.reportToTeamCity(testResult) { log(it) }
+        teamCityReporter.createReport(testResult)
         super.handleResponse(metadataConnection, response)
     }
 
@@ -72,17 +75,13 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         if (_junitReport == null)
             return
 
-        val properties = hashMapOf(
+        jUnitReporter.properties = hashMapOf(
             "username" to (username ?: ""),
             "serverURL" to (serverURL ?: ""),
             "apiVersion" to apiVersion.toString())
+        jUnitReporter.suiteName = _junitReport!!.suiteName
 
-        val reportContent = reporter.createJUnitReport(
-            testResult,
-            _junitReport!!.suiteName,
-            properties)
-
-        val report = saveToFile(reportDir!!, _junitReport!!.file, reportContent.toString())
+        val report = jUnitReporter.saveReportToFile(testResult, reportDir!!, _junitReport!!.file)
         log("JUnit report created successfully: ${report.absolutePath}")
     }
 
@@ -90,8 +89,8 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         if (_coberturaReport == null)
             return
 
-        val reportContent = reporter.createCoberturaReport(testResult, sourceDir?.path)
-        val report = saveToFile(reportDir!!, _coberturaReport!!.file, reportContent.toString())
+        coberturaReporter.projectRootPath = sourceDir?.path
+        val report = coberturaReporter.saveReportToFile(testResult, reportDir!!, _coberturaReport!!.file)
         log("Cobertura report created successfully: ${report.absolutePath}")
     }
 
@@ -99,19 +98,7 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         if (_htmlCoverageReport == null)
             return
 
-        val reportContent = reporter.createHtmlCoverageReport(testResult)
-        val report = saveToFile(reportDir!!, _htmlCoverageReport!!.file, reportContent.toString())
+        val report = htmlCoverageReporter.saveReportToFile(testResult, reportDir!!, _htmlCoverageReport!!.file)
         log("HTML Coverage report created successfully: ${report.absolutePath}")
-    }
-
-    private fun saveToFile(
-        directory: File,
-        fileName: String,
-        fileContent: String): File {
-
-        val reportFile = File("${directory.absolutePath}${File.separator}$fileName")
-        reportFile.createNewFile()
-        reportFile.writeText(fileContent)
-        return reportFile
     }
 }
