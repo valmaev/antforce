@@ -1,6 +1,6 @@
-package com.aquivalabs.force.ant.dsl.junit
+package com.aquivalabs.force.ant.reporters.junit
 
-import com.aquivalabs.force.ant.dsl.xml.*
+import com.aquivalabs.force.ant.reporters.xml.*
 import java.time.LocalDateTime
 
 
@@ -33,7 +33,7 @@ class JUnitReportRoot : EmptyTag() {
 }
 
 class TestSuite : Tag("testsuite") {
-    final val testCases: Iterable<TestCase>
+    val testCases: Iterable<TestCase>
         get() = children.filterIsInstance<TestCase>()
 
     var errors: Int by attributes

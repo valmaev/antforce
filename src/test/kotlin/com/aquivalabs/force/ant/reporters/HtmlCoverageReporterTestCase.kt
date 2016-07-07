@@ -1,4 +1,4 @@
-package com.aquivalabs.force.ant.dsl
+package com.aquivalabs.force.ant.reporters
 
 import com.aquivalabs.force.ant.createRunTestsResult
 import com.aquivalabs.force.ant.*

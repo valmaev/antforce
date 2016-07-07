@@ -1,10 +1,10 @@
-package com.aquivalabs.force.ant.dsl
+package com.aquivalabs.force.ant.reporters
 
 import com.aquivalabs.force.ant.createCodeCoverageResult
 import com.aquivalabs.force.ant.createCodeLocation
 import com.aquivalabs.force.ant.createRunTestsResult
-import com.aquivalabs.force.ant.dsl.cobertura.Coverage
-import com.aquivalabs.force.ant.dsl.cobertura.Packages
+import com.aquivalabs.force.ant.reporters.cobertura.Coverage
+import com.aquivalabs.force.ant.reporters.cobertura.Packages
 import com.sforce.soap.metadata.CodeCoverageResult
 import org.hamcrest.MatcherAssert.*
 import org.hamcrest.core.IsEqual.*

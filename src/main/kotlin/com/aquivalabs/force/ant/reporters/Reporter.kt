@@ -1,4 +1,4 @@
-package com.aquivalabs.force.ant.dsl
+package com.aquivalabs.force.ant.reporters
 
 import com.sforce.soap.metadata.RunTestsResult
 import java.io.File

@@ -1,4 +1,4 @@
-package com.aquivalabs.force.ant.dsl.junit
+package com.aquivalabs.force.ant.reporters.junit
 
 import org.testng.annotations.Test
 import org.hamcrest.MatcherAssert.assertThat

@@ -1,8 +1,8 @@
-package com.aquivalabs.force.ant.dsl
+package com.aquivalabs.force.ant.reporters
 
 import com.aquivalabs.force.ant.classFileName
-import com.aquivalabs.force.ant.dsl.cobertura.Classes
-import com.aquivalabs.force.ant.dsl.cobertura.CoberturaReportRoot
+import com.aquivalabs.force.ant.reporters.cobertura.Classes
+import com.aquivalabs.force.ant.reporters.cobertura.CoberturaReportRoot
 import com.aquivalabs.force.ant.qualifiedName
 import com.sforce.soap.metadata.CodeCoverageResult
 import com.sforce.soap.metadata.RunTestsResult

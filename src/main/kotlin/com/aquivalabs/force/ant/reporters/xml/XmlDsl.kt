@@ -1,4 +1,4 @@
-package com.aquivalabs.force.ant.dsl.xml
+package com.aquivalabs.force.ant.reporters.xml
 
 import java.util.*
 

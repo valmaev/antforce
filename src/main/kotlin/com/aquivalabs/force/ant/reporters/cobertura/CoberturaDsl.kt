@@ -1,6 +1,6 @@
-package com.aquivalabs.force.ant.dsl.cobertura
+package com.aquivalabs.force.ant.reporters.cobertura
 
-import com.aquivalabs.force.ant.dsl.xml.*
+import com.aquivalabs.force.ant.reporters.xml.*
 
 
 class CoberturaReportRoot : EmptyTag() {

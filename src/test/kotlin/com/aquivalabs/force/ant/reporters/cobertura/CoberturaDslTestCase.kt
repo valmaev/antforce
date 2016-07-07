@@ -1,4 +1,4 @@
-package com.aquivalabs.force.ant.dsl.cobertura
+package com.aquivalabs.force.ant.reporters.cobertura
 
 import org.hamcrest.MatcherAssert.*
 import org.testng.annotations.Test

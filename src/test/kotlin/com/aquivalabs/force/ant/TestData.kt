@@ -1,7 +1,7 @@
 package com.aquivalabs.force.ant
 
-import com.aquivalabs.force.ant.dsl.junit.Property
-import com.aquivalabs.force.ant.dsl.junit.TestCase
+import com.aquivalabs.force.ant.reporters.junit.Property
+import com.aquivalabs.force.ant.reporters.junit.TestCase
 import com.sforce.soap.metadata.*
 import org.apache.tools.ant.Project
 import org.apache.tools.ant.types.FileSet

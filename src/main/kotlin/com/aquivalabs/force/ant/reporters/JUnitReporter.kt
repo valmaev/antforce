@@ -1,6 +1,6 @@
-package com.aquivalabs.force.ant.dsl
+package com.aquivalabs.force.ant.reporters
 
-import com.aquivalabs.force.ant.dsl.junit.JUnitReportRoot
+import com.aquivalabs.force.ant.reporters.junit.JUnitReportRoot
 import com.aquivalabs.force.ant.*
 import com.sforce.soap.metadata.RunTestsResult
 import java.time.LocalDateTime

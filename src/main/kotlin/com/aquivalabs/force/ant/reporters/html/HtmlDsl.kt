@@ -1,6 +1,6 @@
-package com.aquivalabs.force.ant.dsl.html
+package com.aquivalabs.force.ant.reporters.html
 
-import com.aquivalabs.force.ant.dsl.xml.*
+import com.aquivalabs.force.ant.reporters.xml.*
 
 
 class HtmlReportRoot : EmptyTag() {

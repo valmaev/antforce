@@ -1,8 +1,8 @@
-package com.aquivalabs.force.ant.dsl
+package com.aquivalabs.force.ant.reporters
 
 import com.aquivalabs.force.ant.*
-import com.aquivalabs.force.ant.dsl.html.BodyTag
-import com.aquivalabs.force.ant.dsl.html.HtmlReportRoot
+import com.aquivalabs.force.ant.reporters.html.BodyTag
+import com.aquivalabs.force.ant.reporters.html.HtmlReportRoot
 import com.sforce.soap.metadata.CodeCoverageResult
 import com.sforce.soap.metadata.RunTestsResult
 import java.time.LocalDateTime

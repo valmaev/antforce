@@ -1,8 +1,8 @@
 package com.aquivalabs.force.ant
 
-import com.aquivalabs.force.ant.dsl.CoberturaCoverageReporter
-import com.aquivalabs.force.ant.dsl.HtmlCoverageReporter
-import com.aquivalabs.force.ant.dsl.JUnitReporter
+import com.aquivalabs.force.ant.reporters.CoberturaCoverageReporter
+import com.aquivalabs.force.ant.reporters.HtmlCoverageReporter
+import com.aquivalabs.force.ant.reporters.JUnitReporter
 import com.salesforce.ant.DeployTask
 import com.sforce.soap.metadata.TestLevel
 import org.apache.tools.ant.Project

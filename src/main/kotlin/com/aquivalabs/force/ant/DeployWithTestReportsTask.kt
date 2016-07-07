@@ -1,6 +1,6 @@
 package com.aquivalabs.force.ant
 
-import com.aquivalabs.force.ant.dsl.*
+import com.aquivalabs.force.ant.reporters.*
 import com.salesforce.ant.DeployTaskAdapter
 import com.sforce.soap.metadata.AsyncResult
 import com.sforce.soap.metadata.MetadataConnection
