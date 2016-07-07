@@ -58,16 +58,20 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         val deployResult = metadataConnection!!.checkDeployStatus(response!!.id, true)
         val testResult = deployResult.details.runTestResult
         sourceDir = sourceDir ?: File(deployRoot)
-        if (reportDir != null && testLevel != null && testLevel != TestLevel.NoTestRun.name) {
-            if (!reportDir!!.exists())
-                reportDir!!.mkdirs()
 
-            saveJUnitReportToFile(testResult)
-            saveCoberturaReportToFile(testResult)
-            saveHtmlCoverageReportToFile(testResult)
+        if (testLevel != null && testLevel != TestLevel.NoTestRun.name) {
+            teamCityReporter.createReport(testResult)
+
+            if (reportDir != null) {
+                if (!reportDir!!.exists())
+                    reportDir!!.mkdirs()
+
+                saveJUnitReportToFile(testResult)
+                saveCoberturaReportToFile(testResult)
+                saveHtmlCoverageReportToFile(testResult)
+            }
         }
 
-        teamCityReporter.createReport(testResult)
         super.handleResponse(metadataConnection, response)
     }
 
