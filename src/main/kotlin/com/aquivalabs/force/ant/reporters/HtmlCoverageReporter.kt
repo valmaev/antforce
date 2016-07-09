@@ -23,7 +23,7 @@ class HtmlCoverageReporter(
 
         val report = HtmlReportRoot()
         report.html {
-            val title = "Code Coverage reportSettings for Apex code"
+            val title = "Code Coverage for Apex code"
 
             head {
                 title { +title }
