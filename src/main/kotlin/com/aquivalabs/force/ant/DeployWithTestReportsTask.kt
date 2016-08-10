@@ -14,9 +14,7 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
     private var _coberturaReport: CoberturaReport? = null
     private var _htmlCoverageReport: HtmlCoverageReport? = null
 
-    internal var coverageTestClassName: String = ""
-
-    val batchTests = java.util.HashSet<BatchTest>()
+    val batchTests = hashSetOf<BatchTest>()
 
     val deployRoot: String?
         get() = DeployTask::class.java.getDeclaredField("deployRoot").accessible {
@@ -31,6 +29,13 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
     var sourceDir: File? = null
     var reportDir: File? = null
 
+    var enforceCoverageForAllClasses: Boolean? = false
+
+    internal var coverageTestClassName: String = ""
+    internal val needToAddCoverageTestClass: Boolean
+        get() = testLevel != null 
+            && testLevel != TestLevel.NoTestRun.name
+            && enforceCoverageForAllClasses == true
 
     fun addJUnitReport(report: JUnitReport) {
         _junitReport = report
@@ -59,15 +64,13 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
     override fun setZipBytes() {
         val deployDir = getFileForPath(deployRoot)
         if (deployDir != null && deployDir.exists() && deployDir.isDirectory) return when {
-            testLevel != null && testLevel != TestLevel.NoTestRun.name ->
-                addCoverageTestClassToDeployRootPackage(deployDir)
+            needToAddCoverageTestClass -> addCoverageTestClassToDeployRootPackage(deployDir)
             else -> setZipBytesField(ZipUtil.zipRoot(deployDir))
         }
 
         val zip = getFileForPath(zipFile)
         if (zip != null && zip.exists() && zip.isFile) return when {
-            testLevel != null && testLevel != TestLevel.NoTestRun.name ->
-                addCoverageTestClassToZipFilePackage(zip)
+            needToAddCoverageTestClass -> addCoverageTestClassToZipFilePackage(zip)
             else -> setZipBytesField(ZipUtil.readZip(zip))
         }
 
