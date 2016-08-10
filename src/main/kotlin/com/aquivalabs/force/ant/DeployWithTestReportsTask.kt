@@ -1,6 +1,7 @@
 package com.aquivalabs.force.ant
 
 import com.aquivalabs.force.ant.reporters.*
+import com.salesforce.ant.DeployTask
 import com.salesforce.ant.DeployTaskAdapter
 import com.salesforce.ant.ZipUtil
 import com.sforce.soap.metadata.*
@@ -12,12 +13,13 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
     private var _junitReport: JUnitReport? = null
     private var _coberturaReport: CoberturaReport? = null
     private var _htmlCoverageReport: HtmlCoverageReport? = null
-    private var _generatedApexTestClass: ApexClass? = null
+
+    internal var coverageTestClassName: String = ""
 
     val batchTests = java.util.HashSet<BatchTest>()
 
     val deployRoot: String?
-        get() = com.salesforce.ant.DeployTask::class.java.getDeclaredField("deployRoot").accessible {
+        get() = DeployTask::class.java.getDeclaredField("deployRoot").accessible {
             return it.get(this) as String?
         }
 
@@ -56,59 +58,46 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
 
     override fun setZipBytes() {
         val deployDir = getFileForPath(deployRoot)
-        if (deployDir != null && deployDir.exists() && deployDir.isDirectory) {
-            when {
-                testLevel != null && testLevel != TestLevel.NoTestRun.name -> {
-                    val packageModifier = DeployRootPackageModifier(deployDir, apiVersion)
-                    _generatedApexTestClass = packageModifier.generateTestClassThatTouchesEveryClassFromDeploymentPackage()
-                    setZipBytesField(packageModifier.modifyPackage(_generatedApexTestClass))
-                    if (_generatedApexTestClass != null)
-                        addRunTest(_generatedApexTestClass!!.toCodeNameElement())
-                }
-                else -> setZipBytesField(ZipUtil.zipRoot(deployDir))
-            }
-            return
+        if (deployDir != null && deployDir.exists() && deployDir.isDirectory) return when {
+            testLevel != null && testLevel != TestLevel.NoTestRun.name ->
+                addCoverageTestClassToDeployRootPackage(deployDir)
+            else -> setZipBytesField(ZipUtil.zipRoot(deployDir))
         }
 
-        val zipFile = getFileForPath(zipFile)
-        if (zipFile != null && zipFile.exists() && zipFile.isFile) {
-            setZipBytesField(ZipUtil.readZip(zipFile))
-            return
+        val zip = getFileForPath(zipFile)
+        if (zip != null && zip.exists() && zip.isFile) return when {
+            testLevel != null && testLevel != TestLevel.NoTestRun.name ->
+                addCoverageTestClassToZipFilePackage(zip)
+            else -> setZipBytesField(ZipUtil.readZip(zip))
         }
 
         throw BuildException("Should provide a valid directory 'deployRoot' or a zip file 'zipFile'.")
     }
 
-    override fun handleResponse(metadataConnection: MetadataConnection?, response: AsyncResult?) {
-        try {
-            val deployResult = metadataConnection!!.checkDeployStatus(response!!.id, true)
-            val testResult = deployResult.details.runTestResult
-            sourceDir = sourceDir ?: File(deployRoot)
-
-            if (testLevel != null && testLevel != TestLevel.NoTestRun.name) {
-                teamCityReporter.createReport(testResult)
-
-                if (reportDir != null) {
-                    if (!reportDir!!.exists())
-                        reportDir!!.mkdirs()
-
-                    saveJUnitReportToFile(testResult)
-                    saveCoberturaReportToFile(testResult)
-                    saveHtmlCoverageReportToFile(testResult)
-                }
-            }
-
-            super.handleResponse(metadataConnection, response)
-        } finally {
-            if (_generatedApexTestClass == null)
-                return
-
-            val deployOptions = DeployOptions()
-            deployOptions.singlePackage = true
-            metadataConnection!!.deploy(
-                _generatedApexTestClass!!.destructiveChangesPackage(),
-                deployOptions)
+    override fun handleResponse(metadataConnection: MetadataConnection?, response: AsyncResult?) = try {
+        val deployResult = metadataConnection!!.checkDeployStatus(response!!.id, true)
+        val testResult = deployResult.details.runTestResult
+        sourceDir = sourceDir ?: when {
+            deployRoot.isNullOrEmpty() -> null
+            else -> File(deployRoot)
         }
+
+        if (testLevel != null && testLevel != TestLevel.NoTestRun.name) {
+            teamCityReporter.createReport(testResult)
+
+            if (reportDir != null) {
+                if (!reportDir!!.exists())
+                    reportDir!!.mkdirs()
+
+                saveJUnitReportToFile(testResult)
+                saveCoberturaReportToFile(testResult)
+                saveHtmlCoverageReportToFile(testResult)
+            }
+        }
+
+        super.handleResponse(metadataConnection, response)
+    } finally {
+        removeCoverageTestClassFromOrg(metadataConnection!!)
     }
 
     internal fun saveJUnitReportToFile(testResult: RunTestsResult) {
