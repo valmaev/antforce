@@ -1,7 +1,7 @@
 build
 .gradle
 .idea
-*.iml
 *.DS_Store
 sample/build.properties
 sample/artifacts
+sample/classes/antforce*.*

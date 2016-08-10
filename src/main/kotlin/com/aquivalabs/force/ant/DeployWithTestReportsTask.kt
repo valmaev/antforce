@@ -2,10 +2,9 @@ package com.aquivalabs.force.ant
 
 import com.aquivalabs.force.ant.reporters.*
 import com.salesforce.ant.DeployTaskAdapter
-import com.sforce.soap.metadata.AsyncResult
-import com.sforce.soap.metadata.MetadataConnection
-import com.sforce.soap.metadata.RunTestsResult
-import com.sforce.soap.metadata.TestLevel
+import com.salesforce.ant.ZipUtil
+import com.sforce.soap.metadata.*
+import org.apache.tools.ant.BuildException
 import java.io.File
 
 
@@ -13,6 +12,7 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
     private var _junitReport: JUnitReport? = null
     private var _coberturaReport: CoberturaReport? = null
     private var _htmlCoverageReport: HtmlCoverageReport? = null
+    private var _generatedApexTestClass: ApexClass? = null
 
     val batchTests = java.util.HashSet<BatchTest>()
 
@@ -54,25 +54,61 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         else -> emptyArray()
     }
 
-    override fun handleResponse(metadataConnection: MetadataConnection?, response: AsyncResult?) {
-        val deployResult = metadataConnection!!.checkDeployStatus(response!!.id, true)
-        val testResult = deployResult.details.runTestResult
-        sourceDir = sourceDir ?: File(deployRoot)
-
-        if (testLevel != null && testLevel != TestLevel.NoTestRun.name) {
-            teamCityReporter.createReport(testResult)
-
-            if (reportDir != null) {
-                if (!reportDir!!.exists())
-                    reportDir!!.mkdirs()
-
-                saveJUnitReportToFile(testResult)
-                saveCoberturaReportToFile(testResult)
-                saveHtmlCoverageReportToFile(testResult)
+    override fun setZipBytes() {
+        val deployDir = getFileForPath(deployRoot)
+        if (deployDir != null && deployDir.exists() && deployDir.isDirectory) {
+            when {
+                testLevel != null && testLevel != TestLevel.NoTestRun.name -> {
+                    val packageModifier = DeployRootPackageModifier(deployDir, apiVersion)
+                    _generatedApexTestClass = packageModifier.generateTestClassThatTouchesEveryClassFromDeploymentPackage()
+                    setZipBytesField(packageModifier.modifyPackage(_generatedApexTestClass))
+                    if (_generatedApexTestClass != null)
+                        addRunTest(_generatedApexTestClass!!.toCodeNameElement())
+                }
+                else -> setZipBytesField(ZipUtil.zipRoot(deployDir))
             }
+            return
         }
 
-        super.handleResponse(metadataConnection, response)
+        val zipFile = getFileForPath(zipFile)
+        if (zipFile != null && zipFile.exists() && zipFile.isFile) {
+            setZipBytesField(ZipUtil.readZip(zipFile))
+            return
+        }
+
+        throw BuildException("Should provide a valid directory 'deployRoot' or a zip file 'zipFile'.")
+    }
+
+    override fun handleResponse(metadataConnection: MetadataConnection?, response: AsyncResult?) {
+        try {
+            val deployResult = metadataConnection!!.checkDeployStatus(response!!.id, true)
+            val testResult = deployResult.details.runTestResult
+            sourceDir = sourceDir ?: File(deployRoot)
+
+            if (testLevel != null && testLevel != TestLevel.NoTestRun.name) {
+                teamCityReporter.createReport(testResult)
+
+                if (reportDir != null) {
+                    if (!reportDir!!.exists())
+                        reportDir!!.mkdirs()
+
+                    saveJUnitReportToFile(testResult)
+                    saveCoberturaReportToFile(testResult)
+                    saveHtmlCoverageReportToFile(testResult)
+                }
+            }
+
+            super.handleResponse(metadataConnection, response)
+        } finally {
+            if (_generatedApexTestClass == null)
+                return
+
+            val deployOptions = DeployOptions()
+            deployOptions.singlePackage = true
+            metadataConnection!!.deploy(
+                _generatedApexTestClass!!.destructiveChangesPackage(),
+                deployOptions)
+        }
     }
 
     internal fun saveJUnitReportToFile(testResult: RunTestsResult) {

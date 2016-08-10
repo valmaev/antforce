@@ -3,6 +3,7 @@ package com.salesforce.ant;
 import com.sforce.soap.metadata.AsyncResult;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.ws.ConnectionException;
+import java.io.IOException;
 
 
 /**
@@ -29,6 +30,15 @@ public class DeployTaskAdapter extends DeployTask {
         result.setDone(response.isDone());
         handleResponse(metadataConnection, result);
         super.handleResponse(metadataConnection, response);
+    }
+
+    @Override
+    public void setZipBytes() throws IOException {
+        super.setZipBytes();
+    }
+
+    public void setZipBytesField(byte[] value) {
+        zipBytes = value;
     }
 
     public void handleResponse(MetadataConnection metadataConnection, AsyncResult response) {

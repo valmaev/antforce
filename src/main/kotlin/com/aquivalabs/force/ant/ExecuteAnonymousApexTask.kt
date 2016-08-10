@@ -8,7 +8,7 @@ import org.apache.tools.ant.Location
 
 class ExecuteAnonymousApexTask : SFDCAntTask() {
     companion object {
-        final val ERROR_HEADER = "*********** APEX EXECUTION FAILED ***********"
+        val ERROR_HEADER = "*********** APEX EXECUTION FAILED ***********"
     }
 
     private var _code = ""
