@@ -25,12 +25,9 @@ class BatchTest(val project: Project) {
         resources.add(fileSet)
     }
 
-    fun getFileNames(): List<String> =
-        resources.filter {
-            it.isExists && it.name.endsWith(Constants.APEX_CLASS_FILE_EXTENSION)
-        }.map {
-            prefix + getTestClassNameFrom(it)
-        }
+    fun getFileNames(): List<String> = resources
+        .filter { it.isExists && it.name.endsWith(Constants.APEX_CLASS_FILE_EXTENSION) }
+        .map { prefix + getTestClassNameFrom(it) }
 
     private fun getTestClassNameFrom(resource: Resource) =
         resource.name.substring(

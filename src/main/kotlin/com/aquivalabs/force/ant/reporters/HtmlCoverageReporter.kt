@@ -6,7 +6,9 @@ import com.aquivalabs.force.ant.reporters.html.HtmlReportRoot
 import com.sforce.soap.metadata.CodeCoverageResult
 import com.sforce.soap.metadata.RunTestsResult
 import java.time.LocalDateTime
+import java.util.*
 
+internal fun Double.format(digits: Int) = String.format(Locale.US, "%.${digits}f", this)
 
 class HtmlCoverageReporter(
     val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.now() }) : Reporter<HtmlReportRoot> {

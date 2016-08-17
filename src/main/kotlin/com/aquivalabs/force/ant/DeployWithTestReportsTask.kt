@@ -1,9 +1,7 @@
 package com.aquivalabs.force.ant
 
 import com.aquivalabs.force.ant.reporters.*
-import com.salesforce.ant.DeployTask
 import com.salesforce.ant.DeployTaskAdapter
-import com.salesforce.ant.ZipUtil
 import com.sforce.soap.metadata.*
 import org.apache.tools.ant.BuildException
 import java.io.File
@@ -15,11 +13,6 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
     private var _htmlCoverageReport: HtmlCoverageReport? = null
 
     val batchTests = hashSetOf<BatchTest>()
-
-    val deployRoot: String?
-        get() = DeployTask::class.java.getDeclaredField("deployRoot").accessible {
-            return it.get(this) as String?
-        }
 
     var jUnitReporter = JUnitReporter()
     var coberturaReporter = CoberturaCoverageReporter()
@@ -33,7 +26,7 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
 
     internal var coverageTestClassName: String = ""
     internal val needToAddCoverageTestClass: Boolean
-        get() = testLevel != null 
+        get() = !testLevel.isNullOrBlank()
             && testLevel != TestLevel.NoTestRun.name
             && enforceCoverageForAllClasses == true
 
@@ -56,25 +49,22 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
     }
 
     override fun getRunTests(): Array<out String>? = when (testLevel) {
-        TestLevel.RunSpecifiedTests.name ->
-            super.getRunTests().union(batchTests.flatMap { it.getFileNames() }).toTypedArray()
+        TestLevel.RunSpecifiedTests.name -> super.getRunTests()
+            .union(batchTests.flatMap { it.getFileNames() })
+            .toTypedArray()
         else -> emptyArray()
     }
 
     override fun setZipBytes() {
         val deployDir = getFileForPath(deployRoot)
-        if (deployDir != null && deployDir.exists() && deployDir.isDirectory) return when {
-            needToAddCoverageTestClass -> addCoverageTestClassToDeployRootPackage(deployDir)
-            else -> setZipBytesField(ZipUtil.zipRoot(deployDir))
-        }
+        if (deployDir != null && deployDir.exists() && deployDir.isDirectory)
+            return addCoverageTestClassToDeployRootPackage(deployDir)
 
         val zip = getFileForPath(zipFile)
-        if (zip != null && zip.exists() && zip.isFile) return when {
-            needToAddCoverageTestClass -> addCoverageTestClassToZipFilePackage(zip)
-            else -> setZipBytesField(ZipUtil.readZip(zip))
-        }
+        if (zip != null && zip.exists() && zip.isFile)
+            return addCoverageTestClassToZipFilePackage(zip)
 
-        throw BuildException("Should provide a valid directory 'deployRoot' or a zip file 'zipFile'.")
+        throw BuildException(INVALID_ZIP_ROOT)
     }
 
     override fun handleResponse(metadataConnection: MetadataConnection?, response: AsyncResult?) = try {

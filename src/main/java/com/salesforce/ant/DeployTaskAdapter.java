@@ -37,8 +37,16 @@ public class DeployTaskAdapter extends DeployTask {
         super.setZipBytes();
     }
 
-    public void setZipBytesField(byte[] value) {
+    public void setZipBytes(byte[] value) {
         zipBytes = value;
+    }
+
+    public byte[] getZipBytes() {
+        return zipBytes;
+    }
+
+    public String getDeployRoot() {
+        return deployRoot;
     }
 
     public void handleResponse(MetadataConnection metadataConnection, AsyncResult response) {

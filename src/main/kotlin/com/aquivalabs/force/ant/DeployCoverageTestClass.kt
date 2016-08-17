@@ -5,6 +5,7 @@ import com.salesforce.ant.ZipUtil
 import com.sforce.soap.metadata.DeployOptions
 import com.sforce.soap.metadata.MetadataConnection
 import org.w3c.dom.Document
+import org.w3c.dom.Node
 import org.w3c.dom.NodeList
 import java.io.*
 import java.util.*
@@ -85,23 +86,25 @@ internal fun ZipOutputStream.addEntry(name: String, content: String) {
 
 internal fun ZipFile.containsEntry(name: String) = getEntry(name) != null
 
-internal fun addClassToPackageXml(packageXmlContent: String, className: String): String {
-    packageXmlContent.byteInputStream().use {
-        val docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-        val doc = docBuilder.parse(packageXmlContent.byteInputStream())
-        val xpath = XPathFactory.newInstance().newXPath()
-        val expression = xpath.compile("/Package/types/name[text()='ApexClass']")
-        val nodes = expression.evaluate(doc, XPathConstants.NODESET) as NodeList
-        if (nodes.length == 0)
-            return packageXmlContent
+private fun Document.searchApexClassNode(): Node? {
+    val xpath = XPathFactory.newInstance().newXPath()
+    val expression = xpath.compile("/Package/types/name[text()='ApexClass']")
+    val nodes = expression.evaluate(this, XPathConstants.NODESET) as NodeList
+    return nodes.item(0)
+}
 
-        val newTestClassNode = doc.createElement("members")
-        newTestClassNode.textContent = className
+private fun Node.addNewApexClassNodeToParent(className: String) {
+    val newTestClassNode = ownerDocument.createElement("members")
+    newTestClassNode.textContent = className
+    parentNode.insertBefore(newTestClassNode, parentNode.firstChild)
+}
 
-        val parentTypesNode = nodes.item(0).parentNode
-        parentTypesNode.insertBefore(newTestClassNode, parentTypesNode.firstChild)
-
-        return doc.saveToString()
+internal fun parseXml(xmlBytes: ByteArray): Document {
+    val docFactory = DocumentBuilderFactory.newInstance()
+    docFactory.isNamespaceAware = false
+    val docBuilder = docFactory.newDocumentBuilder()
+    ByteArrayInputStream(xmlBytes).use {
+        return docBuilder.parse(it)
     }
 }
 
@@ -118,17 +121,20 @@ internal fun Document.saveToString(): String {
 }
 
 fun DeployWithTestReportsTask.addCoverageTestClassToDeployRootPackage(deployDir: File) {
+    if (!needToAddCoverageTestClass)
+        return setZipBytes(ZipUtil.zipRoot(deployDir))
+
     val classesDir = File(deployDir, "classes")
     val packageXml = File(deployDir, "package.xml")
     if (!classesDir.exists() || !packageXml.exists())
-        return setZipBytesField(ZipUtil.zipRoot(deployDir))
+        return setZipBytes(ZipUtil.zipRoot(deployDir))
+
+    val packageXmlDoc = parseXml(packageXml.readBytes())
+    val apexClassNode = packageXmlDoc.searchApexClassNode() ?: return setZipBytes(ZipUtil.zipRoot(deployDir))
 
     val byteArrayStream = ByteArrayOutputStream()
     ZipOutputStream(byteArrayStream).use { output ->
         val topLevelFiles = deployDir.listFiles(FileFilter { it.name != "package.xml" })
-
-        if (topLevelFiles == null || !topLevelFiles.any())
-            throw IOException("No files found in ${deployDir.path}")
 
         ZipUtil.zipFiles("", topLevelFiles, output)
 
@@ -138,12 +144,12 @@ fun DeployWithTestReportsTask.addCoverageTestClassToDeployRootPackage(deployDir:
             .toSet()
 
         coverageTestClassName = generateTestClassName(existingClasses = classes)
-
         addRunTest(coverageTestClassName.toCodeNameElement())
+        apexClassNode.addNewApexClassNodeToParent(coverageTestClassName)
 
         output.addEntry(
             "package.xml",
-            addClassToPackageXml(packageXml.readText(), coverageTestClassName))
+            packageXmlDoc.saveToString())
         output.addEntry(
             "classes/$coverageTestClassName${Constants.APEX_CLASS_FILE_EXTENSION}",
             generateTestClass(coverageTestClassName, classes))
@@ -151,26 +157,32 @@ fun DeployWithTestReportsTask.addCoverageTestClassToDeployRootPackage(deployDir:
             "classes/$coverageTestClassName${Constants.APEX_CLASS_FILE_EXTENSION}-meta.xml",
             generateTestClassMetadata(apiVersion))
     }
-    setZipBytesField(byteArrayStream.toByteArray())
+    zipBytes = byteArrayStream.toByteArray()
 }
 
 fun DeployWithTestReportsTask.addCoverageTestClassToZipFilePackage(zipFile: File) {
+    if (!needToAddCoverageTestClass)
+        return setZipBytes(ZipUtil.readZip(zipFile))
+
     val zip = ZipFile(zipFile)
     if (!zip.containsEntry("package.xml") || !zip.containsEntry("classes"))
-        return setZipBytesField(ZipUtil.readZip(zipFile))
+        return setZipBytes(ZipUtil.readZip(zipFile))
 
     val zipEntries = zip.entries()
 
     val byteArrayStream = ByteArrayOutputStream(8192)
     ZipOutputStream(byteArrayStream).use { output ->
         val classes = hashSetOf<String>()
-        var packageXmlContent: String = ""
+        var packageXmlDoc: Document? = null
+        var apexClassNode: Node? = null
 
         while (zipEntries.hasMoreElements()) {
             val entry = zipEntries.nextElement()
             if (entry.name == "package.xml") {
                 zip.getInputStream(entry).use {
-                    packageXmlContent = String(it.readBytes())
+                    packageXmlDoc = parseXml(it.readBytes())
+                    apexClassNode = packageXmlDoc!!.searchApexClassNode()
+                        ?: return setZipBytes(ZipUtil.readZip(zipFile))
                 }
                 continue
             }
@@ -189,10 +201,11 @@ fun DeployWithTestReportsTask.addCoverageTestClassToZipFilePackage(zipFile: File
 
         coverageTestClassName = generateTestClassName(existingClasses = classes)
         addRunTest(coverageTestClassName.toCodeNameElement())
+        apexClassNode!!.addNewApexClassNodeToParent(coverageTestClassName)
 
         output.addEntry(
             "package.xml",
-            addClassToPackageXml(packageXmlContent, coverageTestClassName))
+            packageXmlDoc!!.saveToString())
         output.addEntry(
             "classes/$coverageTestClassName${Constants.APEX_CLASS_FILE_EXTENSION}",
             generateTestClass(coverageTestClassName, classes))
@@ -200,11 +213,11 @@ fun DeployWithTestReportsTask.addCoverageTestClassToZipFilePackage(zipFile: File
             "classes/$coverageTestClassName${Constants.APEX_CLASS_FILE_EXTENSION}-meta.xml",
             generateTestClassMetadata(apiVersion))
     }
-    setZipBytesField(byteArrayStream.toByteArray())
+    zipBytes = byteArrayStream.toByteArray()
 }
 
 fun DeployWithTestReportsTask.removeCoverageTestClassFromOrg(metadataConnection: MetadataConnection) {
-    if (coverageTestClassName.isNullOrEmpty())
+    if (coverageTestClassName.isNullOrBlank())
         return
 
     val byteArrayStream = ByteArrayOutputStream()
@@ -219,5 +232,8 @@ fun DeployWithTestReportsTask.removeCoverageTestClassFromOrg(metadataConnection:
 
     val deployOptions = DeployOptions()
     deployOptions.singlePackage = true
+    // ignoreWarnings = true will guarantee that deployment will be successful
+    // even if generated coverage test class didn't exist on org
+    deployOptions.ignoreWarnings = true
     metadataConnection.deploy(byteArrayStream.toByteArray(), deployOptions)
 }

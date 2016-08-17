@@ -6,6 +6,7 @@ import com.sforce.soap.metadata.*
 import org.apache.tools.ant.Project
 import org.apache.tools.ant.types.FileSet
 import java.io.File
+import java.util.*
 
 fun createFileSet(directory: File, fileNames: Iterable<String>): FileSet {
     val fileSet = FileSet()
@@ -153,3 +154,15 @@ fun qualifiedNameCommonTestData(): Array<Array<Any?>> = arrayOf(
     arrayOf<Any?>("", "Class", "Class"),
     arrayOf<Any?>(null, "Class", "Class"),
     arrayOf<Any?>("foo", "Class", "foo.Class"))
+
+fun withTestDirectory(directoryNamePrefix: String = "", test: (File) -> Unit) {
+    var testDirectory: File? = null
+    try {
+        testDirectory = createTempDir(directoryNamePrefix)
+        test(testDirectory)
+    } finally {
+        testDirectory?.deleteRecursively()
+    }
+}
+
+fun randomString()= UUID.randomUUID().toString()
