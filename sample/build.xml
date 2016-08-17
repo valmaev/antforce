@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project xmlns:antforce="antlib:com.aquivalabs.force.ant" default="deploy">
+<project xmlns:antforce="antlib:com.aquivalabs.force.ant" default="deployZip">
     <property file="build.properties" />
     <property name="sf.server" value="https://login.salesforce.com" />
     <property name="sf.testLevel" value="RunSpecifiedTests" />
@@ -25,7 +25,8 @@
             deployRoot="src"
             rollbackOnError="true"
             testLevel="${sf.testLevel}"
-            reportDir="${outputdir}/test-reports">
+            reportDir="${outputdir}/test-reports"
+            enforceCoverageForAllClasses="true">
             <batchtest>
                 <fileset dir="src/classes" includes="*TestClass.cls" />
             </batchtest>
@@ -33,6 +34,27 @@
             <coberturaReport file="Apex-Coverage.xml" />
             <htmlCoverageReport file="coverage.html" />
         </antforce:deploy>
+    </target>
+
+    <target name="deployZip">
+        <zip basedir="src" destfile="src.zip" />
+        <antforce:deploy
+            username="${sf.username}"
+            password="${sf.password}${sf.token}"
+            serverUrl="${sf.server}"
+            zipFile="src.zip"
+            rollbackOnError="true"
+            testLevel="${sf.testLevel}"
+            reportDir="${outputdir}/test-reports"
+            enforceCoverageForAllClasses="true">
+            <batchtest>
+                <fileset dir="src/classes" includes="*TestClass.cls" />
+            </batchtest>
+            <junitReport file="TEST-ApexTests.xml" suiteName="Apex" />
+            <coberturaReport file="Apex-Coverage.xml" />
+            <htmlCoverageReport file="coverage.html" />
+        </antforce:deploy>
+        <delete file="src.zip" quiet="true" />
     </target>
 
     <target name="executeApex">

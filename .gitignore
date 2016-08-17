@@ -5,3 +5,4 @@ build
 sample/build.properties
 sample/artifacts
 sample/classes/antforce*.*
+sample/src.zip
