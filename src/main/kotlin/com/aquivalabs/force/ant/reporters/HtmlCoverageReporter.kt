@@ -209,6 +209,14 @@ class HtmlCoverageReporter(
                     }
                     +" attribute"
                 }
+                li {
+                    +"To overcome the issue use "
+                    span {
+                        `class` = "inline-code"
+                        +"enforceCoverageForAllClasses=\"true\""
+                    }
+                    +" attribute"
+                }
             }
         }
     }
