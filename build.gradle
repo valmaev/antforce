@@ -38,6 +38,12 @@ test {
 }
 
 jar {
+    manifest {
+        attributes 'Implementation-Title': rootProject.name
+        attributes 'Implementation-Version': version
+        attributes 'Ant-Version': "Apache Ant $ant_version"
+        attributes 'Created-By': System.getProperty('java.version') + ' (' + System.getProperty('java.vendor') + ')'
+    }
     from('src/main/kotlin') {
         include '**/antlib.xml'
     }
