@@ -6,6 +6,7 @@ import com.salesforce.ant.ZipUtil
 import com.sforce.soap.metadata.DeployOptions
 import com.sforce.soap.metadata.MetadataConnection
 import com.sforce.soap.metadata.TestLevel
+import kotlinx.html.dom.serialize
 import org.apache.tools.ant.Project
 import org.apache.tools.ant.types.FileSet
 import org.hamcrest.MatcherAssert.assertThat
@@ -165,7 +166,7 @@ class DeployWithTestReportsTaskTestCase {
             sut.addHtmlCoverageReport(report)
 
             val input = createRunTestsResult()
-            val expectedContent = sut.htmlCoverageReporter.createReport(input).toString()
+            val expectedContent = sut.htmlCoverageReporter.createReport(input).serialize(true)
 
             // Act
             sut.saveHtmlCoverageReportToFile(input)

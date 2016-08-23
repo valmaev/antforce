@@ -1,201 +1,144 @@
 package com.aquivalabs.force.ant.reporters
 
 import com.aquivalabs.force.ant.*
-import com.aquivalabs.force.ant.reporters.html.BodyTag
-import com.aquivalabs.force.ant.reporters.html.HtmlReportRoot
 import com.sforce.soap.metadata.CodeCoverageResult
 import com.sforce.soap.metadata.RunTestsResult
 import java.time.LocalDateTime
 import java.util.*
+import kotlinx.html.*
+import kotlinx.html.dom.*
+import org.w3c.dom.Document
 
 internal fun Double.format(digits: Int) = String.format(Locale.US, "%.${digits}f", this)
 
 class HtmlCoverageReporter(
-    val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.now() }) : Reporter<HtmlReportRoot> {
+    val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.now() }) : Reporter<Document> {
 
-    override fun createReport(result: RunTestsResult): HtmlReportRoot {
+    override fun createReport(result: RunTestsResult): Document {
+        val css = javaClass.getResourceAsStream("/coverage-report.css").reader().use { it.readText() }
+        return createHTMLDocument().html {
+            val title = "Code Coverage for Apex code"
+            head {
+                title(title)
+                style("text/css", css)
+            }
+            body {
+                div("wrapper") {
+                    div("pad1") {
+                        h1 { +title }
+                        coverageStatistics(result)
+                    }
+                    div("status-line medium")
+                    div("pad1") {
+                        coverageSummary(result)
+                        coverageWarningsList(result)
+                        coverageCalculationNotes()
+                    }
+                    div("push")
+                }
+                version()
+            }
+        }
+    }
+
+    private fun HtmlBlockTag.coverageStatistics(result: RunTestsResult) {
+        div("clearfix") {
+            div("fl pad1y space-right2") {
+                span("strong") {
+                    id = "totalCoveragePercentage"
+                    +"${result.totalCoveragePercentage.format(2)}%"
+                }
+                span("quiet") { +"Lines" }
+                span("fraction") {
+                    id = "totalLinesCoverage"
+                    +"${result.totalNumLocationsCovered}/${result.totalNumLocations}"
+                }
+            }
+            div("fl pad1y space-right2") {
+                span("strong") {
+                    id = "totalCoverageWarnings"
+                    +"${result.codeCoverageWarnings.orEmpty().count()}"
+                }
+                span("quiet") { +"Coverage Warnings" }
+            }
+        }
+    }
+
+    private fun HtmlBlockTag.coverageSummary(result: RunTestsResult) {
+        table("coverage-summary") {
+            thead {
+                tr {
+                    th { +"Type" }
+                    th { +"File" }
+                    th(classes = "pic")
+                    th(classes = "pict") { +"Lines" }
+                }
+                tbody { coverageRows(result) }
+            }
+        }
+    }
+
+    private fun TBODY.coverageRows(result: RunTestsResult) {
         val coverageResultsByType = result.codeCoverage
             .sortedBy { it.qualifiedName }
             .groupBy { it.type ?: "" }
 
-        var css = ""
-        javaClass.getResourceAsStream("/coverage-report.css").reader().use {
-            css = it.readText()
-        }
-
-        val report = HtmlReportRoot()
-        report.html {
-            val title = "Code Coverage for Apex code"
-
-            head {
-                title { +title }
-                style {
-                    type = "text/css"
-                    +css
-                }
-            }
-
-            body {
-                div {
-                    `class` = "wrapper"
-
-                    div {
-                        `class` = "pad1"
-                        h1 { +title }
-                        div {
-                            `class` = "clearfix"
-                            div {
-                                `class` = "fl pad1y space-right2"
-                                span {
-                                    id = "totalCoveragePercentage"
-                                    `class` = "strong"
-                                    +"${result.totalCoveragePercentage.format(2)}%"
-                                }
-                                span {
-                                    `class` = "quiet"
-                                    +"Lines"
-                                }
-                                span {
-                                    id = "totalLinesCoverage"
-                                    `class` = "fraction"
-                                    +"${result.totalNumLocationsCovered}/${result.totalNumLocations}"
-                                }
-                            }
-                            div {
-                                `class` = "fl pad1y space-right2"
-                                span {
-                                    id = "totalCoverageWarnings"
-                                    `class` = "strong"
-                                    +"${result.codeCoverageWarnings.orEmpty().count()}"
-                                }
-                                span {
-                                    `class` = "quiet"
-                                    +"Coverage Warnings"
-                                }
-                            }
-                        }
-                    }
-
-                    div { `class` = "status-line medium"; +"" }
-
-                    div {
-                        `class` = "pad1"
-                        table {
-                            `class` = "coverage-summary"
-                            thead {
-                                th { +"Type" }
-                                th { +"File" }
-                                th { `class` = "pic" }
-                                th {
-                                    `class` = "pict"
-                                    +"Lines"
-                                }
-                            }
-
-                            tbody {
-                                coverageResultsByType.forEach {
-                                    val (type, coverageResults) = it
-                                    coverageResults.forEach {
-                                        val coverage = it.coverage
-                                        val coverageLevel = when {
-                                            coverage < 0 -> ""
-                                            0 <= coverage && coverage < 0.75 -> "low"
-                                            else -> "high"
-                                        }
-
-                                        tr {
-                                            td {
-                                                `class` = coverageLevel
-                                                +type
-                                            }
-                                            td {
-                                                `class` = coverageLevel
-                                                +it.qualifiedName
-                                            }
-                                            td {
-                                                `class` = "pic $coverageLevel"
-                                                createCoverageChart(it)
-                                            }
-                                            td {
-                                                `class` = "pct $coverageLevel"
-                                                +"${it.coveragePercentage.format(2)}%"
-                                            }
-                                            td {
-                                                `class` = "abs $coverageLevel"
-                                                +"${it.numLocationsCovered}/${it.numLocations}"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    createCoverageWarningsList(result)
-                    createCoverageCalculationNotes()
-
-                    div { `class` = "push"; +"" }
-                }
-
-                div {
-                    val name = javaClass.`package`.implementationTitle
-                    val version = javaClass.`package`.implementationVersion
-                    `class` = "footer quiet pad2 space-top1 center small"
-                    +"Code coverage generated by $name $version at ${dateTimeProvider()}"
+        coverageResultsByType.forEach {
+            val (type, coverageResults) = it
+            coverageResults.forEach {
+                val coverageLevel = it.toTestLevel()
+                tr {
+                    td(coverageLevel) { +type }
+                    td(coverageLevel) { +it.qualifiedName }
+                    td("pic $coverageLevel") { coverageChart(it) }
+                    td("pct $coverageLevel") { +"${it.coveragePercentage.format(2)}%" }
+                    td("abs $coverageLevel") { +"${it.numLocationsCovered}/${it.numLocations}" }
                 }
             }
         }
-        return report
     }
 
-    private fun BodyTag.createCoverageChart(result: CodeCoverageResult) {
-        val coveragePercentage = result.coveragePercentage
-        div {
-            `class` = "chart"
-            div {
-                `class` = "cover-fill cover-full"
+    private fun CodeCoverageResult.toTestLevel() = when {
+        coverage < 0 -> ""
+        0 <= coverage && coverage < 0.75 -> "low"
+        else -> "high"
+    }
+
+    private fun HtmlBlockTag.coverageChart(it: CodeCoverageResult) {
+        val coveragePercentage = it.coveragePercentage
+        div("chart") {
+            div("cover-fill cover-full") {
                 style = "width: ${coveragePercentage.format(2)}%;"
-                +""
             }
-            div {
-                `class` = "cover-empty"
-                style = "left: ${coveragePercentage.format(2)}%; width: ${(100.0 - coveragePercentage).format(2)}%;"
-                +""
+            div("cover-empty") {
+                style = "left: ${coveragePercentage.format(2)}%; " +
+                    "width: ${(100.0 - coveragePercentage).format(2)}%;"
             }
         }
     }
 
-    private fun BodyTag.createCoverageWarningsList(result: RunTestsResult) {
+    private fun HtmlBlockTag.coverageWarningsList(result: RunTestsResult) {
         if (result.codeCoverageWarnings.orEmpty().count() == 0)
             return
 
-        div {
-            `class` = "pad1"
+        div("pad1") {
             h3 { +"Coverage Warnings" }
             ol {
                 id = "coverageWarningsList"
                 result.codeCoverageWarnings.sortBy { it.qualifiedName }
                 result.codeCoverageWarnings.forEach {
-                    li {
-                        `class` = "coverage-warning"
-                        span {
-                            `class` = "coverage-warning-name"
-                            +it.qualifiedName
-                        }
+                    li("coverage-warning") {
+                        span("coverage-warning-name") { +it.qualifiedName }
                         +": "
-                        span {
-                            `class` = "coverage-warning-message"
-                            +"${it.message}"
-                        }
+                        span("coverage-warning-message") { +"${it.message}" }
                     }
                 }
             }
         }
     }
 
-    private fun BodyTag.createCoverageCalculationNotes() {
-        div {
-            `class` = "pad1"
+    private fun HtmlBlockTag.coverageCalculationNotes() {
+        div("pad1") {
             h3 { +"Coverage Calculation Notes" }
             ul {
                 li {
@@ -205,21 +148,23 @@ class HtmlCoverageReporter(
                 }
                 li {
                     +"To force build failure in such cases use "
-                    span {
-                        `class` = "inline-code"
-                        +"ignoreWarnings=\"false\""
-                    }
+                    span("inline-code") { +"ignoreWarnings=\"false\"" }
                     +" attribute"
                 }
                 li {
                     +"To overcome the issue use "
-                    span {
-                        `class` = "inline-code"
-                        +"enforceCoverageForAllClasses=\"true\""
-                    }
+                    span("inline-code") { +"enforceCoverageForAllClasses=\"true\"" }
                     +" attribute"
                 }
             }
+        }
+    }
+
+    private fun HtmlBlockTag.version() {
+        div("footer quiet pad2 space-top1 center small") {
+            val name = javaClass.`package`.implementationTitle
+            val version = javaClass.`package`.implementationVersion
+            +"Code coverage generated by $name $version at ${dateTimeProvider()}"
         }
     }
 }

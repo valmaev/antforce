@@ -8,9 +8,14 @@ interface Reporter<out T> {
     fun createReport(result: RunTestsResult): T
 }
 
-fun <T> Reporter<T>.saveReportToFile(result: RunTestsResult, directory: File, fileName: String): File {
+fun <T> Reporter<T>.saveReportToFile(
+    result: RunTestsResult,
+    directory: File,
+    fileName: String,
+    toString: (T) -> String = { it.toString() }): File {
+
     val reportFile = File("${directory.absolutePath}${File.separator}$fileName")
     reportFile.createNewFile()
-    reportFile.writeText(this.createReport(result).toString())
+    reportFile.writeText(toString(createReport(result)))
     return reportFile
 }

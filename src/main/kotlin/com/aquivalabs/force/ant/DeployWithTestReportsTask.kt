@@ -3,6 +3,7 @@ package com.aquivalabs.force.ant
 import com.aquivalabs.force.ant.reporters.*
 import com.salesforce.ant.DeployTaskAdapter
 import com.sforce.soap.metadata.*
+import kotlinx.html.dom.serialize
 import org.apache.tools.ant.BuildException
 import java.io.File
 
@@ -97,30 +98,37 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         if (_junitReport == null)
             return
 
-        jUnitReporter.properties = hashMapOf(
-            "username" to (username ?: ""),
-            "serverURL" to (serverURL ?: ""),
-            "apiVersion" to apiVersion.toString())
-        jUnitReporter.suiteName = _junitReport!!.suiteName
-
-        val report = jUnitReporter.saveReportToFile(testResult, reportDir!!, _junitReport!!.file)
-        log("JUnit report created successfully: ${report.absolutePath}")
+        with(jUnitReporter) {
+            properties = hashMapOf(
+                "username" to (username ?: ""),
+                "serverURL" to (serverURL ?: ""),
+                "apiVersion" to apiVersion.toString())
+            suiteName = _junitReport!!.suiteName
+            val report = saveReportToFile(testResult, reportDir!!, _junitReport!!.file)
+            log("JUnit Report: ${report.absolutePath}")
+        }
     }
 
     internal fun saveCoberturaReportToFile(testResult: RunTestsResult) {
         if (_coberturaReport == null)
             return
 
-        coberturaReporter.projectRootPath = sourceDir?.path
-        val report = coberturaReporter.saveReportToFile(testResult, reportDir!!, _coberturaReport!!.file)
-        log("Cobertura report created successfully: ${report.absolutePath}")
+        with(coberturaReporter) {
+            projectRootPath = sourceDir?.path
+            val report = saveReportToFile(testResult, reportDir!!, _coberturaReport!!.file)
+            log("Cobertura Report: ${report.absolutePath}")
+        }
     }
 
     internal fun saveHtmlCoverageReportToFile(testResult: RunTestsResult) {
         if (_htmlCoverageReport == null)
             return
 
-        val report = htmlCoverageReporter.saveReportToFile(testResult, reportDir!!, _htmlCoverageReport!!.file)
-        log("HTML Coverage report created successfully: ${report.absolutePath}")
+        with(htmlCoverageReporter) {
+            val report = saveReportToFile(testResult, reportDir!!, _htmlCoverageReport!!.file) {
+                it.serialize(true)
+            }
+            log("HTML Coverage Report: ${report.absolutePath}")
+        }
     }
 }

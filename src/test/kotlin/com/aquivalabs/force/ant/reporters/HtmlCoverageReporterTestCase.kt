@@ -3,6 +3,7 @@ package com.aquivalabs.force.ant.reporters
 import com.aquivalabs.force.ant.createRunTestsResult
 import com.aquivalabs.force.ant.*
 import com.sforce.soap.metadata.*
+import kotlinx.html.dom.serialize
 import org.hamcrest.core.IsNull.*
 import org.hamcrest.core.IsEqual.*
 import org.hamcrest.core.StringContains.*
@@ -32,8 +33,7 @@ class HtmlCoverageReporterTestCase {
         val report = sut.createReport(runTestsResult)
 
         // Assert
-        val html = Jsoup.parse(report.toString())
-        val actual = html.getElementById("totalCoveragePercentage").ownText()
+        val actual = report.getElementById("totalCoveragePercentage").textContent
         val expected = "${runTestsResult.totalCoveragePercentage.format(2)}%"
         assertThat(actual, equalTo(expected))
     }
@@ -49,10 +49,8 @@ class HtmlCoverageReporterTestCase {
         val report = sut.createReport(runTestsResult)
 
         // Assert
-        val html = Jsoup.parse(report.toString())
-        val actual = html.getElementById("totalLinesCoverage").ownText()
-        val expected =
-            "${runTestsResult.totalNumLocationsCovered}/${runTestsResult.totalNumLocations}"
+        val actual = report.getElementById("totalLinesCoverage").textContent
+        val expected = "${runTestsResult.totalNumLocationsCovered}/${runTestsResult.totalNumLocations}"
         assertThat(actual, equalTo(expected))
     }
 
@@ -77,8 +75,7 @@ class HtmlCoverageReporterTestCase {
         val report = sut.createReport(runTestsResult)
 
         // Assert
-        val html = Jsoup.parse(report.toString())
-        val actual = html.getElementById("totalCoverageWarnings").ownText()
+        val actual = report.getElementById("totalCoverageWarnings").textContent
         val expected = "${runTestsResult.codeCoverageWarnings.orEmpty().count()}"
         assertThat(actual, equalTo(expected))
     }
@@ -129,7 +126,7 @@ class HtmlCoverageReporterTestCase {
         val report = sut.createReport(runTestsResult)
 
         // Assert
-        val html = Jsoup.parse(report.toString())
+        val html = Jsoup.parse(report.serialize())
         val coverageWarningListItems = html
             .getElementById("coverageWarningsList")
             .getElementsByTag("li")
@@ -161,8 +158,7 @@ class HtmlCoverageReporterTestCase {
         val report = sut.createReport(runTestsResult)
 
         // Assert
-        val html = Jsoup.parse(report.toString())
-        val actual = html.getElementById("coverageWarningsList")
+        val actual = report.getElementById("coverageWarningsList")
         assertThat(actual, nullValue())
     }
 
@@ -177,7 +173,7 @@ class HtmlCoverageReporterTestCase {
         val report = sut.createReport(runTestsResult)
 
         // Assert
-        val html = Jsoup.parse(report.toString())
+        val html = Jsoup.parse(report.serialize())
         val coverageRows = html
             .getElementsByClass("coverage-summary").single()
             .getElementsByTag("tbody").single()
@@ -220,7 +216,7 @@ class HtmlCoverageReporterTestCase {
         val report = sut.createReport(runTestsResult)
 
         // Assert
-        val html = Jsoup.parse(report.toString())
+        val html = Jsoup.parse(report.serialize())
         val coverageCells = html
             .getElementsByClass("coverage-summary").single()
             .getElementsByTag("tbody").single()
@@ -263,7 +259,7 @@ class HtmlCoverageReporterTestCase {
 
         val report = sut.createReport(createRunTestsResult())
 
-        val html = Jsoup.parse(report.toString())
+        val html = Jsoup.parse(report.serialize())
         val actual = html.getElementsByClass("footer").single().ownText()
         assertThat(actual, containsString(expected.toString()))
     }
@@ -274,7 +270,7 @@ class HtmlCoverageReporterTestCase {
 
         val report = sut.createReport(createRunTestsResult())
 
-        val html = Jsoup.parse(report.toString())
+        val html = Jsoup.parse(report.serialize())
         val actual = html.getElementsByTag("style").first().data().trim()
         val expected = File(javaClass.classLoader.getResource("coverage-report.css").file)
             .readText().trim()

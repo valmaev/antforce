@@ -103,9 +103,7 @@ internal fun parseXml(xmlBytes: ByteArray): Document {
     val docFactory = DocumentBuilderFactory.newInstance()
     docFactory.isNamespaceAware = false
     val docBuilder = docFactory.newDocumentBuilder()
-    ByteArrayInputStream(xmlBytes).use {
-        return docBuilder.parse(it)
-    }
+    return ByteArrayInputStream(xmlBytes).use { docBuilder.parse(it) }
 }
 
 internal fun Document.saveToString(): String {
@@ -130,7 +128,8 @@ fun DeployWithTestReportsTask.addCoverageTestClassToDeployRootPackage(deployDir:
         return setZipBytes(ZipUtil.zipRoot(deployDir))
 
     val packageXmlDoc = parseXml(packageXml.readBytes())
-    val apexClassNode = packageXmlDoc.searchApexClassNode() ?: return setZipBytes(ZipUtil.zipRoot(deployDir))
+    val apexClassNode = packageXmlDoc.searchApexClassNode()
+        ?: return setZipBytes(ZipUtil.zipRoot(deployDir))
 
     val byteArrayStream = ByteArrayOutputStream()
     ZipOutputStream(byteArrayStream).use { output ->

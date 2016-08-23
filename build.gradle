@@ -18,10 +18,14 @@ apply plugin: 'kotlin'
 repositories {
     mavenCentral()
     jcenter()
+    maven {
+        url "http://dl.bintray.com/kotlinx/kotlinx"
+    }
 }
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile 'org.jetbrains.kotlinx:kotlinx.html.jvm:0.5.10'
     compile "org.apache.ant:ant:$ant_version"
     compile fileTree(dir: 'libs', include: ['*.jar'])
     runtime "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
