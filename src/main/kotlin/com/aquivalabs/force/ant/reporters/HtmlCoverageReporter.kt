@@ -9,6 +9,7 @@ import kotlinx.html.*
 import kotlinx.html.dom.*
 import org.w3c.dom.Document
 
+
 internal fun Double.format(digits: Int) = String.format(Locale.US, "%.${digits}f", this)
 
 class HtmlCoverageReporter(
@@ -43,23 +44,49 @@ class HtmlCoverageReporter(
 
     private fun HtmlBlockTag.coverageStatistics(result: RunTestsResult) {
         div("clearfix") {
+            coverageStatistic(
+                "Class",
+                "Classes",
+                result.classCoveragePercentage,
+                result.numClassesCovered,
+                result.numClasses)
+            coverageStatistic(
+                "Trigger",
+                "Triggers",
+                result.triggerCoveragePercentage,
+                result.numTriggersCovered,
+                result.numTriggers)
+            coverageStatistic(
+                "Line",
+                "Lines",
+                result.totalCoveragePercentage,
+                result.totalNumLocationsCovered,
+                result.totalNumLocations)
             div("fl pad1y space-right2") {
-                span("strong") {
-                    id = "totalCoveragePercentage"
-                    +"${result.totalCoveragePercentage.format(2)}%"
-                }
-                span("quiet") { +"Lines" }
-                span("fraction") {
-                    id = "totalLinesCoverage"
-                    +"${result.totalNumLocationsCovered}/${result.totalNumLocations}"
-                }
-            }
-            div("fl pad1y space-right2") {
-                span("strong") {
+                span("strong space-right") {
                     id = "totalCoverageWarnings"
                     +"${result.codeCoverageWarnings.orEmpty().count()}"
                 }
                 span("quiet") { +"Coverage Warnings" }
+            }
+        }
+    }
+
+    private fun HtmlBlockTag.coverageStatistic(
+        singularName: String,
+        pluralName: String,
+        percentage: Double,
+        numCovered: Int,
+        numTotal: Int) {
+        div("fl pad1y space-right2") {
+            span("strong space-right") {
+                id = "total${singularName}CoveragePercentage"
+                +"${percentage.format(2)}%"
+            }
+            span("quiet space-right") { +pluralName }
+            span("fraction") {
+                id = "total${singularName}Coverage"
+                +"$numCovered/$numTotal"
             }
         }
     }

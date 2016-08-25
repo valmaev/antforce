@@ -37,6 +37,7 @@
     </target>
 
     <target name="deployZip">
+        <delete file="src.zip" quiet="true" />
         <zip basedir="src" destfile="src.zip" />
         <antforce:deploy
             username="${sf.username}"

@@ -61,13 +61,14 @@ fun createCodeCoverageResult(
     namespace: String? = null,
     type: String? = null,
     locationsNotCovered: Array<CodeLocation>? = null,
+    numLocationsNotCovered: Int = 0,
     numLocations: Int = 0): CodeCoverageResult {
     val result = CodeCoverageResult()
     result.name = name
     result.namespace = namespace
     result.type = type
     result.locationsNotCovered = locationsNotCovered
-    result.numLocationsNotCovered = locationsNotCovered?.size ?: 0
+    result.numLocationsNotCovered = locationsNotCovered?.size ?: numLocationsNotCovered
     result.numLocations = numLocations
     return result
 }

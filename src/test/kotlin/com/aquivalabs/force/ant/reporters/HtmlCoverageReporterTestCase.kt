@@ -7,7 +7,6 @@ import kotlinx.html.dom.serialize
 import org.hamcrest.core.IsNull.*
 import org.hamcrest.core.IsEqual.*
 import org.hamcrest.core.StringContains.*
-import org.hamcrest.collection.IsIterableContainingInAnyOrder.*
 import org.hamcrest.collection.IsIn.*
 import org.hamcrest.MatcherAssert.*
 import org.jsoup.Jsoup
@@ -23,45 +22,158 @@ class HtmlCoverageReporterTestCase {
     val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.MIN }
 
     @Test(dataProvider = "createReportTestData")
-    fun createReport_always_shouldContainTotalCoveragePercentage(
-        codeCoverage: Array<CodeCoverageResult>) {
+    fun createReport_always_shouldContainTotalLineCoveragePercentage(
+        codeCoverage: Array<CodeCoverageResult>,
+        codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider)
-        val runTestsResult = createRunTestsResult(codeCoverage = codeCoverage)
+        val runTestsResult = createRunTestsResult(
+            codeCoverage = codeCoverage,
+            codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
         val report = sut.createReport(runTestsResult)
 
         // Assert
-        val actual = report.getElementById("totalCoveragePercentage").textContent
+        val actual = report.getElementById("totalLineCoveragePercentage").textContent
         val expected = "${runTestsResult.totalCoveragePercentage.format(2)}%"
         assertThat(actual, equalTo(expected))
     }
 
     @Test(dataProvider = "createReportTestData")
-    fun createReport_always_shouldContainTotalLinesCoverage(
-        codeCoverage: Array<CodeCoverageResult>) {
+    fun createReport_always_shouldContainTotalLineCoverage(
+        codeCoverage: Array<CodeCoverageResult>,
+        codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider)
-        val runTestsResult = createRunTestsResult(codeCoverage = codeCoverage)
+        val runTestsResult = createRunTestsResult(
+            codeCoverage = codeCoverage,
+            codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
         val report = sut.createReport(runTestsResult)
 
         // Assert
-        val actual = report.getElementById("totalLinesCoverage").textContent
+        val actual = report.getElementById("totalLineCoverage").textContent
         val expected = "${runTestsResult.totalNumLocationsCovered}/${runTestsResult.totalNumLocations}"
         assertThat(actual, equalTo(expected))
     }
 
+    @Test(dataProvider = "createReportTestData")
+    fun createReport_always_shouldContainTotalClassCoveragePercentage(
+        codeCoverage: Array<CodeCoverageResult>,
+        codeCoverageWarnings: Array<CodeCoverageWarning>) {
+        // Arrange
+        val sut = createSystemUnderTest(dateTimeProvider)
+        val runTestsResult = createRunTestsResult(
+            codeCoverage = codeCoverage,
+            codeCoverageWarnings = codeCoverageWarnings)
+
+        // Act
+        val report = sut.createReport(runTestsResult)
+
+        // Assert
+        val actual = report.getElementById("totalClassCoveragePercentage").textContent
+        val expected = "${runTestsResult.classCoveragePercentage.format(2)}%"
+        assertThat(actual, equalTo(expected))
+    }
+
+    @Test(dataProvider = "createReportTestData")
+    fun createReport_always_shouldContainTotalClassCoverage(
+        codeCoverage: Array<CodeCoverageResult>,
+        codeCoverageWarnings: Array<CodeCoverageWarning>) {
+        // Arrange
+        val sut = createSystemUnderTest(dateTimeProvider)
+        val runTestsResult = createRunTestsResult(
+            codeCoverage = codeCoverage,
+            codeCoverageWarnings = codeCoverageWarnings)
+
+        // Act
+        val report = sut.createReport(runTestsResult)
+
+        // Assert
+        val actual = report.getElementById("totalClassCoverage").textContent
+        val expected = "${runTestsResult.numClassesCovered}/${runTestsResult.numClasses}"
+        assertThat(actual, equalTo(expected))
+    }
+
+    @Test(dataProvider = "createReportTestData")
+    fun createReport_always_shouldContainTotalTriggerCoveragePercentage(
+        codeCoverage: Array<CodeCoverageResult>,
+        codeCoverageWarnings: Array<CodeCoverageWarning>) {
+        // Arrange
+        val sut = createSystemUnderTest(dateTimeProvider)
+        val runTestsResult = createRunTestsResult(
+            codeCoverage = codeCoverage,
+            codeCoverageWarnings = codeCoverageWarnings)
+
+        // Act
+        val report = sut.createReport(runTestsResult)
+
+        // Assert
+        val actual = report.getElementById("totalTriggerCoveragePercentage").textContent
+        val expected = "${runTestsResult.triggerCoveragePercentage.format(2)}%"
+        assertThat(actual, equalTo(expected))
+    }
+
+    @Test(dataProvider = "createReportTestData")
+    fun createReport_always_shouldContainTotalTriggerCoverage(
+        codeCoverage: Array<CodeCoverageResult>,
+        codeCoverageWarnings: Array<CodeCoverageWarning>) {
+        // Arrange
+        val sut = createSystemUnderTest(dateTimeProvider)
+        val runTestsResult = createRunTestsResult(
+            codeCoverage = codeCoverage,
+            codeCoverageWarnings = codeCoverageWarnings)
+
+        // Act
+        val report = sut.createReport(runTestsResult)
+
+        // Assert
+        val actual = report.getElementById("totalTriggerCoverage").textContent
+        val expected = "${runTestsResult.numTriggersCovered}/${runTestsResult.numTriggers}"
+        assertThat(actual, equalTo(expected))
+    }
+
     @DataProvider
-    fun createReportTestData(): Array<Array<Any>> {
+    fun createReportTestData(): Array<Array<Any?>> {
         return arrayOf(
-            arrayOf<Any>(
-                arrayOf(createCodeCoverageResult(
-                    name = "ControllerCls",
-                    type = "Class",
-                    numLocations = 100))))
+            arrayOf<Any?>(
+                arrayOf(
+                    createCodeCoverageResult(
+                        name = "Foo",
+                        namespace = "nmspc",
+                        type = "Trigger",
+                        numLocations = 10,
+                        numLocationsNotCovered = 0),
+                    createCodeCoverageResult(
+                        name = "Bar",
+                        namespace = "nmspc",
+                        type = "Trigger",
+                        numLocations = 10,
+                        numLocationsNotCovered = 10),
+                    createCodeCoverageResult(
+                        name = "Baz",
+                        namespace = "nmspc",
+                        type = "Class",
+                        numLocations = 10,
+                        numLocationsNotCovered = 0)),
+                arrayOf(
+                    createCodeCoverageWarning(
+                        name = "Foo",
+                        namespace = "qwe",
+                        message = "Test coverage of selected Apex Trigger is 0%, at least 75% test coverage is required"),
+                    createCodeCoverageWarning(
+                        name = "Bar",
+                        namespace = "qwe",
+                        message = "Test coverage of selected Apex Trigger is 12%, at least 75% test coverage is required"),
+                    createCodeCoverageWarning(
+                        name = "Baz",
+                        namespace = "qwe",
+                        message = "Test coverage of selected Apex Class is 0%, at least 75% test coverage is required"),
+                    createCodeCoverageWarning(
+                        name = "Qux",
+                        namespace = "qwe"))))
     }
 
     @Test(dataProvider = "createReportWarningsTestData")
@@ -164,10 +276,13 @@ class HtmlCoverageReporterTestCase {
 
     @Test(dataProvider = "createReportTestData")
     fun createReport_always_shouldContainTableWithAllCoverageResults(
-        codeCoverage: Array<CodeCoverageResult>) {
+        codeCoverage: Array<CodeCoverageResult>,
+        codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider)
-        val runTestsResult = createRunTestsResult(codeCoverage = codeCoverage)
+        val runTestsResult = createRunTestsResult(
+            codeCoverage = codeCoverage,
+            codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
         val report = sut.createReport(runTestsResult)
@@ -195,7 +310,9 @@ class HtmlCoverageReporterTestCase {
                 lines = "${it.numLocationsCovered}/${it.numLocations}")
         }
 
-        expected.forEach { assertThat(actual, containsInAnyOrder(it)) }
+        expected.forEach {
+            assert(actual.contains(it))
+        }
     }
 
     data class CoverageRow(
