@@ -11,8 +11,9 @@ import org.testng.annotations.DataProvider
 
 class TeamCityReporterTestCase {
 
-    @Test(dataProvider = "createReportWarningsTestData")
+    @Test(dataProvider = "createReportTestData")
     fun createReport_ifTeamCityDetected_shouldLogCoverageMessages(
+        codeCoverage: Array<CodeCoverageResult>?,
         codeCoverageWarnings: Array<CodeCoverageWarning>?) {
         // Arrange
         val env = hashMapOf("TEAMCITY_PROJECT_NAME" to "foo")
@@ -20,7 +21,9 @@ class TeamCityReporterTestCase {
         val sut = createSystemUnderTest(
             systemEnvironment = { env[it] },
             log = { actual.add(it) })
-        val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
+        val runTestsResult = createRunTestsResult(
+            codeCoverage = codeCoverage,
+            codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
         sut.createReport(runTestsResult)
@@ -28,47 +31,74 @@ class TeamCityReporterTestCase {
         // Assert
         assertTrue(
             actual.contains("##teamcity[message text='Apex Code Coverage is ${runTestsResult.totalCoveragePercentage}%']"))
+
         assertTrue(
             actual.contains("##teamcity[buildStatisticValue key='CodeCoverageAbsLCovered' value='${runTestsResult.totalNumLocationsCovered}']"))
         assertTrue(
             actual.contains("##teamcity[buildStatisticValue key='CodeCoverageAbsLTotal' value='${runTestsResult.totalNumLocations}']"))
         assertTrue(
             actual.contains("##teamcity[buildStatisticValue key='CodeCoverageL' value='${runTestsResult.totalCoveragePercentage}']"))
+
+        assertTrue(
+            actual.contains("##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='${runTestsResult.numClassesCovered}']"))
+        assertTrue(
+            actual.contains("##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='${runTestsResult.numClasses}']"))
+        assertTrue(
+            actual.contains("##teamcity[buildStatisticValue key='CodeCoverageC' value='${runTestsResult.classCoveragePercentage}']"))
+
+        assertTrue(
+            actual.contains("##teamcity[buildStatisticValue key='CodeCoverageAbsTCovered' value='${runTestsResult.numTriggersCovered}']"))
+        assertTrue(
+            actual.contains("##teamcity[buildStatisticValue key='CodeCoverageAbsTTotal' value='${runTestsResult.numTriggers}']"))
+        assertTrue(
+            actual.contains("##teamcity[buildStatisticValue key='CodeCoverageT' value='${runTestsResult.triggerCoveragePercentage}']"))
+
+        assertTrue(
+            actual.contains("##teamcity[buildStatisticValue key='CodeCoverageWarningCount' value='${runTestsResult.codeCoverageWarnings.orEmpty().size}']"))
     }
 
     @DataProvider
-    fun createReportWarningsTestData(): Array<Array<Any?>> =
-        emptyCoverageWarningTestData()
-            .plus(nonEmptyCoverageWarningsTestData())
-            .plus(arrayOf(arrayOf<Any?>(
+    fun createReportTestData(): Array<Array<Any?>> {
+        return arrayOf(
+            arrayOf<Any?>(
+                arrayOf<CodeCoverageResult>(),
+                arrayOf<CodeCoverageWarning>()),
+            arrayOf<Any?>(
                 arrayOf(
-                    createCodeCoverageWarning()))))
-
-    @DataProvider
-    fun emptyCoverageWarningTestData(): Array<Array<Any?>> {
-        return arrayOf(
-            arrayOf<Any?>(null),
-            arrayOf<Any?>(
-                arrayOf<CodeCoverageWarning>()))
-    }
-
-    @DataProvider
-    fun nonEmptyCoverageWarningsTestData(): Array<Array<Any?>> {
-        return arrayOf(
-            arrayOf<Any?>(
+                    createCodeCoverageResult(
+                        name = "Foo",
+                        namespace = "nmspc",
+                        type = "Trigger",
+                        numLocations = 10,
+                        numLocationsNotCovered = 0),
+                    createCodeCoverageResult(
+                        name = "Bar",
+                        namespace = "nmspc",
+                        type = "Trigger",
+                        numLocations = 10,
+                        numLocationsNotCovered = 10),
+                    createCodeCoverageResult(
+                        name = "Baz",
+                        namespace = "nmspc",
+                        type = "Class",
+                        numLocations = 10,
+                        numLocationsNotCovered = 0)),
                 arrayOf(
                     createCodeCoverageWarning(
-                        name = "Book",
-                        namespace = "fdc",
+                        name = "Foo",
+                        namespace = "qwe",
+                        message = "Test coverage of selected Apex Trigger is 0%, at least 75% test coverage is required"),
+                    createCodeCoverageWarning(
+                        name = "Bar",
+                        namespace = "qwe",
+                        message = "Test coverage of selected Apex Trigger is 12%, at least 75% test coverage is required"),
+                    createCodeCoverageWarning(
+                        name = "Baz",
+                        namespace = "qwe",
                         message = "Test coverage of selected Apex Class is 0%, at least 75% test coverage is required"),
                     createCodeCoverageWarning(
-                        name = "bar",
-                        namespace = "",
-                        message = "Test coverage of selected Apex Class is 20%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
-                        name = "baz",
-                        namespace = "fdc",
-                        message = "Test coverage of selected Apex Class is 66%, at least 75% test coverage is required"))))
+                        name = "Qux",
+                        namespace = "qwe"))))
     }
 
     @Test
@@ -193,7 +223,7 @@ class TeamCityReporterTestCase {
 
     @Test
     fun createReport_ifTeamCityDetected_shouldEscapeFailureMessages() {
-        // See documentation: https://confluence.jetbrains.com/display/TCD9/Build+Script+Interaction+with+TeamCity
+        // See documentation: https://confluence.jetbrains.com/display/TCD10/Build+Script+Interaction+with+TeamCity
 
         // Arrange
         val env = hashMapOf("TEAMCITY_PROJECT_NAME" to "foo")
@@ -227,7 +257,7 @@ class TeamCityReporterTestCase {
 
     @Test
     fun createReport_ifTeamCityDetected_shouldEscapeSuccessMessages() {
-        // See documentation: https://confluence.jetbrains.com/display/TCD9/Build+Script+Interaction+with+TeamCity
+        // See documentation: https://confluence.jetbrains.com/display/TCD10/Build+Script+Interaction+with+TeamCity
 
         // Arrange
         val env = hashMapOf("TEAMCITY_PROJECT_NAME" to "foo")

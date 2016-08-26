@@ -1,9 +1,6 @@
 package com.aquivalabs.force.ant.reporters
 
-import com.aquivalabs.force.ant.qualifiedClassName
-import com.aquivalabs.force.ant.totalCoveragePercentage
-import com.aquivalabs.force.ant.totalNumLocations
-import com.aquivalabs.force.ant.totalNumLocationsCovered
+import com.aquivalabs.force.ant.*
 import com.sforce.soap.metadata.RunTestsResult
 
 
@@ -37,14 +34,38 @@ class TeamCityReporter(
 
         log("##teamcity[message text='Apex Code Coverage is ${result.totalCoveragePercentage}%']")
         log("##teamcity[blockOpened name='Apex Code Coverage Summary']")
-        log("##teamcity[buildStatisticValue key='CodeCoverageAbsLCovered' " +
-            "value='${result.totalNumLocationsCovered}']")
-        log("##teamcity[buildStatisticValue key='CodeCoverageAbsLTotal' " +
-            "value='${result.totalNumLocations}']")
-        log("##teamcity[buildStatisticValue key='CodeCoverageL' " +
-            "value='${result.totalCoveragePercentage}']")
+
+        CoverageType.Class.logCoverageStatistic(
+            result.numClassesCovered,
+            result.numClasses,
+            result.classCoveragePercentage)
+
+        CoverageType.Trigger.logCoverageStatistic(
+            result.numTriggersCovered,
+            result.numTriggers,
+            result.triggerCoveragePercentage)
+
+        CoverageType.Line.logCoverageStatistic(
+            result.totalNumLocationsCovered,
+            result.totalNumLocations,
+            result.totalCoveragePercentage)
+
+        logBuildStatisticValue("CodeCoverageWarningCount", result.codeCoverageWarnings.orEmpty().size)
+
         log("##teamcity[blockClosed name='Apex Code Coverage Summary']")
     }
+
+    private enum class CoverageType() { Class, Trigger, Line }
+
+    private fun CoverageType.logCoverageStatistic(covered: Int, total: Int, totalPercentage: Double) {
+        val type = this.name[0]
+        logBuildStatisticValue("CodeCoverageAbs${type}Covered", covered)
+        logBuildStatisticValue("CodeCoverageAbs${type}Total", total)
+        logBuildStatisticValue("CodeCoverage$type", totalPercentage)
+    }
+
+    private fun logBuildStatisticValue(key: String, value: Any) =
+        log("##teamcity[buildStatisticValue key='$key' value='$value']")
 
     private fun String.escape(): String {
         val sb = StringBuilder(this.length * 2)
