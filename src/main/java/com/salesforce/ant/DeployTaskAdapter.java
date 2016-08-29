@@ -51,4 +51,9 @@ public class DeployTaskAdapter extends DeployTask {
 
     public void handleResponse(MetadataConnection metadataConnection, AsyncResult response) {
     }
+
+    public boolean isTaskDone(MetadataConnection port, String asyncRequestId) throws ConnectionException {
+        StatusResult result = checkTaskStatus(port, asyncRequestId);
+        return result.isDone();
+    }
 }

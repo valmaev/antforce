@@ -234,5 +234,26 @@ fun DeployWithTestReportsTask.removeCoverageTestClassFromOrg(metadataConnection:
     // ignoreWarnings = true will guarantee that deployment will be successful
     // even if generated coverage test class didn't exist on org
     deployOptions.ignoreWarnings = true
-    metadataConnection.deploy(byteArrayStream.toByteArray(), deployOptions)
+
+    try {
+        val result = metadataConnection.deploy(byteArrayStream.toByteArray(), deployOptions)
+        log("Request for removing $coverageTestClassName class submitted successfully.")
+        log("Request ID for the current deploy task: ${result.id}")
+        log("Waiting for server to finish processing the request...")
+
+        repeat(maxPoll) {
+            val done = isTaskDone(metadataConnection, result.id)
+            if (!done) {
+                log("Request Status: InProgress")
+                Thread.sleep(pollWaitMillis.toLong())
+            } else {
+                log("Finished request ${result.id} successfully.")
+                return
+            }
+        }
+    } catch(ex: Exception) {
+        log("Request status: Failed")
+        log("Please, remove generated $coverageTestClassName class from $username org manually")
+        throw ex
+    }
 }

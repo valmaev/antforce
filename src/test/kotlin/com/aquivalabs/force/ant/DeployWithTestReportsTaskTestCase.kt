@@ -420,6 +420,51 @@ class DeployWithTestReportsTaskTestCase {
         }
     }
 
+    @Test(dataProvider = "blankCoverageTestNameData")
+    fun removeCoverageTestClassFromOrg_withBlankCoverageTestClassName_shouldNotDeployAnything(
+        blankTestName: String) {
+        val sut = createSystemUnderTest()
+        sut.coverageTestClassName = blankTestName
+        val connectionMock = mock<MetadataConnection>()
+
+        sut.removeCoverageTestClassFromOrg(connectionMock)
+
+        verifyZeroInteractions(connectionMock)
+    }
+
+    @DataProvider
+    fun blankCoverageTestNameData(): Array<Array<out Any?>> = arrayOf(
+        arrayOf<Any?>(""),
+        arrayOf<Any?>("   "))
+
+    @Test
+    fun removeCoverageTestClassFromOrg_withNonBlankCoverageTestClassName_shouldDeployDestructiveChanges() {
+        // Arrange
+        val sut = createSystemUnderTest()
+        sut.coverageTestClassName = generateTestClassName()
+        val connectionMock = createMetadataConnectionMock()
+
+        // Act
+        sut.removeCoverageTestClassFromOrg(connectionMock)
+
+        // Assert
+        val actualBytes = argumentCaptor<ByteArray>()
+        val actualOptions = argumentCaptor<DeployOptions>()
+        verify(connectionMock).deploy(actualBytes.capture(), actualOptions.capture())
+
+        assertTrue(actualOptions.value.singlePackage)
+        assertTrue(actualOptions.value.ignoreWarnings)
+
+        val actualDestructiveChanges = actualBytes.value.getEntryContent("destructiveChanges.xml")
+        val actualPackage = actualBytes.value.getEntryContent("package.xml")
+
+        val expectedDestructiveChanges = generateDestructiveChanges(sut.coverageTestClassName, sut.apiVersion)
+        val expectedPackage = generatePackage(sut.apiVersion)
+
+        assertEquals(actualDestructiveChanges, expectedDestructiveChanges)
+        assertEquals(actualPackage, expectedPackage)
+    }
+
     @Test
     fun handleResponse_withNonBlankCoverageTestClassName_shouldRemoveItFromTestResult() {
         withTestDirectory {
