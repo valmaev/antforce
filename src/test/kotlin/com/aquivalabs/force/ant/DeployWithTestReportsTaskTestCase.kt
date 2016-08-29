@@ -1,20 +1,15 @@
 package com.aquivalabs.force.ant
 
 import com.aquivalabs.force.ant.reporters.*
+import com.nhaarman.mockito_kotlin.*
 import com.salesforce.ant.DeployTask
 import com.salesforce.ant.ZipUtil
-import com.sforce.soap.metadata.DeployOptions
-import com.sforce.soap.metadata.MetadataConnection
-import com.sforce.soap.metadata.TestLevel
+import com.sforce.soap.metadata.*
 import kotlinx.html.dom.serialize
 import org.apache.tools.ant.Project
 import org.apache.tools.ant.types.FileSet
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.*
-import org.mockito.ArgumentCaptor
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyZeroInteractions
 import org.testng.annotations.*
 import org.testng.Assert.*
 import org.xmlmatchers.XmlMatchers.*
@@ -425,49 +420,66 @@ class DeployWithTestReportsTaskTestCase {
         }
     }
 
-    @Test(dataProvider = "blankCoverageTestNameData")
-    fun removeCoverageTestClassFromOrg_withBlankCoverageTestClassName_shouldNotDeployAnything(
-        blankTestName: String) {
-        val sut = createSystemUnderTest()
-        sut.coverageTestClassName = blankTestName
-        val connectionMock = mock(MetadataConnection::class.java)
+    @Test
+    fun handleResponse_withNonBlankCoverageTestClassName_shouldRemoveItFromTestResult() {
+        withTestDirectory {
+            // Arrange
+            val sut = createSystemUnderTest()
+            sut.reportDir = it
+            sut.coverageTestClassName = generateTestClassName()
+            sut.addJUnitReport(JUnitReport(file = "JUnit.xml"))
+            sut.addCoberturaReport(CoberturaReport(file = "Cobertura.xml"))
+            sut.addHtmlCoverageReport(HtmlCoverageReport(file = "Coverage.html"))
+            val teamcityLog = mutableListOf<String>()
+            sut.teamCityReporter = createTeamCityReporter { teamcityLog.add(it) }
 
-        sut.removeCoverageTestClassFromOrg(connectionMock)
+            val numTestsRun = 3
+            val deployResult = createDeployResult(
+                testResult = createRunTestsResult(
+                    numTestsRun = numTestsRun,
+                    successes = arrayOf(
+                        createRunTestSuccess(name = sut.coverageTestClassName),
+                        createRunTestSuccess(name = "foo"),
+                        createRunTestSuccess(name = "bar"))))
 
-        verifyZeroInteractions(connectionMock)
+            val connectionMock = createMetadataConnectionMock(deployResult)
+            val asyncResult = createAsyncResult()
+
+            // Act
+            sut.handleResponse(connectionMock, asyncResult)
+
+            // Assert
+            assertFalse(File(it, "JUnit.xml").readText().contains(sut.coverageTestClassName))
+            assertFalse(File(it, "Cobertura.xml").readText().contains(sut.coverageTestClassName))
+            assertFalse(File(it, "Coverage.html").readText().contains(sut.coverageTestClassName))
+            assertEquals(teamcityLog.filter { it.contains(sut.coverageTestClassName) }.size, 0)
+        }
     }
 
-    @DataProvider
-    fun blankCoverageTestNameData(): Array<Array<out Any?>> = arrayOf(
-        arrayOf<Any?>(""),
-        arrayOf<Any?>("   "))
+    private fun createMetadataConnectionMock(deployResult: DeployResult = createDeployResult()): MetadataConnection {
+        val connectionMock = mock<MetadataConnection>()
+        whenever(connectionMock.deploy(any(), any())).thenReturn(createAsyncResult())
+        whenever(connectionMock.checkDeployStatus(any(), any())).thenReturn(deployResult)
+        return connectionMock
+    }
 
-    @Test
-    fun removeCoverageTestClassFromOrg_withNonBlankCoverageTestClassName_shouldDeployDestructiveChanges() {
-        // Arrange
-        val sut = createSystemUnderTest()
-        sut.coverageTestClassName = generateTestClassName()
-        val connectionMock = mock(MetadataConnection::class.java)
+    private fun createAsyncResult(done: Boolean = true): AsyncResult {
+        val asyncResult = AsyncResult()
+        asyncResult.id = UUID.randomUUID().toString()
+        asyncResult.done = done
+        return asyncResult
+    }
 
-        // Act
-        sut.removeCoverageTestClassFromOrg(connectionMock)
+    private fun createDeployResult(
+        done: Boolean = true,
+        testResult: RunTestsResult = createRunTestsResult()): DeployResult {
 
-        // Assert
-        val actualBytes = ArgumentCaptor.forClass(ByteArray::class.java)
-        val actualOptions = ArgumentCaptor.forClass(DeployOptions::class.java)
-        verify(connectionMock).deploy(actualBytes.capture(), actualOptions.capture())
-
-        assertTrue(actualOptions.value.singlePackage)
-        assertTrue(actualOptions.value.ignoreWarnings)
-
-        val actualDestructiveChanges = actualBytes.value.getEntryContent("destructiveChanges.xml")
-        val actualPackage = actualBytes.value.getEntryContent("package.xml")
-
-        val expectedDestructiveChanges = generateDestructiveChanges(sut.coverageTestClassName, sut.apiVersion)
-        val expectedPackage = generatePackage(sut.apiVersion)
-
-        assertEquals(actualDestructiveChanges, expectedDestructiveChanges)
-        assertEquals(actualPackage, expectedPackage)
+        val result = DeployResult()
+        result.id = UUID.randomUUID().toString()
+        result.done = done
+        result.details = DeployDetails()
+        result.details.runTestResult = testResult
+        return result
     }
 
     private fun ByteArray.getEntryContent(name: String): String? {
@@ -552,6 +564,7 @@ class DeployWithTestReportsTaskTestCase {
         deployRoot: String? = null,
         zipFile: String? = null,
         enforceCoverageForAllClasses: Boolean? = false): DeployWithTestReportsTask {
+
         val sut = DeployWithTestReportsTask()
         sut.project = project
         sut.testLevel = testLevel
@@ -571,4 +584,9 @@ class DeployWithTestReportsTaskTestCase {
         createFileSet(
             directory,
             fileNames.map { it + Constants.APEX_CLASS_FILE_EXTENSION })
+
+    fun createTeamCityReporter(log: (String) -> Unit = { println(it) }): TeamCityReporter {
+        val env = hashMapOf("TEAMCITY_PROJECT_NAME" to "foo")
+        return TeamCityReporter({ env[it] }, log)
+    }
 }

@@ -77,6 +77,8 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         }
 
         if (testLevel != null && testLevel != TestLevel.NoTestRun.name) {
+            removeCoverageTestClassFrom(testResult)
+
             teamCityReporter.createReport(testResult)
 
             if (reportDir != null) {
@@ -92,6 +94,16 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         super.handleResponse(metadataConnection, response)
     } finally {
         removeCoverageTestClassFromOrg(metadataConnection!!)
+    }
+
+    internal fun removeCoverageTestClassFrom(testResult: RunTestsResult) {
+        if (!coverageTestClassName.isNullOrBlank()) {
+            log("Generated CoverageTestClassName: $coverageTestClassName")
+            testResult.successes = testResult.successes
+                .filter { it.name != coverageTestClassName }
+                .toTypedArray()
+            testResult.numTestsRun -= 1
+        }
     }
 
     internal fun saveJUnitReportToFile(testResult: RunTestsResult) {
