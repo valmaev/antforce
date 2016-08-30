@@ -237,7 +237,7 @@ fun DeployWithTestReportsTask.removeCoverageTestClassFromOrg(metadataConnection:
 
     try {
         val result = metadataConnection.deploy(byteArrayStream.toByteArray(), deployOptions)
-        log("Request for removing $coverageTestClassName class submitted successfully.")
+        log("\nRequest for removing $coverageTestClassName class submitted successfully.")
         log("Request ID for the current deploy task: ${result.id}")
         log("Waiting for server to finish processing the request...")
 
@@ -253,7 +253,7 @@ fun DeployWithTestReportsTask.removeCoverageTestClassFromOrg(metadataConnection:
         }
     } catch(ex: Exception) {
         log("Request status: Failed")
-        log("Please, remove generated $coverageTestClassName class from $username org manually")
+        log("Please, remove generated $coverageTestClassName class from ${metadataConnection.config.serviceEndpoint} org manually")
         throw ex
     }
 }

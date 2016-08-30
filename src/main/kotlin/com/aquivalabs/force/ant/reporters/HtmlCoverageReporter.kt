@@ -11,7 +11,7 @@ import org.w3c.dom.Document
 
 
 internal fun Double.format(digits: Int) = String.format(Locale.US, "%.${digits}f", this)
-internal fun Any.getResourceAsString(name: String) = javaClass.getResourceAsStream(name).reader().use { it.readText() }
+internal fun Class<*>.getResourceAsString(name: String) = getResourceAsStream(name).reader().use { it.readText() }
 
 class HtmlCoverageReporter(
     val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.now() }) : Reporter<Document> {
@@ -21,7 +21,7 @@ class HtmlCoverageReporter(
             val title = "Code Coverage for Apex code"
             head {
                 title(title)
-                style("text/css", getResourceAsString("/coverage-report.css"))
+                style("text/css", javaClass.getResourceAsString("/coverage-report.css"))
             }
             body {
                 div("wrapper") {
@@ -29,7 +29,7 @@ class HtmlCoverageReporter(
                         h1 { +title }
                         coverageStatistics(result)
                     }
-                    div("status-line medium")
+                    div("status-line ${result.totalCoveragePercentage.toTestLevel()}")
                     div("pad1") {
                         coverageSummary(result)
                         coverageWarningsList(result)
@@ -38,7 +38,7 @@ class HtmlCoverageReporter(
                     div("push")
                 }
                 version()
-                script(type = ScriptType.textJavaScript) { +getResourceAsString("/sorter.js") }
+                script(type = ScriptType.textJavaScript) { +javaClass.getResourceAsString("/sorter.js") }
             }
         }
     }
@@ -137,7 +137,7 @@ class HtmlCoverageReporter(
         coverageResultsByType.forEach {
             val (type, coverageResults) = it
             coverageResults.forEach {
-                val coverageLevel = it.toTestLevel()
+                val coverageLevel = it.coverage.toTestLevel()
                 tr {
                     td(coverageLevel) {
                         +type
@@ -164,9 +164,9 @@ class HtmlCoverageReporter(
         }
     }
 
-    private fun CodeCoverageResult.toTestLevel() = when {
-        coverage < 0 -> ""
-        0 <= coverage && coverage < 0.75 -> "low"
+    private fun Double.toTestLevel() = when {
+        this < 0 -> ""
+        0 <= this && this < 0.75 -> "low"
         else -> "high"
     }
 
@@ -184,7 +184,7 @@ class HtmlCoverageReporter(
     }
 
     private fun HtmlBlockTag.coverageWarningsList(result: RunTestsResult) {
-        if (result.codeCoverageWarnings.orEmpty().count() == 0)
+        if (result.codeCoverageWarnings.orEmpty().size == 0)
             return
 
         div("pad1") {

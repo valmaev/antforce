@@ -98,7 +98,6 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
 
     internal fun removeCoverageTestClassFrom(testResult: RunTestsResult) {
         if (!coverageTestClassName.isNullOrBlank()) {
-            log("Generated CoverageTestClassName: $coverageTestClassName")
             testResult.successes = testResult.successes
                 .filter { it.name != coverageTestClassName }
                 .toTypedArray()
