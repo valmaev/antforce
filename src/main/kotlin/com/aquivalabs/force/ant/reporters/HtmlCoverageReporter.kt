@@ -11,17 +11,17 @@ import org.w3c.dom.Document
 
 
 internal fun Double.format(digits: Int) = String.format(Locale.US, "%.${digits}f", this)
+internal fun Any.getResourceAsString(name: String) = javaClass.getResourceAsStream(name).reader().use { it.readText() }
 
 class HtmlCoverageReporter(
     val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.now() }) : Reporter<Document> {
 
     override fun createReport(result: RunTestsResult): Document {
-        val css = javaClass.getResourceAsStream("/coverage-report.css").reader().use { it.readText() }
         return createHTMLDocument().html {
             val title = "Code Coverage for Apex code"
             head {
                 title(title)
-                style("text/css", css)
+                style("text/css", getResourceAsString("/coverage-report.css"))
             }
             body {
                 div("wrapper") {
@@ -38,6 +38,7 @@ class HtmlCoverageReporter(
                     div("push")
                 }
                 version()
+                script(type = ScriptType.textJavaScript) { +getResourceAsString("/sorter.js") }
             }
         }
     }
@@ -95,10 +96,33 @@ class HtmlCoverageReporter(
         table("coverage-summary") {
             thead {
                 tr {
-                    th { +"Type" }
-                    th { +"File" }
-                    th(classes = "pic")
-                    th(classes = "pict") { +"Lines" }
+                    th {
+                        +"Type"
+                        attributes["data-col"] = "type"
+                        attributes["data-fmt"] = "string"
+                    }
+                    th {
+                        +"File"
+                        attributes["data-col"] = "file"
+                        attributes["data-fmt"] = "string"
+                    }
+                    th(classes = "pic") {
+                        attributes["data-col"] = "pic"
+                        attributes["data-type"] = "number"
+                        attributes["data-fmt"] = "html"
+                        attributes["data-html"] = "true"
+                    }
+                    th(classes = "pct") {
+                        +"Lines"
+                        attributes["data-col"] = "lines"
+                        attributes["data-type"] = "number"
+                        attributes["data-fmt"] = "pct"
+                    }
+                    th(classes = "abs") {
+                        attributes["data-col"] = "lines_raw"
+                        attributes["data-type"] = "number"
+                        attributes["data-fmt"] = "html"
+                    }
                 }
                 tbody { coverageRows(result) }
             }
@@ -115,11 +139,26 @@ class HtmlCoverageReporter(
             coverageResults.forEach {
                 val coverageLevel = it.toTestLevel()
                 tr {
-                    td(coverageLevel) { +type }
-                    td(coverageLevel) { +it.qualifiedName }
-                    td("pic $coverageLevel") { coverageChart(it) }
-                    td("pct $coverageLevel") { +"${it.coveragePercentage.format(2)}%" }
-                    td("abs $coverageLevel") { +"${it.numLocationsCovered}/${it.numLocations}" }
+                    td(coverageLevel) {
+                        +type
+                        attributes["data-value"] = type
+                    }
+                    td(coverageLevel) {
+                        +it.qualifiedName
+                        attributes["data-value"] = it.qualifiedName
+                    }
+                    td("pic $coverageLevel") {
+                        coverageChart(it)
+                        attributes["data-value"] = it.coveragePercentage.format(2)
+                    }
+                    td("pct $coverageLevel") {
+                        +"${it.coveragePercentage.format(2)}%"
+                        attributes["data-value"] = it.coveragePercentage.format(2)
+                    }
+                    td("abs $coverageLevel") {
+                        +"${it.numLocationsCovered}/${it.numLocations}"
+                        attributes["data-value"] = it.numLocations.toString()
+                    }
                 }
             }
         }

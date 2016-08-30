@@ -147,6 +147,7 @@ table.coverage td span.cline-any {
     width: 7px;
     display: inline-block;
     margin-left: 0.5em;
+    background: no-repeat scroll 0 0 transparent;
 }
 .coverage-summary .sorted .sorter {
     background-position: 0 -20px;
@@ -217,3 +218,7 @@ pre.prettyprint {
 .coverage-warning, .coverage-warning-name  { color: #C21F39 }
 .coverage-warning-name { font-weight: bold }
 .inline-code {  display: inline  }
+
+.coverage-summary .sorter {
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAbCAMAAACHmGUBAAAADFBMVEUAAAD///8AAAAAAADI23cLAAAAA3RSTlMAADNFpqXIAAAAOklEQVR4AZXMsQ3EABTCUJu//86Hji6p4uYVSKAGpSRIaZDFsywYbQilrpe38I9o2X5OP3pzP6XJrR9iVQECArqqjAAAAABJRU5ErkJggg==);
+}
