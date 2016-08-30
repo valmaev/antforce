@@ -93,10 +93,10 @@ class CodeCoverageResultTestCase {
         arrayOf<Any?>(null, "", "", ""),
         arrayOf<Any?>("", null, "", ""),
         arrayOf<Any?>("", "", "", ""),
-        arrayOf<Any?>(null, "MyClass", "Class", "classes${File.separator}MyClass${Constants.APEX_CLASS_FILE_EXTENSION}"),
-        arrayOf<Any?>("", "MyClass", "Class", "classes${File.separator}MyClass${Constants.APEX_CLASS_FILE_EXTENSION}"),
+        arrayOf<Any?>(null, "MyClass", "Class", "classes${File.separator}MyClass$APEX_CLASS_FILE_EXTENSION"),
+        arrayOf<Any?>("", "MyClass", "Class", "classes${File.separator}MyClass$APEX_CLASS_FILE_EXTENSION"),
         arrayOf<Any?>("foo", "MyClass", "Class", ""),
-        arrayOf<Any?>(null, "MyTrigger", "Trigger", "triggers${File.separator}MyTrigger${Constants.APEX_TRIGGER_FILE_EXTENSION}"),
-        arrayOf<Any?>("", "MyTrigger", "Trigger", "triggers${File.separator}MyTrigger${Constants.APEX_TRIGGER_FILE_EXTENSION}"),
+        arrayOf<Any?>(null, "MyTrigger", "Trigger", "triggers${File.separator}MyTrigger$APEX_TRIGGER_FILE_EXTENSION"),
+        arrayOf<Any?>("", "MyTrigger", "Trigger", "triggers${File.separator}MyTrigger$APEX_TRIGGER_FILE_EXTENSION"),
         arrayOf<Any?>("foo", "MyTrigger", "Trigger", ""))
 }

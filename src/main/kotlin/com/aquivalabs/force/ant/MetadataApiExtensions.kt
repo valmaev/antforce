@@ -26,8 +26,8 @@ val CodeCoverageResult.classFileName: String
     get() = if (name.isNullOrEmpty()) ""
     else if (!namespace.isNullOrEmpty()) ""
     else when (type) {
-        "Class" -> "classes${File.separator}$name${Constants.APEX_CLASS_FILE_EXTENSION}"
-        "Trigger" -> "triggers${File.separator}$name${Constants.APEX_TRIGGER_FILE_EXTENSION}"
+        "Class" -> "classes${File.separator}$name$APEX_CLASS_FILE_EXTENSION"
+        "Trigger" -> "triggers${File.separator}$name$APEX_TRIGGER_FILE_EXTENSION"
         else -> ""
     }
 

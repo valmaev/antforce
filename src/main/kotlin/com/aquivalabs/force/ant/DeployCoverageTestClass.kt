@@ -138,7 +138,7 @@ fun DeployWithTestReportsTask.addCoverageTestClassToDeployRootPackage(deployDir:
         ZipUtil.zipFiles("", topLevelFiles, output)
 
         val classes = classesDir
-            .listFiles { file, name -> name.endsWith(Constants.APEX_CLASS_FILE_EXTENSION) }
+            .listFiles { file, name -> name.endsWith(APEX_CLASS_FILE_EXTENSION) }
             .map { it.nameWithoutExtension }
             .toSet()
 
@@ -150,10 +150,10 @@ fun DeployWithTestReportsTask.addCoverageTestClassToDeployRootPackage(deployDir:
             "package.xml",
             packageXmlDoc.saveToString())
         output.addEntry(
-            "classes/$coverageTestClassName${Constants.APEX_CLASS_FILE_EXTENSION}",
+            "classes/$coverageTestClassName$APEX_CLASS_FILE_EXTENSION",
             generateTestClass(coverageTestClassName, classes))
         output.addEntry(
-            "classes/$coverageTestClassName${Constants.APEX_CLASS_FILE_EXTENSION}-meta.xml",
+            "classes/$coverageTestClassName$APEX_CLASS_FILE_EXTENSION$META_FILE_EXTENSION",
             generateTestClassMetadata(apiVersion))
     }
     zipBytes = byteArrayStream.toByteArray()
@@ -186,8 +186,8 @@ fun DeployWithTestReportsTask.addCoverageTestClassToZipFilePackage(zipFile: File
                 continue
             }
 
-            if (entry.name.startsWith("classes/") && (entry.name.endsWith(Constants.APEX_CLASS_FILE_EXTENSION)))
-                classes.add(entry.name.removePrefix("classes/").removeSuffix(Constants.APEX_CLASS_FILE_EXTENSION))
+            if (entry.name.startsWith("classes/") && (entry.name.endsWith(APEX_CLASS_FILE_EXTENSION)))
+                classes.add(entry.name.removePrefix("classes/").removeSuffix(APEX_CLASS_FILE_EXTENSION))
 
             val newEntry = ZipEntry(entry.name)
             output.putNextEntry(newEntry)
@@ -206,10 +206,10 @@ fun DeployWithTestReportsTask.addCoverageTestClassToZipFilePackage(zipFile: File
             "package.xml",
             packageXmlDoc!!.saveToString())
         output.addEntry(
-            "classes/$coverageTestClassName${Constants.APEX_CLASS_FILE_EXTENSION}",
+            "classes/$coverageTestClassName$APEX_CLASS_FILE_EXTENSION",
             generateTestClass(coverageTestClassName, classes))
         output.addEntry(
-            "classes/$coverageTestClassName${Constants.APEX_CLASS_FILE_EXTENSION}-meta.xml",
+            "classes/$coverageTestClassName$APEX_CLASS_FILE_EXTENSION$META_FILE_EXTENSION",
             generateTestClassMetadata(apiVersion))
     }
     zipBytes = byteArrayStream.toByteArray()

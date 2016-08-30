@@ -260,9 +260,9 @@ class DeployWithTestReportsTaskTestCase {
             // Assert
             val actualPackageXml = sut.zipBytes.getEntryContent("package.xml")
             val actualCoverageTestClass = sut.zipBytes.getEntryContent(
-                "classes/${sut.coverageTestClassName}${Constants.APEX_CLASS_FILE_EXTENSION}")
+                "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION")
             val actualCoverageTestClassMetadata = sut.zipBytes.getEntryContent(
-                "classes/${sut.coverageTestClassName}${Constants.APEX_CLASS_FILE_EXTENSION}-meta.xml")
+                "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION$META_FILE_EXTENSION")
 
             val expectedClassMembers = linkedSetOf(sut.coverageTestClassName)
             expectedClassMembers.addAll(packageXmlClassMembers)
@@ -301,9 +301,9 @@ class DeployWithTestReportsTaskTestCase {
             // Assert
             val actualPackageXml = sut.zipBytes.getEntryContent("package.xml")
             val actualCoverageTestClass = sut.zipBytes.getEntryContent(
-                "classes/${sut.coverageTestClassName}${Constants.APEX_CLASS_FILE_EXTENSION}")
+                "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION")
             val actualCoverageTestClassMetadata = sut.zipBytes.getEntryContent(
-                "classes/${sut.coverageTestClassName}${Constants.APEX_CLASS_FILE_EXTENSION}-meta.xml")
+                "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION$META_FILE_EXTENSION")
 
             assertThat(the(actualPackageXml), isEquivalentTo(the(packageXml)))
             assertEquals(actualCoverageTestClass, null)
@@ -377,9 +377,9 @@ class DeployWithTestReportsTaskTestCase {
             // Assert
             val actualPackageXml = sut.zipBytes.getEntryContent("package.xml")
             val actualCoverageTestClass = sut.zipBytes.getEntryContent(
-                "classes/${sut.coverageTestClassName}${Constants.APEX_CLASS_FILE_EXTENSION}")
+                "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION")
             val actualCoverageTestClassMetadata = sut.zipBytes.getEntryContent(
-                "classes/${sut.coverageTestClassName}${Constants.APEX_CLASS_FILE_EXTENSION}-meta.xml")
+                "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION$META_FILE_EXTENSION")
 
             val expectedClassMembers = linkedSetOf(sut.coverageTestClassName)
             expectedClassMembers.addAll(packageXmlClassMembers)
@@ -409,9 +409,9 @@ class DeployWithTestReportsTaskTestCase {
             // Assert
             val actualPackageXml = sut.zipBytes.getEntryContent("package.xml")
             val actualCoverageTestClass = sut.zipBytes.getEntryContent(
-                "classes/${sut.coverageTestClassName}${Constants.APEX_CLASS_FILE_EXTENSION}")
+                "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION")
             val actualCoverageTestClassMetadata = sut.zipBytes.getEntryContent(
-                "classes/${sut.coverageTestClassName}${Constants.APEX_CLASS_FILE_EXTENSION}-meta.xml")
+                "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION$META_FILE_EXTENSION")
 
             assertThat(the(actualPackageXml), isEquivalentTo(the(packageXml)))
             assertEquals(actualCoverageTestClass, null)
@@ -563,7 +563,7 @@ class DeployWithTestReportsTaskTestCase {
         File(it, "package.xml").appendText(packageXml)
         File(it, "classes").mkdir()
         classes.forEach { className ->
-            File(it, "classes/$className${Constants.APEX_CLASS_FILE_EXTENSION}")
+            File(it, "classes/$className$APEX_CLASS_FILE_EXTENSION")
                 .appendText("public with sharing class $it { }")
         }
         test(it)
@@ -583,7 +583,7 @@ class DeployWithTestReportsTaskTestCase {
                 zipOutput.addEntry("classes", "")
                 classes.forEach {
                     zipOutput.addEntry(
-                        "classes/$it${Constants.APEX_CLASS_FILE_EXTENSION}",
+                        "classes/$it$APEX_CLASS_FILE_EXTENSION",
                         "public with sharing class $it { }")
                 }
             }
@@ -628,7 +628,7 @@ class DeployWithTestReportsTaskTestCase {
     fun createTestClassesFileSet(directory: File, fileNames: Iterable<String>): FileSet =
         createFileSet(
             directory,
-            fileNames.map { it + Constants.APEX_CLASS_FILE_EXTENSION })
+            fileNames.map { it + APEX_CLASS_FILE_EXTENSION })
 
     fun createTeamCityReporter(log: (String) -> Unit = { println(it) }): TeamCityReporter {
         val env = hashMapOf("TEAMCITY_PROJECT_NAME" to "foo")
