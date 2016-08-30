@@ -35,17 +35,17 @@ class TeamCityReporter(
         log("##teamcity[message text='Apex Code Coverage is ${result.totalCoveragePercentage}%']")
         log("##teamcity[blockOpened name='Apex Code Coverage Summary']")
 
-        CoverageType.Class.logCoverageStatistic(
+        CoverageType.CLASS.logCoverageStatistic(
             result.numClassesCovered,
             result.numClasses,
             result.classCoveragePercentage)
 
-        CoverageType.Trigger.logCoverageStatistic(
+        CoverageType.TRIGGER.logCoverageStatistic(
             result.numTriggersCovered,
             result.numTriggers,
             result.triggerCoveragePercentage)
 
-        CoverageType.Line.logCoverageStatistic(
+        CoverageType.LINE.logCoverageStatistic(
             result.totalNumLocationsCovered,
             result.totalNumLocations,
             result.totalCoveragePercentage)
@@ -55,7 +55,7 @@ class TeamCityReporter(
         log("##teamcity[blockClosed name='Apex Code Coverage Summary']")
     }
 
-    private enum class CoverageType() { Class, Trigger, Line }
+    private enum class CoverageType { CLASS, TRIGGER, LINE }
 
     private fun CoverageType.logCoverageStatistic(covered: Int, total: Int, totalPercentage: Double) {
         val type = this.name[0]
