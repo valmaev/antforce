@@ -5,10 +5,8 @@ import com.nhaarman.mockito_kotlin.*
 import com.salesforce.ant.DeployTask
 import com.salesforce.ant.ZipUtil
 import com.sforce.soap.metadata.*
-import kotlinx.html.dom.serialize
 import org.apache.tools.ant.Project
 import org.apache.tools.ant.types.FileSet
-import org.apache.tools.ant.util.FileUtils
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.*
 import org.testng.annotations.*
@@ -18,7 +16,6 @@ import org.xmlmatchers.transform.XmlConverters.*
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.time.LocalDateTime
 import java.util.zip.*
 import java.io.FileOutputStream
 import java.nio.file.Files
@@ -46,25 +43,25 @@ class DeployWithTestReportsTaskTestCase {
             startsWith("create"))
     }
 
-    @Test fun addJUnitReport_always_shouldFollowAntNamingConventions() {
+    @Test fun addConfiguredJUnitReport_always_shouldFollowAntNamingConventions() {
         assertThat(
-            nestedElementConvention("add"),
-            DeployWithTestReportsTask::addJUnitReport.name,
-            startsWith("add"))
+            nestedElementConvention("addConfigured"),
+            DeployWithTestReportsTask::addConfiguredJUnitReport.name,
+            startsWith("addConfigured"))
     }
 
-    @Test fun addCoberturaReport_always_shouldFollowAntNamingConventions() {
+    @Test fun addConfiguredCoberturaReport_always_shouldFollowAntNamingConventions() {
         assertThat(
-            nestedElementConvention("add"),
-            DeployWithTestReportsTask::addCoberturaReport.name,
-            startsWith("add"))
+            nestedElementConvention("addConfigured"),
+            DeployWithTestReportsTask::addConfiguredCoberturaReport.name,
+            startsWith("addConfigured"))
     }
 
-    @Test fun addHtmlCoverageReport_always_shouldFollowAntNamingConventions() {
+    @Test fun addConfiguredHtmlCoverageReport_always_shouldFollowAntNamingConventions() {
         assertThat(
-            nestedElementConvention("add"),
-            DeployWithTestReportsTask::addHtmlCoverageReport.name,
-            startsWith("add"))
+            nestedElementConvention("addConfigured"),
+            DeployWithTestReportsTask::addConfiguredHtmlCoverageReport.name,
+            startsWith("addConfigured"))
     }
 
     @Test(dataProvider = "getRunTestsEmptyArrayTestLevels")
@@ -114,7 +111,7 @@ class DeployWithTestReportsTaskTestCase {
 //            sut.apiVersion = 35.0
 //
 //            val report = JUnitReport(file = "TEST-ApexSuite.xml", suiteName = "TestSuite")
-//            sut.addJUnitReport(report)
+//            sut.addConfiguredJUnitReport(report)
 //
 //            val input = createRunTestsResult()
 //
@@ -137,7 +134,7 @@ class DeployWithTestReportsTaskTestCase {
 //            sut.reportDir = testDirectory
 //
 //            val report = CoberturaReport(file = "Cobertura.xml")
-//            sut.addCoberturaReport(report)
+//            sut.addConfiguredCoberturaReport(report)
 //
 //            val input = createRunTestsResult()
 //            val expectedContent = sut.coberturaReporter.createReport(input).toString()
@@ -160,7 +157,7 @@ class DeployWithTestReportsTaskTestCase {
 //            sut.reportDir = testDirectory
 //
 //            val report = HtmlCoverageReport(file = "Coverage.html")
-//            sut.addHtmlCoverageReport(report)
+//            sut.addConfiguredHtmlCoverageReport(report)
 //
 //            val input = createRunTestsResult()
 //            val expectedContent = sut.htmlCoverageReporter.createReport(input).serialize(true)
@@ -475,9 +472,9 @@ class DeployWithTestReportsTaskTestCase {
             sut.reportDir = it
             sut.sourceDir = it
             sut.coverageTestClassName = generateTestClassName()
-            sut.addJUnitReport(JUnitReport(file = "JUnit.xml"))
-            sut.addCoberturaReport(CoberturaReport(file = "Cobertura.xml"))
-            sut.addHtmlCoverageReport(HtmlCoverageReport(dir = "coverage"))
+            sut.addConfiguredJUnitReport(JUnitReport(file = "JUnit.xml"))
+            sut.addConfiguredCoberturaReport(CoberturaReport(file = "Cobertura.xml"))
+            sut.addConfiguredHtmlCoverageReport(HtmlCoverageReport(dir = "coverage"))
             val teamcityLog = mutableListOf<String>()
             sut.consoleReporters["TeamCity"] = createTeamCityReporter { teamcityLog.add(it) }
 

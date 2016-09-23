@@ -30,7 +30,7 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
             && testLevel != TestLevel.NoTestRun.name
             && enforceCoverageForAllClasses == true
 
-    fun addJUnitReport(report: JUnitReport) {
+    fun addConfiguredJUnitReport(report: JUnitReport) {
         fileReporters["JUnit"] = JUnitReporter(
             outputFile = File(reportDir, report.file),
             suiteName = report.suiteName,
@@ -40,13 +40,13 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
                 "apiVersion" to apiVersion.toString()))
     }
 
-    fun addCoberturaReport(report: CoberturaReport) {
+    fun addConfiguredCoberturaReport(report: CoberturaReport) {
         fileReporters["Cobertura"] = CoberturaCoverageReporter(
             outputFile = File(reportDir, report.file),
             projectRootPath = sourceDir?.path)
     }
 
-    fun addHtmlCoverageReport(report: HtmlCoverageReport) {
+    fun addConfiguredHtmlCoverageReport(report: HtmlCoverageReport) {
         fileReporters["HtmlCoverage"] = HtmlCoverageReporter(
             sourceDir = sourceDir!!,
             outputDir = File(reportDir, report.dir))
