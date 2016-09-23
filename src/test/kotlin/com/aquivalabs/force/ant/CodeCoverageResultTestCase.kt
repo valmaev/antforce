@@ -95,8 +95,8 @@ class CodeCoverageResultTestCase {
         arrayOf<Any?>("", "", "", ""),
         arrayOf<Any?>(null, "MyClass", "Class", "classes${File.separator}MyClass$APEX_CLASS_FILE_EXTENSION"),
         arrayOf<Any?>("", "MyClass", "Class", "classes${File.separator}MyClass$APEX_CLASS_FILE_EXTENSION"),
-        arrayOf<Any?>("foo", "MyClass", "Class", ""),
+        arrayOf<Any?>("foo", "MyClass", "Class", "classes${File.separator}MyClass$APEX_CLASS_FILE_EXTENSION"),
         arrayOf<Any?>(null, "MyTrigger", "Trigger", "triggers${File.separator}MyTrigger$APEX_TRIGGER_FILE_EXTENSION"),
         arrayOf<Any?>("", "MyTrigger", "Trigger", "triggers${File.separator}MyTrigger$APEX_TRIGGER_FILE_EXTENSION"),
-        arrayOf<Any?>("foo", "MyTrigger", "Trigger", ""))
+        arrayOf<Any?>("foo", "MyTrigger", "Trigger", "triggers${File.separator}MyTrigger$APEX_TRIGGER_FILE_EXTENSION"))
 }

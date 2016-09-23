@@ -2,43 +2,133 @@ package com.aquivalabs.force.ant.reporters
 
 import com.aquivalabs.force.ant.*
 import com.sforce.soap.metadata.CodeCoverageResult
+import com.sforce.soap.metadata.DeployResult
 import com.sforce.soap.metadata.RunTestsResult
 import java.time.LocalDateTime
 import java.util.*
 import kotlinx.html.*
 import kotlinx.html.dom.*
 import org.w3c.dom.Document
+import java.io.File
 
 
 internal fun Double.format(digits: Int) = String.format(Locale.US, "%.${digits}f", this)
 internal fun Class<*>.getResourceAsString(name: String) = getResourceAsStream(name).reader().use { it.readText() }
 
 class HtmlCoverageReporter(
-    val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.now() }) : Reporter<Document> {
+    var sourceDir: File,
+    var outputDir: File,
+    val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.now() }) : Reporter<File> {
 
-    override fun createReport(result: RunTestsResult): Document {
+    private val reportTitle = "Code Coverage for Apex code"
+
+    override fun createReport(deployResult: DeployResult): File {
+        if (!outputDir.exists())
+            outputDir.mkdirs()
+
+        val testResult = deployResult.details.runTestResult
+        val rootReport = createSummaryReport(testResult)
+        rootReport.saveToFile("index.html")
+
+        testResult.codeCoverage.forEach {
+            val file = File(sourceDir, it.classFileName)
+            if (file.exists() && file.isFile) {
+                val report = createClassCoverageReport(it, file)
+                report.saveToFile("${it.classFileName}.html")
+            }
+        }
+        return outputDir
+    }
+
+    internal fun createSummaryReport(result: RunTestsResult): Document {
+        return htmlDocument(
+            statusCssClass = result.totalCoveragePercentage.toTestLevel(),
+            summary = {
+                h1 { +reportTitle }
+                coverageStatistics(result)
+            },
+            body = {
+                div("pad1") {
+                    coverageSummary(result)
+                    coverageWarningsList(result)
+                    coverageCalculationNotes()
+                }
+            })
+    }
+
+    internal fun createClassCoverageReport(coverageResult: CodeCoverageResult, sourceFile: File): Document {
+        val notCoveredLines = coverageResult.locationsNotCovered.orEmpty()
+            .fold("") { r, l -> r + ".prettyprint ol.linenums > li:nth-child(${l.line})," }
+            .removeSuffix(",") + "{ background: #F6C6CE }"
+        return htmlDocument(
+            statusCssClass = coverageResult.coveragePercentage.toTestLevel(),
+            css = notCoveredLines,
+            summary = {
+                h1 {
+                    a("../index.html") { +"all files" }
+                    +" / ${coverageResult.classFileName.replace(File.separator, " / ")}"
+                }
+                div("clearfix") {
+                    coverageStatistic(
+                        "Line",
+                        "Lines",
+                        coverageResult.coveragePercentage,
+                        coverageResult.numLocationsCovered,
+                        coverageResult.numLocations)
+                }
+            },
+            body = {
+                pre {
+                    table("coverage") {
+                        tbody {
+                            tr {
+                                td("text") {
+                                    pre("prettyprint linenums") {
+                                        sourceFile.bufferedReader().forEachLine { +"$it\n" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+    }
+
+    private fun Document.saveToFile(fileName: String) {
+        val reportFile = File(outputDir, fileName)
+        reportFile.parentFile.mkdirs()
+        reportFile.createNewFile()
+        reportFile.writeText(serialize(prettyPrint = false))
+    }
+
+    private fun htmlDocument(
+        statusCssClass: String,
+        css: String? = null,
+        summary: DIV.() -> Unit = {},
+        body: DIV.() -> Unit = {}): Document {
+
         return createHTMLDocument().html {
-            val title = "Code Coverage for Apex code"
+            attributes["lang"] = "en"
             head {
-                title(title)
+                title(reportTitle)
                 style("text/css", javaClass.getResourceAsString("/coverage-report.css"))
+                style("text/css", javaClass.getResourceAsString("/prettify.css"))
+                if (css != null)
+                    style("text/css", css)
             }
             body {
                 div("wrapper") {
-                    div("pad1") {
-                        h1 { +title }
-                        coverageStatistics(result)
-                    }
-                    div("status-line ${result.totalCoveragePercentage.toTestLevel()}")
-                    div("pad1") {
-                        coverageSummary(result)
-                        coverageWarningsList(result)
-                        coverageCalculationNotes()
-                    }
+                    div("pad1") { summary() }
+                    div("status-line $statusCssClass")
+                    body()
                     div("push")
                 }
                 version()
                 script(type = ScriptType.textJavaScript) { +javaClass.getResourceAsString("/sorter.js") }
+                script(type = ScriptType.textJavaScript) { +javaClass.getResourceAsString("/prettify.js") }
+                script(type = ScriptType.textJavaScript) {
+                    +"window.onload = function () { if (typeof prettyPrint === 'function') { prettyPrint(); } };"
+                }
             }
         }
     }
@@ -104,7 +194,7 @@ class HtmlCoverageReporter(
                     th {
                         +"File"
                         attributes["data-col"] = "file"
-                        attributes["data-fmt"] = "string"
+                        attributes["data-fmt"] = "html"
                     }
                     th(classes = "pic") {
                         attributes["data-col"] = "pic"
@@ -144,7 +234,7 @@ class HtmlCoverageReporter(
                         attributes["data-value"] = type
                     }
                     td(coverageLevel) {
-                        +it.qualifiedName
+                        a(href = "${it.classFileName}.html") { +it.qualifiedName }
                         attributes["data-value"] = it.qualifiedName
                     }
                     td("pic $coverageLevel") {

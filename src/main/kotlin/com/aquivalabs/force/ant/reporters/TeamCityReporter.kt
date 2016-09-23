@@ -1,25 +1,26 @@
 package com.aquivalabs.force.ant.reporters
 
 import com.aquivalabs.force.ant.*
-import com.sforce.soap.metadata.RunTestsResult
+import com.sforce.soap.metadata.DeployResult
 
 
 class TeamCityReporter(
     val systemEnvironment: (String) -> String? = { System.getenv(it) },
     val log: (String) -> Unit = { println(it) }) : Reporter<Unit> {
 
-    override fun createReport(result: RunTestsResult) {
+    override fun createReport(deployResult: DeployResult) {
         if (systemEnvironment("TEAMCITY_PROJECT_NAME") == null)
             return
 
+        val testResult = deployResult.details.runTestResult
         log("##teamcity[testSuiteStarted name='Apex']")
-        result.successes.forEach {
+        testResult.successes.forEach {
             log("##teamcity[testStarted name='${it.qualifiedClassName.escape()}.${it.methodName.escape()}']")
             log("##teamcity[testFinished " +
                 "name='${it.qualifiedClassName.escape()}.${it.methodName.escape()}' " +
                 "duration='${it.time / 1000}']")
         }
-        result.failures.forEach {
+        testResult.failures.forEach {
             log("##teamcity[testStarted name='${it.qualifiedClassName.escape()}.${it.methodName.escape()}']")
             log("##teamcity[testFailed " +
                 "name='${it.qualifiedClassName.escape()}.${it.methodName.escape()}' " +
@@ -30,27 +31,27 @@ class TeamCityReporter(
                 "name='${it.qualifiedClassName.escape()}.${it.methodName.escape()}' " +
                 "duration='${it.time / 1000}']")
         }
-        log("##teamcity[testSuiteFinished name='Apex' duration='${result.totalTime / 1000}']")
+        log("##teamcity[testSuiteFinished name='Apex' duration='${testResult.totalTime / 1000}']")
 
-        log("##teamcity[message text='Apex Code Coverage is ${result.totalCoveragePercentage}%']")
+        log("##teamcity[message text='Apex Code Coverage is ${testResult.totalCoveragePercentage}%']")
         log("##teamcity[blockOpened name='Apex Code Coverage Summary']")
 
         CoverageType.CLASS.logCoverageStatistic(
-            result.numClassesCovered,
-            result.numClasses,
-            result.classCoveragePercentage)
+            testResult.numClassesCovered,
+            testResult.numClasses,
+            testResult.classCoveragePercentage)
 
         CoverageType.TRIGGER.logCoverageStatistic(
-            result.numTriggersCovered,
-            result.numTriggers,
-            result.triggerCoveragePercentage)
+            testResult.numTriggersCovered,
+            testResult.numTriggers,
+            testResult.triggerCoveragePercentage)
 
         CoverageType.LINE.logCoverageStatistic(
-            result.totalNumLocationsCovered,
-            result.totalNumLocations,
-            result.totalCoveragePercentage)
+            testResult.totalNumLocationsCovered,
+            testResult.totalNumLocations,
+            testResult.totalCoveragePercentage)
 
-        logBuildStatisticValue("CodeCoverageWarningCount", result.codeCoverageWarnings.orEmpty().size)
+        logBuildStatisticValue("CodeCoverageWarningCount", testResult.codeCoverageWarnings.orEmpty().size)
 
         log("##teamcity[blockClosed name='Apex Code Coverage Summary']")
     }

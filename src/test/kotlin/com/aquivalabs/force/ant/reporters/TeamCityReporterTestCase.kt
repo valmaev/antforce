@@ -26,7 +26,7 @@ class TeamCityReporterTestCase {
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        sut.createReport(runTestsResult)
+        sut.createReport(createDeployResult(runTestsResult))
 
         // Assert
         assertTrue(
@@ -111,7 +111,7 @@ class TeamCityReporterTestCase {
         val runTestsResult = createRunTestsResult()
 
         // Act
-        sut.createReport(runTestsResult)
+        sut.createReport(createDeployResult(runTestsResult))
 
         // Assert
         assertThat(actual, empty())
@@ -128,7 +128,7 @@ class TeamCityReporterTestCase {
         val runTestsResult = createRunTestsResult(totalTime = 2000.0)
 
         // Act
-        sut.createReport(runTestsResult)
+        sut.createReport(createDeployResult(runTestsResult))
 
         // Assert
         assertTrue(actual.contains("##teamcity[testSuiteStarted name='Apex']"))
@@ -161,7 +161,7 @@ class TeamCityReporterTestCase {
                 time = 100.0)))
 
         // Act
-        sut.createReport(runTestsResult)
+        sut.createReport(createDeployResult(runTestsResult))
 
         // Assert
         runTestsResult.successes.forEach {
@@ -201,7 +201,7 @@ class TeamCityReporterTestCase {
                 stackTrace = "Class.TestPortalController.constructor_always_shouldSetContactAndAccount: line 16, column 1")))
 
         // Act
-        sut.createReport(runTestsResult)
+        sut.createReport(createDeployResult(runTestsResult))
 
         // Assert
         runTestsResult.failures.forEach {
@@ -243,7 +243,7 @@ class TeamCityReporterTestCase {
         val runTestsResult = createRunTestsResult(failures = arrayOf(failure))
 
         // Act
-        sut.createReport(runTestsResult)
+        sut.createReport(createDeployResult(runTestsResult))
 
         // Assert
         assertTrue(actual.contains(
@@ -275,7 +275,7 @@ class TeamCityReporterTestCase {
         val runTestsResult = createRunTestsResult(successes = arrayOf(success))
 
         // Act
-        sut.createReport(runTestsResult)
+        sut.createReport(createDeployResult(runTestsResult))
 
         // Assert
         assertTrue(actual.contains(

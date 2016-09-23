@@ -5,12 +5,21 @@ import com.aquivalabs.force.ant.reporters.cobertura.Classes
 import com.aquivalabs.force.ant.reporters.cobertura.CoberturaReportRoot
 import com.aquivalabs.force.ant.qualifiedName
 import com.sforce.soap.metadata.CodeCoverageResult
-import com.sforce.soap.metadata.RunTestsResult
+import com.sforce.soap.metadata.DeployResult
+import java.io.File
 
-class CoberturaCoverageReporter(var projectRootPath: String? = null) : Reporter<CoberturaReportRoot> {
+class CoberturaCoverageReporter(
+    var outputFile: File,
+    var projectRootPath: String? = null) : Reporter<File> {
 
-    override fun createReport(result: RunTestsResult): CoberturaReportRoot {
-        val coverageTypes = result.codeCoverage.groupBy { it.type ?: "" }
+    override fun createReport(deployResult: DeployResult): File {
+        val report = createCoberturaReport(deployResult)
+        outputFile.writeText(report.toString())
+        return outputFile
+    }
+
+    internal fun createCoberturaReport(deployResult: DeployResult): CoberturaReportRoot {
+        val coverageTypes = deployResult.details.runTestResult.codeCoverage.groupBy { it.type ?: "" }
 
         val report = CoberturaReportRoot()
         report.coverage {

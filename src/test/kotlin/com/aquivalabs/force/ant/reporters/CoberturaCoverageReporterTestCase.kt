@@ -2,6 +2,7 @@ package com.aquivalabs.force.ant.reporters
 
 import com.aquivalabs.force.ant.createCodeCoverageResult
 import com.aquivalabs.force.ant.createCodeLocation
+import com.aquivalabs.force.ant.createDeployResult
 import com.aquivalabs.force.ant.createRunTestsResult
 import com.aquivalabs.force.ant.reporters.cobertura.Coverage
 import com.aquivalabs.force.ant.reporters.cobertura.Packages
@@ -10,6 +11,7 @@ import org.hamcrest.MatcherAssert.*
 import org.hamcrest.core.IsEqual.*
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
+import java.io.File
 
 
 class CoberturaCoverageReporterTestCase {
@@ -20,10 +22,9 @@ class CoberturaCoverageReporterTestCase {
         expected: Packages,
         reason: String) {
 
-        val sut = createSystemUnderTest()
-        sut.projectRootPath = projectRootPath
+        val sut = createSystemUnderTest(projectRootPath)
         val testResult = createRunTestsResult(codeCoverage = codeCoverage)
-        val report = sut.createReport(testResult)
+        val report = sut.createCoberturaReport(createDeployResult(testResult))
 
         val actual = report
             .children.filterIsInstance<Coverage>().single()
@@ -103,7 +104,7 @@ class CoberturaCoverageReporterTestCase {
                             }
                             `class`(
                                 name = "foo.BookBuilder",
-                                filename = "") {
+                                filename = "classes/BookBuilder.cls") {
                                 lines()
                             }
                         }
@@ -117,7 +118,7 @@ class CoberturaCoverageReporterTestCase {
                             }
                             `class`(
                                 name = "bar.BookTrigger",
-                                filename = "") {
+                                filename = "triggers/BookTrigger.trigger") {
                                 lines()
                             }
                         }
@@ -201,12 +202,12 @@ class CoberturaCoverageReporterTestCase {
                     `package`("Class") {
                         classes {
                             `class`(
-                                filename = "",
+                                filename = "classes/BookBuilder.cls",
                                 name = "foo.BookBuilder") { lines() }
                         }
                     }
                 },
-                "Should not generate fileName for coverage results with non-empty namespace"),
+                "Should generate fileName for coverage results with non-empty namespace"),
             arrayOf(
                 arrayOf(
                     createCodeCoverageResult(
@@ -247,5 +248,7 @@ class CoberturaCoverageReporterTestCase {
                 "Should properly handle trailing slash in projectRootPath"))
     }
 
-    fun createSystemUnderTest() = CoberturaCoverageReporter()
+    fun createSystemUnderTest(projectRootPath: String?) = CoberturaCoverageReporter(
+        outputFile = File("foo"),
+        projectRootPath = projectRootPath)
 }

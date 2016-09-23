@@ -9,26 +9,27 @@ import org.hamcrest.MatcherAssert.*
 import org.hamcrest.core.IsEqual.*
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
+import java.io.File
 import java.time.LocalDateTime
 
 
 class JUnitReporterTestCase {
     val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.MIN }
 
-    @Test(dataProvider = "createReportTesSuiteData")
-    fun createReport_always_shouldCreateProperTestSuite(
+    @Test(dataProvider = "createJUnitReportTesSuiteData")
+    fun createJUnitReport_always_shouldCreateProperTestSuite(
         input: RunTestsResult,
         expected: TestSuite,
         reason: String) {
 
         val sut = createSystemUnderTest(dateTimeProvider)
-        val report = sut.createReport(input)
+        val report = sut.createJUnitReport(createDeployResult(input))
         val actual = report.children.filterIsInstance<TestSuite>().single()
         assertThat(reason, actual, equalTo(expected))
     }
 
     @DataProvider
-    fun createReportTesSuiteData(): Array<Array<Any>> {
+    fun createJUnitReportTesSuiteData(): Array<Array<Any>> {
         return arrayOf(
             arrayOf(
                 createRunTestsResult(),
@@ -44,23 +45,23 @@ class JUnitReporterTestCase {
                 "Should properly calculate time in ms (totalTime / 1000.0)"))
     }
 
-    @Test(dataProvider = "createReportSuiteNameData")
-    fun createReport_always_shouldUsePassedSuiteNameAsExpected(expected: String) {
+    @Test(dataProvider = "createJUnitReportSuiteNameData")
+    fun createJUnitReport_always_shouldUsePassedSuiteNameAsExpected(expected: String) {
         val sut = createSystemUnderTest(dateTimeProvider)
         sut.suiteName = expected
-        val report = sut.createReport(createRunTestsResult())
+        val report = sut.createJUnitReport(createDeployResult())
         val actual = report.children.filterIsInstance<TestSuite>().single()
         assertThat(actual.name, equalTo(expected))
     }
 
     @DataProvider
-    fun createReportSuiteNameData(): Array<Array<out Any>> =
+    fun createJUnitReportSuiteNameData(): Array<Array<out Any>> =
         arrayOf(
             arrayOf<Any>(""),
             arrayOf<Any>("foo"))
 
-    @Test(dataProvider = "createReportTestCaseData")
-    fun createReport_forEachSuccess_shouldCreateTestCaseInsideTestSuite(
+    @Test(dataProvider = "createJUnitReportTestCaseData")
+    fun createJUnitReport_forEachSuccess_shouldCreateTestCaseInsideTestSuite(
         successes: Array<RunTestSuccess>,
         expected: Array<TestCase>,
         reason: String) {
@@ -68,7 +69,7 @@ class JUnitReporterTestCase {
         val sut = createSystemUnderTest(dateTimeProvider)
         val input = createRunTestsResult(successes = successes)
 
-        val report = sut.createReport(input)
+        val report = sut.createJUnitReport(createDeployResult(input))
         val actual = report.children.filterIsInstance<TestSuite>().single().testCases
 
         assertThat(actual.count(), equalTo(expected.size))
@@ -76,7 +77,7 @@ class JUnitReporterTestCase {
     }
 
     @DataProvider
-    fun createReportTestCaseData(): Array<Array<out Any>> {
+    fun createJUnitReportTestCaseData(): Array<Array<out Any>> {
         return arrayOf(
             arrayOf<Any>(
                 arrayOf<RunTestSuccess>(),
@@ -117,8 +118,8 @@ class JUnitReporterTestCase {
                     "(className = name instead of .name or null.name)"))
     }
 
-    @Test(dataProvider = "createReportTestCaseFailureData")
-    fun createReport_forEachFailure_shouldCreateTestCaseWithFailureInsideTestSuite(
+    @Test(dataProvider = "createJUnitReportTestCaseFailureData")
+    fun createJUnitReport_forEachFailure_shouldCreateTestCaseWithFailureInsideTestSuite(
         failures: Array<RunTestFailure>,
         expected: Array<TestCase>,
         reason: String) {
@@ -126,7 +127,7 @@ class JUnitReporterTestCase {
         val sut = createSystemUnderTest(dateTimeProvider)
         val input = createRunTestsResult(failures = failures)
 
-        val report = sut.createReport(input)
+        val report = sut.createJUnitReport(createDeployResult(input))
         val actual = report.children.filterIsInstance<TestSuite>().single().testCases
 
         assertThat(actual.count(), equalTo(expected.size))
@@ -134,7 +135,7 @@ class JUnitReporterTestCase {
     }
 
     @DataProvider
-    fun createReportTestCaseFailureData(): Array<Array<out Any>> {
+    fun createJUnitReportTestCaseFailureData(): Array<Array<out Any>> {
         return arrayOf(
             arrayOf<Any>(
                 arrayOf<RunTestFailure>(),
@@ -198,15 +199,15 @@ class JUnitReporterTestCase {
                     "(className = name instead of .name or null.name)"))
     }
 
-    @Test(dataProvider = "createReportTestCasePropertiesData")
-    fun createReport_forEachProperty_shouldCreateCorrespondingPropertyElement(
+    @Test(dataProvider = "createJUnitReportTestCasePropertiesData")
+    fun createJUnitReport_forEachProperty_shouldCreateCorrespondingPropertyElement(
         properties: Map<String, String>,
         expected: Array<Property>,
         reason: String) {
 
         val sut = createSystemUnderTest(dateTimeProvider)
         sut.properties = properties
-        val report = sut.createReport(createRunTestsResult())
+        val report = sut.createJUnitReport(createDeployResult())
         val suite = report.children.filterIsInstance<TestSuite>().single()
         val actual = suite
             .children.filterIsInstance<Properties>().single()
@@ -217,7 +218,7 @@ class JUnitReporterTestCase {
     }
 
     @DataProvider
-    fun createReportTestCasePropertiesData(): Array<Array<out Any>> {
+    fun createJUnitReportTestCasePropertiesData(): Array<Array<out Any>> {
         return arrayOf(
             arrayOf(
                 hashMapOf<String, String>(),
@@ -235,5 +236,7 @@ class JUnitReporterTestCase {
 
     fun createSystemUnderTest(
         dateTimeProvider: () -> LocalDateTime = this.dateTimeProvider) =
-        JUnitReporter(dateTimeProvider = dateTimeProvider)
+        JUnitReporter(
+            outputFile = File("foo"),
+            dateTimeProvider = dateTimeProvider)
 }

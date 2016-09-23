@@ -83,7 +83,7 @@ table.coverage td {
 }
 table.coverage td.line-count {
     text-align: right;
-    padding: 0 5px 0 20px;
+    padding: 0 10px 0 20px;
 }
 table.coverage td.line-coverage {
     text-align: right;
@@ -208,7 +208,7 @@ pre.prettyprint {
 
 .wrapper {
     min-height: 100%;
-    height: 100%;
+    height: auto !important;
     margin: 0 auto -48px;
 }
 .footer, .push {

@@ -21,6 +21,13 @@ fun createFileSet(directory: File, fileNames: Iterable<String>): FileSet {
 fun createFileSet(directory: File, vararg filesNames: String) =
     createFileSet(directory, filesNames.asIterable())
 
+fun createDeployResult(runTestsResult: RunTestsResult? = null): DeployResult {
+    val result = DeployResult()
+    result.details = DeployDetails()
+    result.details.runTestResult = runTestsResult ?: RunTestsResult()
+    return result
+}
+
 fun createRunTestsResult(
     numTestsRun: Int = 0,
     numFailures: Int = 0,
