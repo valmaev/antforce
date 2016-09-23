@@ -16,7 +16,7 @@ internal fun Double.format(digits: Int) = String.format(Locale.US, "%.${digits}f
 internal fun Class<*>.getResourceAsString(name: String) = getResourceAsStream(name).reader().use { it.readText() }
 
 class HtmlCoverageReporter(
-    var sourceDir: File,
+    var sourceDir: File?,
     var outputDir: File,
     val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.now() }) : Reporter<File> {
 
@@ -30,11 +30,13 @@ class HtmlCoverageReporter(
         val rootReport = createSummaryReport(testResult)
         rootReport.saveToFile("index.html")
 
-        testResult.codeCoverage.forEach {
-            val file = File(sourceDir, it.classFileName)
-            if (file.exists() && file.isFile) {
-                val report = createClassCoverageReport(it, file)
-                report.saveToFile("${it.classFileName}.html")
+        if (sourceDir != null) {
+            testResult.codeCoverage.forEach {
+                val file = File(sourceDir, it.classFileName)
+                if (file.exists() && file.isFile) {
+                    val report = createClassCoverageReport(it, file)
+                    report.saveToFile("${it.classFileName}.html")
+                }
             }
         }
         return outputDir
@@ -234,7 +236,10 @@ class HtmlCoverageReporter(
                         attributes["data-value"] = type
                     }
                     td(coverageLevel) {
-                        a(href = "${it.classFileName}.html") { +it.qualifiedName }
+                        if (sourceDir == null)
+                            +it.qualifiedName
+                        else
+                            a(href = "${it.classFileName}.html") { +it.qualifiedName }
                         attributes["data-value"] = it.qualifiedName
                     }
                     td("pic $coverageLevel") {
@@ -286,7 +291,7 @@ class HtmlCoverageReporter(
                     li("coverage-warning") {
                         span("coverage-warning-name") { +it.qualifiedName }
                         +": "
-                        span("coverage-warning-message") { +"${it.message}" }
+                        span("coverage-warning-message") { +it.message.orEmpty() }
                     }
                 }
             }

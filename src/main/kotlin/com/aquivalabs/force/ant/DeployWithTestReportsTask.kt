@@ -48,7 +48,7 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
 
     fun addConfiguredHtmlCoverageReport(report: HtmlCoverageReport) {
         fileReporters["HtmlCoverage"] = HtmlCoverageReporter(
-            sourceDir = sourceDir!!,
+            sourceDir = sourceDir,
             outputDir = File(reportDir, report.dir))
     }
 

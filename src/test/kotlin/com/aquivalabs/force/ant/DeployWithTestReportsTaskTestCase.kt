@@ -100,78 +100,6 @@ class DeployWithTestReportsTaskTestCase {
         }
     }
 
-//    @Test fun saveJUnitReportToFile_ifReportDirIsNotNull_shouldCreateReportFileWithExpectedContent() {
-//        withTestDirectory { testDirectory ->
-//            // Arrange
-//            val sut = createSystemUnderTest()
-//            sut.jUnitReporter = JUnitReporter(dateTimeProvider = { LocalDateTime.MAX })
-//            sut.reportDir = testDirectory
-//            sut.username = "foo"
-//            sut.serverURL = "bar"
-//            sut.apiVersion = 35.0
-//
-//            val report = JUnitReport(file = "TEST-ApexSuite.xml", suiteName = "TestSuite")
-//            sut.addConfiguredJUnitReport(report)
-//
-//            val input = createRunTestsResult()
-//
-//            // Act
-//            sut.saveJUnitReportToFile(input)
-//
-//            // Assert
-//            val expectedContent = sut.jUnitReporter.createReport(input).toString()
-//            val actual = testDirectory.listFiles().single { it.name == report.file }
-//            assertTrue(actual.exists(), "Report file wasn't found")
-//            assertEquals(actual.readText(), expectedContent)
-//        }
-//    }
-//
-//    @Test fun saveCoberturaReportToFile_ifReportDirIsNotNull_shouldCreateReportFileWithExpectedContent() {
-//        withTestDirectory { testDirectory ->
-//            // Arrange
-//            val sut = createSystemUnderTest()
-//            sut.coberturaReporter = CoberturaCoverageReporter()
-//            sut.reportDir = testDirectory
-//
-//            val report = CoberturaReport(file = "Cobertura.xml")
-//            sut.addConfiguredCoberturaReport(report)
-//
-//            val input = createRunTestsResult()
-//            val expectedContent = sut.coberturaReporter.createReport(input).toString()
-//
-//            // Act
-//            sut.saveCoberturaReportToFile(input)
-//
-//            // Assert
-//            val actual = testDirectory.listFiles().single { it.name == report.file }
-//            assertTrue(actual.exists(), "Report file wasn't found")
-//            assertEquals(actual.readText(), expectedContent)
-//        }
-//    }
-//
-//    @Test fun saveHtmlCoverageReportToFile_ifReportDirIsNotNull_shouldCreateReportFileWithExpectedContent() {
-//        withTestDirectory { testDirectory ->
-//            // Arrange
-//            val sut = createSystemUnderTest()
-//            sut.htmlCoverageReporter = HtmlCoverageReporter(dateTimeProvider = { LocalDateTime.MAX })
-//            sut.reportDir = testDirectory
-//
-//            val report = HtmlCoverageReport(file = "Coverage.html")
-//            sut.addConfiguredHtmlCoverageReport(report)
-//
-//            val input = createRunTestsResult()
-//            val expectedContent = sut.htmlCoverageReporter.createReport(input).serialize(true)
-//
-//            // Act
-//            sut.saveHtmlCoverageReportToFile(input)
-//
-//            // Assert
-//            val actual = testDirectory.listFiles().single { it.name == report.file }
-//            assertTrue(actual.exists(), "Report file wasn't found")
-//            assertEquals(actual.readText(), expectedContent)
-//        }
-//    }
-
     @Test fun deployRoot_always_shouldReturnValueFromCorrespondingBaseClassPrivateField() {
         val sut = createSystemUnderTest()
         val expected = "foobar"
@@ -464,6 +392,63 @@ class DeployWithTestReportsTaskTestCase {
         assertEquals(actualPackage, expectedPackage)
     }
 
+    @Test fun handleResponse_ifReportDirIsNotNullAndJUnitReport_shouldCreateReportFile() {
+        withTestDirectory { testDirectory ->
+            // Arrange
+            val sut = createSystemUnderTest()
+            sut.reportDir = testDirectory
+            sut.username = "foo"
+            sut.serverURL = "bar"
+            sut.apiVersion = 35.0
+
+            val report = JUnitReport(file = "TEST-ApexSuite.xml", suiteName = "TestSuite")
+            sut.addConfiguredJUnitReport(report)
+
+            // Act
+            sut.handleResponse(createMetadataConnectionMock(), createAsyncResult())
+
+            // Assert
+            val actual = testDirectory.listFiles().single { it.name == report.file }
+            assertTrue(actual.exists(), "Report file wasn't found")
+        }
+    }
+
+    @Test fun handleResponse_ifReportDirIsNotNullAndCoberturaReport_shouldCreateReportFile() {
+        withTestDirectory { testDirectory ->
+            // Arrange
+            val sut = createSystemUnderTest()
+            sut.reportDir = testDirectory
+
+            val report = CoberturaReport(file = "Cobertura.xml")
+            sut.addConfiguredCoberturaReport(report)
+
+            // Act
+            sut.handleResponse(createMetadataConnectionMock(), createAsyncResult())
+
+            // Assert
+            val actual = testDirectory.listFiles().single { it.name == report.file }
+            assertTrue(actual.exists(), "Report file wasn't found")
+        }
+    }
+
+    @Test fun handleResponse_ifReportDirIsNotNullAndHtmlCoverageReport_shouldCreateReportFile() {
+        withTestDirectory { testDirectory ->
+            // Arrange
+            val sut = createSystemUnderTest()
+            sut.reportDir = testDirectory
+
+            val report = HtmlCoverageReport(dir = "html-coverage")
+            sut.addConfiguredHtmlCoverageReport(report)
+
+            // Act
+            sut.handleResponse(createMetadataConnectionMock(), createAsyncResult())
+
+            // Assert
+            val actual = testDirectory.listFiles().single { it.name == report.dir }
+            assertTrue(actual.exists(), "Report file wasn't found")
+        }
+    }
+
     @Test
     fun handleResponse_withNonBlankCoverageTestClassName_shouldRemoveItFromTestResult() {
         withTestDirectory {
@@ -513,18 +498,6 @@ class DeployWithTestReportsTaskTestCase {
         asyncResult.id = UUID.randomUUID().toString()
         asyncResult.done = done
         return asyncResult
-    }
-
-    private fun createDeployResult(
-        done: Boolean = true,
-        testResult: RunTestsResult = createRunTestsResult()): DeployResult {
-
-        val result = DeployResult()
-        result.id = UUID.randomUUID().toString()
-        result.done = done
-        result.details = DeployDetails()
-        result.details.runTestResult = testResult
-        return result
     }
 
     private fun ByteArray.getEntryContent(name: String): String? {
@@ -630,7 +603,7 @@ class DeployWithTestReportsTaskTestCase {
             directory,
             fileNames.map { it + APEX_CLASS_FILE_EXTENSION })
 
-    fun createTeamCityReporter(log: (String) -> Unit = { println(it) }): TeamCityReporter {
+    fun createTeamCityReporter(log: (String) -> Unit = ::println): TeamCityReporter {
         val env = hashMapOf("TEAMCITY_PROJECT_NAME" to "foo")
         return TeamCityReporter({ env[it] }, log)
     }
