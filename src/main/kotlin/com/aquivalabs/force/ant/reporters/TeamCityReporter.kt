@@ -6,7 +6,7 @@ import com.sforce.soap.metadata.DeployResult
 
 class TeamCityReporter(
     val systemEnvironment: (String) -> String? = { System.getenv(it) },
-    val log: (String) -> Unit = { println(it) }) : Reporter<Unit> {
+    val log: (String) -> Unit = ::println) : Reporter<Unit> {
 
     override fun createReport(deployResult: DeployResult) {
         if (systemEnvironment("TEAMCITY_PROJECT_NAME") == null)

@@ -47,8 +47,9 @@ abstract class Tag(val tagName: String) : Element {
             renderWithChildren(builder, indent)
     }
 
-    protected fun renderAsSelfClosing(builder: StringBuilder, indent: String) =
+    protected fun renderAsSelfClosing(builder: StringBuilder, indent: String) {
         builder.append("$indent<$tagName${renderAttributes()} />\n")
+    }
 
     protected fun renderWithChildren(builder: StringBuilder, indent: String) {
         builder.append("$indent<$tagName${renderAttributes()}>\n")

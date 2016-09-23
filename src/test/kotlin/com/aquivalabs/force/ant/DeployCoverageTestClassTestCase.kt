@@ -61,7 +61,7 @@ class DeployCoverageTestClassTestCase {
 
         assertThat(
             the(actual),
-            hasXPath("/x:Package/x:types/x:members", metadataApiNamespace, equalTo("$expectedClassName")))
+            hasXPath("/x:Package/x:types/x:members", metadataApiNamespace, equalTo(expectedClassName)))
         assertThat(
             the(actual),
             hasXPath("/x:Package/x:types/x:name", metadataApiNamespace, equalTo("ApexClass")))

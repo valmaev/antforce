@@ -44,18 +44,18 @@ class ExecuteAnonymousApexTask : SFDCAntTask() {
 
     private fun ExecuteAnonymousResult.toCompilerError() =
         "$ERROR_HEADER${System.lineSeparator()}" +
-            "Error: ${this.compileProblem} (line ${this.line}, column ${this.column})}"
+            "Error: $compileProblem (line $line, column $column)}"
 
     private fun ExecuteAnonymousResult.toExceptionMessage() =
         "$ERROR_HEADER${System.lineSeparator()}" +
-            "${this.exceptionMessage}${System.lineSeparator()}" +
-            "Stack trace: ${this.exceptionStackTrace}"
+            "$exceptionMessage${System.lineSeparator()}" +
+            "Stack trace: $exceptionStackTrace"
 
     private fun getBuildFileErrorLocation(result: ExecuteAnonymousResult): Location {
         val lines = _code.lines()
         val linesCount = lines.count()
-        val emptyLinesBeforeCodeCount = lines.takeWhile { it.isBlank() }.count()
-        val emptyLinesAfterCodeCount = lines.reversed().takeWhile { it.isBlank() }.count()
+        val emptyLinesBeforeCodeCount = lines.takeWhile(String::isBlank).count()
+        val emptyLinesAfterCodeCount = lines.reversed().takeWhile(String::isBlank).count()
         val codeLinesCount = linesCount - emptyLinesBeforeCodeCount - emptyLinesAfterCodeCount
 
         val lineOffset = when {
