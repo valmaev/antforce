@@ -3,7 +3,6 @@ package com.aquivalabs.force.ant.reporters
 import com.aquivalabs.force.ant.createRunTestsResult
 import com.aquivalabs.force.ant.*
 import com.sforce.soap.metadata.*
-import kotlinx.html.dom.serialize
 import org.hamcrest.core.IsNull.*
 import org.hamcrest.core.IsEqual.*
 import org.hamcrest.core.StringContains.*
@@ -21,8 +20,8 @@ class HtmlCoverageReporterTestCase {
 
     val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.MIN }
 
-    @Test(dataProvider = "createSummaryReportTestData")
-    fun createSummaryReport_always_shouldContainTotalLineCoveragePercentage(
+    @Test(dataProvider = "createReportTestData")
+    fun createReport_always_shouldContainTotalLineCoveragePercentage(
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
@@ -32,16 +31,18 @@ class HtmlCoverageReporterTestCase {
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val report = sut.createSummaryReport(runTestsResult)
+        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val reportFile = File(outputDir, "index.html")
 
         // Assert
-        val actual = report.getElementById("totalLineCoveragePercentage").textContent
+        val html = Jsoup.parse(reportFile, Charsets.UTF_8.name())
+        val actual = html.getElementById("totalLineCoveragePercentage").text()
         val expected = "${runTestsResult.totalCoveragePercentage.format(2)}%"
         assertThat(actual, equalTo(expected))
     }
 
-    @Test(dataProvider = "createSummaryReportTestData")
-    fun createSummaryReport_always_shouldContainTotalLineCoverage(
+    @Test(dataProvider = "createReportTestData")
+    fun createReport_always_shouldContainTotalLineCoverage(
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
@@ -51,16 +52,18 @@ class HtmlCoverageReporterTestCase {
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val report = sut.createSummaryReport(runTestsResult)
+        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val reportFile = File(outputDir, "index.html")
 
         // Assert
-        val actual = report.getElementById("totalLineCoverage").textContent
+        val html = Jsoup.parse(reportFile, Charsets.UTF_8.name())
+        val actual = html.getElementById("totalLineCoverage").text()
         val expected = "${runTestsResult.totalNumLocationsCovered}/${runTestsResult.totalNumLocations}"
         assertThat(actual, equalTo(expected))
     }
 
-    @Test(dataProvider = "createSummaryReportTestData")
-    fun createSummaryReport_always_shouldContainTotalClassCoveragePercentage(
+    @Test(dataProvider = "createReportTestData")
+    fun createReport_always_shouldContainTotalClassCoveragePercentage(
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
@@ -70,16 +73,18 @@ class HtmlCoverageReporterTestCase {
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val report = sut.createSummaryReport(runTestsResult)
+        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val reportFile = File(outputDir, "index.html")
 
         // Assert
-        val actual = report.getElementById("totalClassCoveragePercentage").textContent
+        val html = Jsoup.parse(reportFile, Charsets.UTF_8.name())
+        val actual = html.getElementById("totalClassCoveragePercentage").text()
         val expected = "${runTestsResult.classCoveragePercentage.format(2)}%"
         assertThat(actual, equalTo(expected))
     }
 
-    @Test(dataProvider = "createSummaryReportTestData")
-    fun createSummaryReport_always_shouldContainTotalClassCoverage(
+    @Test(dataProvider = "createReportTestData")
+    fun createReport_always_shouldContainTotalClassCoverage(
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
@@ -89,16 +94,18 @@ class HtmlCoverageReporterTestCase {
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val report = sut.createSummaryReport(runTestsResult)
+        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val reportFile = File(outputDir, "index.html")
 
         // Assert
-        val actual = report.getElementById("totalClassCoverage").textContent
+        val html = Jsoup.parse(reportFile, Charsets.UTF_8.name())
+        val actual = html.getElementById("totalClassCoverage").text()
         val expected = "${runTestsResult.numClassesCovered}/${runTestsResult.numClasses}"
         assertThat(actual, equalTo(expected))
     }
 
-    @Test(dataProvider = "createSummaryReportTestData")
-    fun createSummaryReport_always_shouldContainTotalTriggerCoveragePercentage(
+    @Test(dataProvider = "createReportTestData")
+    fun createReport_always_shouldContainTotalTriggerCoveragePercentage(
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
@@ -108,16 +115,18 @@ class HtmlCoverageReporterTestCase {
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val report = sut.createSummaryReport(runTestsResult)
+        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val reportFile = File(outputDir, "index.html")
 
         // Assert
-        val actual = report.getElementById("totalTriggerCoveragePercentage").textContent
+        val html = Jsoup.parse(reportFile, Charsets.UTF_8.name())
+        val actual = html.getElementById("totalTriggerCoveragePercentage").text()
         val expected = "${runTestsResult.triggerCoveragePercentage.format(2)}%"
         assertThat(actual, equalTo(expected))
     }
 
-    @Test(dataProvider = "createSummaryReportTestData")
-    fun createSummaryReport_always_shouldContainTotalTriggerCoverage(
+    @Test(dataProvider = "createReportTestData")
+    fun createReport_always_shouldContainTotalTriggerCoverage(
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
@@ -127,16 +136,18 @@ class HtmlCoverageReporterTestCase {
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val report = sut.createSummaryReport(runTestsResult)
+        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val reportFile = File(outputDir, "index.html")
 
         // Assert
-        val actual = report.getElementById("totalTriggerCoverage").textContent
+        val html = Jsoup.parse(reportFile, Charsets.UTF_8.name())
+        val actual = html.getElementById("totalTriggerCoverage").text()
         val expected = "${runTestsResult.numTriggersCovered}/${runTestsResult.numTriggers}"
         assertThat(actual, equalTo(expected))
     }
 
     @DataProvider
-    fun createSummaryReportTestData(): Array<Array<Any?>> {
+    fun createReportTestData(): Array<Array<Any?>> {
         return arrayOf(
             arrayOf<Any?>(
                 arrayOf(
@@ -176,24 +187,26 @@ class HtmlCoverageReporterTestCase {
                         namespace = "qwe"))))
     }
 
-    @Test(dataProvider = "createSummaryReportWarningsTestData")
-    fun createSummaryReport_always_shouldContainTotalNumberOfCoverageWarnings(
+    @Test(dataProvider = "createReportWarningsTestData")
+    fun createReport_always_shouldContainTotalNumberOfCoverageWarnings(
         codeCoverageWarnings: Array<CodeCoverageWarning>?) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider)
         val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val report = sut.createSummaryReport(runTestsResult)
+        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val reportFile = File(outputDir, "index.html")
 
         // Assert
-        val actual = report.getElementById("totalCoverageWarnings").textContent
+        val html = Jsoup.parse(reportFile, Charsets.UTF_8.name())
+        val actual = html.getElementById("totalCoverageWarnings").text()
         val expected = "${runTestsResult.codeCoverageWarnings.orEmpty().count()}"
         assertThat(actual, equalTo(expected))
     }
 
     @DataProvider
-    fun createSummaryReportWarningsTestData(): Array<Array<Any?>> =
+    fun createReportWarningsTestData(): Array<Array<Any?>> =
         emptyCoverageWarningTestData()
             .plus(nonEmptyCoverageWarningsTestData())
             .plus(arrayOf(arrayOf<Any?>(
@@ -228,17 +241,18 @@ class HtmlCoverageReporterTestCase {
     }
 
     @Test(dataProvider = "nonEmptyCoverageWarningsTestData")
-    fun createSummaryReport_ifCoverageWarningsExist_shouldContainAllOfThem(
+    fun createReport_ifCoverageWarningsExist_shouldContainAllOfThem(
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider)
         val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val report = sut.createSummaryReport(runTestsResult)
+        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val reportFile = File(outputDir, "index.html")
 
         // Assert
-        val html = Jsoup.parse(report.serialize())
+        val html = Jsoup.parse(reportFile, Charsets.UTF_8.name())
         val coverageWarningListItems = html
             .getElementById("coverageWarningsList")
             .getElementsByTag("li")
@@ -260,22 +274,24 @@ class HtmlCoverageReporterTestCase {
     data class CoverageWarning(val qualifiedName: String?, val message: String?)
 
     @Test(dataProvider = "emptyCoverageWarningTestData")
-    fun createSummaryReport_ifNoCoverageWarningsExist_shouldNotIncludeThem(
+    fun createReport_ifNoCoverageWarningsExist_shouldNotIncludeThem(
         codeCoverageWarnings: Array<CodeCoverageWarning>?) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider)
         val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val report = sut.createSummaryReport(runTestsResult)
+        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val reportFile = File(outputDir, "index.html")
 
         // Assert
+        val report = Jsoup.parse(reportFile, Charsets.UTF_8.name())
         val actual = report.getElementById("coverageWarningsList")
         assertThat(actual, nullValue())
     }
 
-    @Test(dataProvider = "createSummaryReportTestData")
-    fun createSummaryReport_always_shouldContainTableWithAllCoverageResults(
+    @Test(dataProvider = "createReportTestData")
+    fun createReport_always_shouldContainTableWithAllCoverageResults(
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
@@ -285,10 +301,11 @@ class HtmlCoverageReporterTestCase {
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val report = sut.createSummaryReport(runTestsResult)
+        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val reportFile = File(outputDir, "index.html")
 
         // Assert
-        val html = Jsoup.parse(report.serialize())
+        val html = Jsoup.parse(reportFile, Charsets.UTF_8.name())
         val coverageRows = html
             .getElementsByClass("coverage-summary").single()
             .getElementsByTag("tbody").single()
@@ -321,8 +338,8 @@ class HtmlCoverageReporterTestCase {
         val linesPercent: String,
         val lines: String)
 
-    @Test(dataProvider = "createSummaryReportHighlightingTestData")
-    fun createSummaryReport_always_shouldProperlySetCssStyleToClassCoverageRow(
+    @Test(dataProvider = "createReportHighlightingTestData")
+    fun createReport_always_shouldProperlySetCssStyleToClassCoverageRow(
         codeCoverageResult: CodeCoverageResult,
         expected: String) {
         // Arrange
@@ -330,10 +347,11 @@ class HtmlCoverageReporterTestCase {
         val runTestsResult = createRunTestsResult(codeCoverage = arrayOf(codeCoverageResult))
 
         // Act
-        val report = sut.createSummaryReport(runTestsResult)
+        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val reportFile = File(outputDir, "index.html")
 
         // Assert
-        val html = Jsoup.parse(report.serialize())
+        val html = Jsoup.parse(reportFile, Charsets.UTF_8.name())
         val coverageCells = html
             .getElementsByClass("coverage-summary").single()
             .getElementsByTag("tbody").single()
@@ -345,7 +363,7 @@ class HtmlCoverageReporterTestCase {
     }
 
     @DataProvider
-    fun createSummaryReportHighlightingTestData(): Array<Array<Any>> {
+    fun createReportHighlightingTestData(): Array<Array<Any>> {
         return arrayOf(
             arrayOf(
                 createCodeCoverageResult(
@@ -370,25 +388,29 @@ class HtmlCoverageReporterTestCase {
     }
 
     @Test
-    fun createSummaryReport_always_shouldContainFooterWithCreationDate() {
+    fun createReport_always_shouldContainFooterWithCreationDate() {
         val expected = LocalDateTime.now()
         val sut = createSystemUnderTest(dateTimeProvider = { expected })
 
-        val report = sut.createSummaryReport(createRunTestsResult())
+        val outputDir = sut.createReport(createDeployResult())
+        val reportFile = File(outputDir, "index.html")
 
-        val html = Jsoup.parse(report.serialize())
+        val html = Jsoup.parse(reportFile, Charsets.UTF_8.name())
         val actual = html.getElementsByClass("footer").single().ownText()
         assertThat(actual, containsString(expected.toString()))
     }
 
     @Test
-    fun createSummaryReport_always_shouldEmbedCssFromResources() {
+    fun createReport_always_shouldEmbedCssFromResources() {
         val sut = createSystemUnderTest(dateTimeProvider = { LocalDateTime.now() })
 
-        val report = sut.createSummaryReport(createRunTestsResult())
+        // Act
+        val outputDir = sut.createReport(createDeployResult())
+        val reportFile = File(outputDir, "index.html")
 
-        val html = Jsoup.parse(report.serialize())
-        val actual = html.getElementsByTag("style").first().data().trim()
+        // Assert
+        val report = Jsoup.parse(reportFile, Charsets.UTF_8.name())
+        val actual = report.getElementsByTag("style").first().data().trim()
         val expected = File(javaClass.classLoader.getResource("coverage-report.css").file)
             .readText().trim()
         assertEquals(actual, expected)
