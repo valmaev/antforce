@@ -86,7 +86,10 @@ class HtmlCoverageReporter(
                                         var index = 0
                                         sourceFile.bufferedReader().forEachLine {
                                             if (notCoveredLines.contains(++index))
-                                                span(classes = "cstat-no") { +"$it\n" }
+                                                span(classes = "cstat-no") {
+                                                    id = "not-covered-line-$index"
+                                                    +"$it\n"
+                                                }
                                             else
                                                 +"$it\n"
                                         }

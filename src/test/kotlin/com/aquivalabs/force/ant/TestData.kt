@@ -105,6 +105,8 @@ fun createCodeLocation(
     return location
 }
 
+fun Int.toCodeLocation(): CodeLocation = createCodeLocation(this)
+
 fun createRunTestSuccess(
     namespace: String? = "",
     name: String? = "",

@@ -25,7 +25,7 @@ class HtmlCoverageReporterTestCase {
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
-        val sut = createSystemUnderTest(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
         val runTestsResult = createRunTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
@@ -46,7 +46,7 @@ class HtmlCoverageReporterTestCase {
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
-        val sut = createSystemUnderTest(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
         val runTestsResult = createRunTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
@@ -67,7 +67,7 @@ class HtmlCoverageReporterTestCase {
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
-        val sut = createSystemUnderTest(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
         val runTestsResult = createRunTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
@@ -88,7 +88,7 @@ class HtmlCoverageReporterTestCase {
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
-        val sut = createSystemUnderTest(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
         val runTestsResult = createRunTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
@@ -109,7 +109,7 @@ class HtmlCoverageReporterTestCase {
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
-        val sut = createSystemUnderTest(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
         val runTestsResult = createRunTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
@@ -130,7 +130,7 @@ class HtmlCoverageReporterTestCase {
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
-        val sut = createSystemUnderTest(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
         val runTestsResult = createRunTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
@@ -191,7 +191,7 @@ class HtmlCoverageReporterTestCase {
     fun createReport_always_shouldContainTotalNumberOfCoverageWarnings(
         codeCoverageWarnings: Array<CodeCoverageWarning>?) {
         // Arrange
-        val sut = createSystemUnderTest(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
         val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
@@ -244,7 +244,7 @@ class HtmlCoverageReporterTestCase {
     fun createReport_ifCoverageWarningsExist_shouldContainAllOfThem(
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
-        val sut = createSystemUnderTest(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
         val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
@@ -277,7 +277,7 @@ class HtmlCoverageReporterTestCase {
     fun createReport_ifNoCoverageWarningsExist_shouldNotIncludeThem(
         codeCoverageWarnings: Array<CodeCoverageWarning>?) {
         // Arrange
-        val sut = createSystemUnderTest(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
         val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
@@ -295,7 +295,7 @@ class HtmlCoverageReporterTestCase {
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
-        val sut = createSystemUnderTest(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
         val runTestsResult = createRunTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
@@ -343,7 +343,7 @@ class HtmlCoverageReporterTestCase {
         codeCoverageResult: CodeCoverageResult,
         expected: String) {
         // Arrange
-        val sut = createSystemUnderTest(dateTimeProvider)
+        val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
         val runTestsResult = createRunTestsResult(codeCoverage = arrayOf(codeCoverageResult))
 
         // Act
@@ -402,6 +402,7 @@ class HtmlCoverageReporterTestCase {
 
     @Test
     fun createReport_always_shouldEmbedCssFromResources() {
+        // Arrange
         val sut = createSystemUnderTest(dateTimeProvider = { LocalDateTime.now() })
 
         // Act
@@ -416,9 +417,138 @@ class HtmlCoverageReporterTestCase {
         assertEquals(actual, expected)
     }
 
-    fun createSystemUnderTest(dateTimeProvider: () -> LocalDateTime = this.dateTimeProvider) =
-        HtmlCoverageReporter(
-            File("foo"),
-            File("bar"),
-            dateTimeProvider)
+    @Test(dataProvider = "createReportClassCoveragePageData")
+    fun createReport_withNonEmptySourceDir_shouldCreateClassCoverageHtmlPages(
+        sourceFiles: Map<String, String>,
+        codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) {
+        // Arrange
+        val sut = createSystemUnderTest(sourceDir = File(it, "src"), outputDir = it)
+
+        // Act
+        val outputDir = sut.createReport(
+            createDeployResult(createRunTestsResult(codeCoverage = codeCoverage)))
+
+        // Assert
+        sourceFiles.keys.forEach { expected ->
+            val actual = File(outputDir, "$expected.html")
+            assertEquals(
+                actual.exists(),
+                codeCoverage.count { it.classFileName == expected } == 1)
+
+            val html = Jsoup.parse(actual, Charsets.UTF_8.name())
+            val actualContent = html.getElementsByClass("prettyprint").single().text()
+            val expectedContent = File(it, "src/$expected").readText()
+            assertThat(actualContent, equalTo(expectedContent))
+        }
+    }
+
+    @Test(dataProvider = "createReportClassCoveragePageData")
+    fun createReport_withNonEmptySourceDir_shouldCreateClassCoverageHtmlPagesWithExpectedTotalLineCoveragePercentage(
+        sourceFiles: Map<String, String>,
+        codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) {
+        // Arrange
+        val sut = createSystemUnderTest(sourceDir = File(it, "src"), outputDir = it)
+
+        // Act
+        val outputDir = sut.createReport(
+            createDeployResult(createRunTestsResult(codeCoverage = codeCoverage)))
+
+        // Assert
+        sourceFiles.keys.forEach { file ->
+            val coverage = codeCoverage.single { it.classFileName == file }
+            val html = Jsoup.parse(File(outputDir, "$file.html"), Charsets.UTF_8.name())
+            val actual = html.getElementById("totalLineCoveragePercentage").text()
+            val expected = "${coverage.coveragePercentage.format(2)}%"
+            assertThat(actual, equalTo(expected))
+        }
+    }
+
+    @Test(dataProvider = "createReportClassCoveragePageData")
+    fun createReport_withNonEmptySourceDir_shouldCreateClassCoverageHtmlPagesWithExpectedTotalLineCoverage(
+        sourceFiles: Map<String, String>,
+        codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) {
+        // Arrange
+        val sut = createSystemUnderTest(sourceDir = File(it, "src"), outputDir = it)
+
+        // Act
+        val outputDir = sut.createReport(
+            createDeployResult(createRunTestsResult(codeCoverage = codeCoverage)))
+
+        // Assert
+        sourceFiles.keys.forEach { file ->
+            val coverage = codeCoverage.single { it.classFileName == file }
+            val html = Jsoup.parse(File(outputDir, "$file.html"), Charsets.UTF_8.name())
+            val actual = html.getElementById("totalLineCoverage").text()
+            val expected = "${coverage.numLocationsCovered}/${coverage.numLocations}"
+            assertThat(actual, equalTo(expected))
+        }
+    }
+
+    @Test(dataProvider = "createReportClassCoveragePageData")
+    fun createReport_withNonEmptySourceDir_shouldCreateClassCoverageHtmlPagesWithExpectedHighlightedLines(
+        sourceFiles: Map<String, String>,
+        codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) {
+        // Arrange
+        val sut = createSystemUnderTest(sourceDir = File(it, "src"), outputDir = it)
+
+        // Act
+        val outputDir = sut.createReport(
+            createDeployResult(createRunTestsResult(codeCoverage = codeCoverage)))
+
+        // Assert
+        sourceFiles.keys.forEach { file ->
+            val coverage = codeCoverage.single { it.classFileName == file }
+            val html = Jsoup.parse(File(outputDir, "$file.html"), Charsets.UTF_8.name())
+            coverage.locationsNotCovered.forEach {
+                val actual = html
+                    .getElementsByClass("prettyprint").single()
+                    .getElementById("not-covered-line-${it.line}")
+                assertThat(actual.className(), equalTo("cstat-no"))
+            }
+        }
+    }
+
+    @DataProvider
+    fun createReportClassCoveragePageData(): Array<Array<Any?>> {
+        return arrayOf(
+            arrayOf<Any?>(
+                mapOf(
+                    "classes/Foo.cls" to "public class Foo{\npublic String field;\n}",
+                    "triggers/Bar.trigger" to "trigger Bar on Bar (before insert){\n System.debug('test');\n}"),
+                arrayOf(
+                    createCodeCoverageResult(
+                        name = "Foo",
+                        type = "Class",
+                        numLocations = 3,
+                        numLocationsNotCovered = 0,
+                        locationsNotCovered = arrayOf(2,3)
+                            .map(Int::toCodeLocation)
+                            .toTypedArray()),
+                    createCodeCoverageResult(
+                        name = "Bar",
+                        namespace = "nmspc",
+                        type = "Trigger",
+                        numLocations = 10,
+                        locationsNotCovered = arrayOf()))))
+    }
+
+    fun createSystemUnderTest(
+        sourceDir: File? = null,
+        outputDir: File = createTempDir(),
+        dateTimeProvider: () -> LocalDateTime = this.dateTimeProvider) =
+        HtmlCoverageReporter(sourceDir, outputDir, dateTimeProvider)
+
+    fun withDeployRoot(
+        files: Map<String, String> = mapOf("classes/Foo.cls" to "public class Foo { }"),
+        test: (File) -> Unit) = withTestDirectory(javaClass.name) { testDirectory ->
+
+        val srcDir = File(testDirectory, "src")
+        srcDir.mkdir()
+        files.forEach {
+            val file = File(srcDir, it.key)
+            file.parentFile.mkdirs()
+            file.appendText(it.value)
+        }
+        test(testDirectory)
+    }
 }
