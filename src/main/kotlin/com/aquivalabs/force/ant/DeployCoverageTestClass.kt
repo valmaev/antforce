@@ -247,6 +247,7 @@ fun DeployWithTestReportsTask.removeCoverageTestClassFromOrg(metadataConnection:
                 log("Request Status: InProgress")
                 Thread.sleep(pollWaitMillis.toLong())
             } else {
+                log("Request Status: Succeeded")
                 log("Finished request ${result.id} successfully.")
                 return
             }
