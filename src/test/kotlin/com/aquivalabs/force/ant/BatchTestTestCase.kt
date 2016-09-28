@@ -5,24 +5,11 @@ import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
 import org.testng.Assert.assertEquals
 import org.testng.Assert.assertTrue
-import org.testng.annotations.AfterMethod
-import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
-import java.io.File
 
 
 class BatchTestTestCase() {
-    private var testDirectory: File? = null
-
-    @BeforeMethod
-    fun createTestDirectory() {
-        testDirectory = createTempDir(javaClass.name)
-    }
-
-    @AfterMethod
-    fun removeTestDirectory() = testDirectory?.deleteRecursively()
-
     @Test fun addFileSet_always_shouldFollowAntNamingConventions() {
         MatcherAssert.assertThat(
             "Prefix 'add' is one of the Ant's conventions for nested elements declaration. " +
@@ -31,18 +18,18 @@ class BatchTestTestCase() {
             Matchers.startsWith("add"))
     }
 
-    @Test fun addFileSet_always_shouldFillProjectPropertyOfPassedValue() {
+    @Test fun addFileSet_always_shouldFillProjectPropertyOfPassedValue() = withTestDirectory {
         val sut = createSystemUnderTest()
-        val input = createFileSet(testDirectory!!)
+        val input = createFileSet(it)
 
         sut.addFileSet(input)
 
         assertEquals(input.project, sut.project)
     }
 
-    @Test fun addFileSet_always_shouldAddFileSetToResources() {
+    @Test fun addFileSet_always_shouldAddFileSetToResources() = withTestDirectory {
         val sut = createSystemUnderTest()
-        val input = createFileSet(testDirectory!!, "foo", "bar")
+        val input = createFileSet(it , "foo", "bar")
 
         sut.addFileSet(input)
 
@@ -56,11 +43,11 @@ class BatchTestTestCase() {
         namespace: String,
         inputFileNames: List<String>,
         expected: List<String>,
-        message: String) {
+        message: String) = withTestDirectory {
 
         val sut = createSystemUnderTest()
         sut.namespace = namespace
-        val fileSet = createFileSet(testDirectory!!, inputFileNames)
+        val fileSet = createFileSet(it, inputFileNames)
         sut.addFileSet(fileSet)
 
         assertEquals(sut.getFileNames(), expected, message)

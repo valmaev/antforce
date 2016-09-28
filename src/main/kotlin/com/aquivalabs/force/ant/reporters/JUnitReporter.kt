@@ -11,7 +11,7 @@ class JUnitReporter(
     var outputFile: File,
     var suiteName: String = "",
     var properties: Map<String, String>? = null,
-    val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.now() }) : Reporter<File> {
+    val dateTimeProvider: () -> LocalDateTime = LocalDateTime::now) : Reporter<File> {
 
     override fun createReport(deployResult: DeployResult) : File {
         val report = createJUnitReport(deployResult)

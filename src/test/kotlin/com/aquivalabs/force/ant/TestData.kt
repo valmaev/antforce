@@ -6,7 +6,9 @@ import com.sforce.soap.metadata.*
 import org.apache.tools.ant.Project
 import org.apache.tools.ant.types.FileSet
 import java.io.File
+import java.io.FileOutputStream
 import java.util.*
+import java.util.zip.ZipOutputStream
 
 fun createFileSet(directory: File, fileNames: Iterable<String>): FileSet {
     val fileSet = FileSet()
@@ -170,7 +172,15 @@ fun qualifiedNameCommonTestData(): Array<Array<Any?>> = arrayOf(
     arrayOf<Any?>(null, "Class", "Class"),
     arrayOf<Any?>("foo", "Class", "foo.Class"))
 
-fun withTestDirectory(directoryNamePrefix: String = "", test: (File) -> Unit) {
+private fun calleeClass() = Thread.currentThread().stackTrace.first {
+    it.fileName != "TestData.kt"
+        && it.className != Thread::class.java.name
+}
+
+fun withTestDirectory(
+    directoryNamePrefix: String = calleeClass()?.className ?: randomString(),
+    test: (File) -> Unit) {
+
     var testDirectory: File? = null
     try {
         testDirectory = createTempDir(directoryNamePrefix)
@@ -180,4 +190,50 @@ fun withTestDirectory(directoryNamePrefix: String = "", test: (File) -> Unit) {
     }
 }
 
-fun randomString()= UUID.randomUUID().toString()
+fun withDeployRoot(
+    packageXml: String = generateDestructiveChanges("*", 37.0),
+    classes: Set<String> = setOf("Foobar"),
+    test: (File) -> Unit) = withTestDirectory {
+
+    File(it, "package.xml").appendText(packageXml)
+    File(it, "classes").mkdir()
+    classes.forEach { className ->
+        File(it, "classes/$className$APEX_CLASS_FILE_EXTENSION")
+            .appendText("public with sharing class $it { }")
+    }
+    test(it)
+}
+
+fun withZipFile(
+    packageXml: String? = generateDestructiveChanges("*", 37.0),
+    classes: Set<String>? = setOf("Foobar"),
+    triggers: Set<String>? = null,
+    test: (File) -> Unit) = withTestDirectory {
+
+    val zip = File(it, "src.zip")
+    val fileOutput = FileOutputStream(zip)
+    ZipOutputStream(fileOutput).use { zipOutput ->
+        if (packageXml != null)
+            zipOutput.addEntry("package.xml", packageXml)
+        if (classes != null) {
+            zipOutput.addEntry("classes", "")
+            classes.forEach {
+                zipOutput.addEntry(
+                    "classes/$it$APEX_CLASS_FILE_EXTENSION",
+                    "public with sharing class $it { }")
+            }
+        }
+
+        if (triggers != null) {
+            zipOutput.addEntry("triggers", "")
+            triggers.forEach {
+                zipOutput.addEntry(
+                    "triggers/$it$APEX_TRIGGER_FILE_EXTENSION",
+                    "trigger $it on $it (before insert){ }")
+            }
+        }
+    }
+    test(zip)
+}
+
+fun randomString() = UUID.randomUUID().toString()

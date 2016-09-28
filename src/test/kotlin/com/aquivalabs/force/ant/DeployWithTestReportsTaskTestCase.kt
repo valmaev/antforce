@@ -17,7 +17,6 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.zip.*
-import java.io.FileOutputStream
 import java.nio.file.Files
 import java.util.*
 
@@ -431,10 +430,10 @@ class DeployWithTestReportsTaskTestCase {
         }
     }
 
-    @Test fun handleResponse_ifReportDirIsNotNullAndHtmlCoverageReport_shouldCreateReportFile() {
-        withTestDirectory { testDirectory ->
+    @Test fun handleResponse_ifReportDirIsNotNullAndDeployRootIsNotNullAndHtmlCoverageReport_shouldCreateReportFile() {
+        withDeployRoot { testDirectory ->
             // Arrange
-            val sut = createSystemUnderTest()
+            val sut = createSystemUnderTest(deployRoot = testDirectory.absolutePath)
             sut.reportDir = testDirectory
 
             val report = HtmlCoverageReport(dir = "html-coverage")
@@ -524,44 +523,6 @@ class DeployWithTestReportsTaskTestCase {
             } while (entry != null)
         }
         return null
-    }
-
-    fun withTestDirectory(test: (File) -> Unit) = withTestDirectory(javaClass.name, test)
-
-    fun withDeployRoot(
-        packageXml: String = generateDestructiveChanges("*", 37.0),
-        classes: Set<String> = setOf("Foobar"),
-        test: (File) -> Unit) = withTestDirectory(javaClass.name) {
-
-        File(it, "package.xml").appendText(packageXml)
-        File(it, "classes").mkdir()
-        classes.forEach { className ->
-            File(it, "classes/$className$APEX_CLASS_FILE_EXTENSION")
-                .appendText("public with sharing class $it { }")
-        }
-        test(it)
-    }
-
-    fun withZipFile(
-        packageXml: String? = generateDestructiveChanges("*", 37.0),
-        classes: Set<String>? = setOf("Foobar"),
-        test: (File) -> Unit) = withTestDirectory(javaClass.name) {
-
-        val zip = File(it, "src.zip")
-        val fileOutput = FileOutputStream(zip)
-        ZipOutputStream(fileOutput).use { zipOutput ->
-            if (packageXml != null)
-                zipOutput.addEntry("package.xml", packageXml)
-            if (classes != null) {
-                zipOutput.addEntry("classes", "")
-                classes.forEach {
-                    zipOutput.addEntry(
-                        "classes/$it$APEX_CLASS_FILE_EXTENSION",
-                        "public with sharing class $it { }")
-                }
-            }
-        }
-        test(zip)
     }
 
     fun generatePackageWithApexClasses(classNames: LinkedHashSet<String>) =

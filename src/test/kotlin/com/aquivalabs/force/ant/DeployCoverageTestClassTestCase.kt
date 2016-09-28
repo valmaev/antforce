@@ -118,6 +118,4 @@ class DeployCoverageTestClassTestCase {
         generateTestClassName(),
         generateTestClassName(),
         generateTestClassName())
-
-    fun withTestDirectory(test: (File) -> Unit) = withTestDirectory(javaClass.name, test)
 }
