@@ -16,7 +16,7 @@ import java.io.File
 import java.time.LocalDateTime
 
 
-class HtmlCoverageReporterTestCase {
+open class HtmlCoverageReporterTestCase<T> where T : HtmlCoverageReporter {
 
     val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.MIN }
 
@@ -422,7 +422,7 @@ class HtmlCoverageReporterTestCase {
         sourceFiles: Map<String, String>,
         codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) {
         // Arrange
-        val sut = createSystemUnderTest(sourceDir = File(it, "src"), outputDir = it)
+        val sut = createSystemUnderTest(sourcesRoot(it), outputDir = it)
 
         // Act
         val outputDir = sut.createReport(
@@ -437,7 +437,7 @@ class HtmlCoverageReporterTestCase {
 
             val html = Jsoup.parse(actual, Charsets.UTF_8.name())
             val actualContent = html.getElementsByClass("prettyprint").single().text()
-            val expectedContent = File(it, "src/$expected").readText()
+            val expectedContent = sourceFiles[expected]
             assertThat(actualContent, equalTo(expectedContent))
         }
     }
@@ -447,7 +447,7 @@ class HtmlCoverageReporterTestCase {
         sourceFiles: Map<String, String>,
         codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) {
         // Arrange
-        val sut = createSystemUnderTest(sourceDir = File(it, "src"), outputDir = it)
+        val sut = createSystemUnderTest(sourcesRoot(it), outputDir = it)
 
         // Act
         val outputDir = sut.createReport(
@@ -468,7 +468,7 @@ class HtmlCoverageReporterTestCase {
         sourceFiles: Map<String, String>,
         codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) {
         // Arrange
-        val sut = createSystemUnderTest(sourceDir = File(it, "src"), outputDir = it)
+        val sut = createSystemUnderTest(sourceDir = sourcesRoot(it), outputDir = it)
 
         // Act
         val outputDir = sut.createReport(
@@ -489,7 +489,7 @@ class HtmlCoverageReporterTestCase {
         sourceFiles: Map<String, String>,
         codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) {
         // Arrange
-        val sut = createSystemUnderTest(sourceDir = File(it, "src"), outputDir = it)
+        val sut = createSystemUnderTest(sourceDir = sourcesRoot(it), outputDir = it)
 
         // Act
         val outputDir = sut.createReport(
@@ -532,17 +532,17 @@ class HtmlCoverageReporterTestCase {
                         locationsNotCovered = arrayOf()))))
     }
 
-    fun createSystemUnderTest(
+    open fun createSystemUnderTest(
         sourceDir: File? = null,
         outputDir: File = createTempDir(),
         dateTimeProvider: () -> LocalDateTime = this.dateTimeProvider) =
         HtmlCoverageReporter(sourceDir, outputDir, dateTimeProvider)
 
-    fun withDeployRoot(
+    open fun withDeployRoot(
         files: Map<String, String> = mapOf("classes/Foo.cls" to "public class Foo { }"),
-        test: (File) -> Unit) = withTestDirectory(javaClass.name) { testDirectory ->
+        test: (File) -> Unit) = withTestDirectory { testDirectory ->
 
-        val srcDir = File(testDirectory, "src")
+        val srcDir = sourcesRoot(testDirectory)
         srcDir.mkdir()
         files.forEach {
             val file = File(srcDir, it.key)
@@ -551,4 +551,6 @@ class HtmlCoverageReporterTestCase {
         }
         test(testDirectory)
     }
+
+    open fun sourcesRoot(dir: File) = File(dir, "src")
 }

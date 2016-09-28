@@ -47,9 +47,14 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
     }
 
     fun addConfiguredHtmlCoverageReport(report: HtmlCoverageReport) {
-        fileReporters["HtmlCoverage"] = HtmlCoverageReporter(
-            sourceDir = sourceDir,
-            outputDir = File(reportDir, report.dir))
+        if (sourceDir != null)
+            fileReporters["HtmlCoverage"] = HtmlCoverageReporter(
+                sourceDir = sourceDir,
+                outputDir = File(reportDir, report.dir))
+        else if (zipFile != null)
+            fileReporters["HtmlCoverage"] = ZipRootHtmlCoverageReporter(
+                sourceDir = getFileForPath(zipFile),
+                outputDir = File(reportDir, report.dir))
     }
 
     fun createBatchTest(): BatchTest {

@@ -448,6 +448,24 @@ class DeployWithTestReportsTaskTestCase {
         }
     }
 
+    @Test fun handleResponse_ifReportDirIsNotNullAndZipFileIsNotNullAndHtmlCoverageReport_shouldCreateReportFile() {
+        withZipFile { zipFile ->
+            // Arrange
+            val sut = createSystemUnderTest(zipFile = zipFile.absolutePath)
+            sut.reportDir = zipFile.parentFile
+
+            val report = HtmlCoverageReport(dir = "html-coverage")
+            sut.addConfiguredHtmlCoverageReport(report)
+
+            // Act
+            sut.handleResponse(createMetadataConnectionMock(), createAsyncResult())
+
+            // Assert
+            val actual = zipFile.parentFile.listFiles().single { it.name == report.dir }
+            assertTrue(actual.exists(), "Report file wasn't found")
+        }
+    }
+
     @Test
     fun handleResponse_withNonBlankCoverageTestClassName_shouldRemoveItFromTestResult() {
         withTestDirectory {
