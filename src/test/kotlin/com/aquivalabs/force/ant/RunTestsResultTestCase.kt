@@ -8,13 +8,16 @@ import org.testng.Assert.*
 
 class RunTestsResultTestCase {
     @Test(dataProvider = "nonEmptyCoverageTestData")
-    fun totalCoveragePercentage_ifTotalNumLocationsMoreThan0_shouldReturnAverageCoveragePercentageForAllCodeCoverageResults(
+    fun totalCoverage_ifTotalNumLocationsMoreThan0_shouldReturnAverageCoveragePercentageForAllCodeCoverageResults(
         codeCoverage: Array<CodeCoverageResult>) {
 
         val sut = createRunTestsResult(codeCoverage = codeCoverage)
         assertEquals(
+            sut.totalCoverage,
+            sut.totalNumLocationsCovered.toDouble() / sut.totalNumLocations)
+        assertEquals(
             sut.totalCoveragePercentage,
-            sut.totalNumLocationsCovered.toDouble() * 100 / sut.totalNumLocations)
+            sut.totalCoverage * 100)
     }
 
     @Test

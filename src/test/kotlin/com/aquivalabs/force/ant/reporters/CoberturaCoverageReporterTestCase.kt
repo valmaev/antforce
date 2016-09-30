@@ -47,16 +47,18 @@ class CoberturaCoverageReporterTestCase {
                     createCodeCoverageResult(type = "Trigger")),
                 "",
                 Coverage().packages {
-                    `package`("Class") {
+                    `package`("Class", `line-rate` = 1.0) {
                         classes {
-                            `class`() {
+                            `class`(`line-rate` = 1.0) {
+                                methods()
                                 lines()
                             }
                         }
                     }
-                    `package`("Trigger") {
+                    `package`("Trigger", `line-rate` = 1.0) {
                         classes {
-                            `class`() {
+                            `class`(`line-rate` = 1.0) {
+                                methods()
                                 lines()
                             }
                         }
@@ -68,9 +70,10 @@ class CoberturaCoverageReporterTestCase {
                     createCodeCoverageResult(type = null)),
                 "",
                 Coverage().packages {
-                    `package`(name = "") {
+                    `package`(name = "", `line-rate` = 1.0) {
                         classes {
-                            `class`() {
+                            `class`(`line-rate` = 1.0) {
+                                methods()
                                 lines()
                             }
                         }
@@ -95,30 +98,38 @@ class CoberturaCoverageReporterTestCase {
                         namespace = "bar")),
                 "",
                 Coverage().packages {
-                    `package`("Class") {
+                    `package`("Class", `line-rate` = 1.0) {
                         classes {
                             `class`(
                                 name = "Book",
-                                filename = "classes/Book.cls") {
+                                filename = "classes/Book.cls",
+                                `line-rate` = 1.0) {
+                                methods()
                                 lines()
                             }
                             `class`(
                                 name = "foo.BookBuilder",
-                                filename = "classes/BookBuilder.cls") {
+                                filename = "classes/BookBuilder.cls",
+                                `line-rate` = 1.0) {
+                                methods()
                                 lines()
                             }
                         }
                     }
-                    `package`("Trigger") {
+                    `package`("Trigger", `line-rate` = 1.0) {
                         classes {
                             `class`(
                                 name = "AccountTrigger",
-                                filename = "triggers/AccountTrigger.trigger") {
+                                filename = "triggers/AccountTrigger.trigger",
+                                `line-rate` = 1.0) {
+                                methods()
                                 lines()
                             }
                             `class`(
                                 name = "bar.BookTrigger",
-                                filename = "triggers/BookTrigger.trigger") {
+                                filename = "triggers/BookTrigger.trigger",
+                                `line-rate` = 1.0) {
+                                methods()
                                 lines()
                             }
                         }
@@ -137,11 +148,13 @@ class CoberturaCoverageReporterTestCase {
                             createCodeLocation(line = 17, numExecutions = 0)))),
                 "",
                 Coverage().packages {
-                    `package`("Class") {
+                    `package`("Class", `line-rate` = 0.0) {
                         classes {
                             `class`(
                                 name = "BookBuilder",
-                                filename = "classes/BookBuilder.cls") {
+                                filename = "classes/BookBuilder.cls",
+                                `line-rate` = 0.0) {
+                                methods()
                                 lines {
                                     line(number = 5, hits = 0)
                                     line(number = 17, hits = 0)
@@ -165,11 +178,13 @@ class CoberturaCoverageReporterTestCase {
                             createCodeLocation(line = 10, numExecutions = 0)))),
                 "",
                 Coverage().packages {
-                    `package`("Class") {
+                    `package`("Class", `line-rate` = 10.0 / 13) {
                         classes {
                             `class`(
                                 name = "BookBuilder",
-                                filename = "classes/BookBuilder.cls") {
+                                filename = "classes/BookBuilder.cls",
+                                `line-rate` = 10.0 / 13) {
+                                methods()
                                 lines {
                                     line(number = 1, hits = 1)
                                     line(number = 2, hits = 1)
@@ -201,19 +216,21 @@ class CoberturaCoverageReporterTestCase {
                         locationsNotCovered = arrayOf(
                             createCodeLocation(line = 1, numExecutions = 0),
                             createCodeLocation(line = 2, numExecutions = 0),
-                            createCodeLocation(line = 4, numExecutions = 3)))),
+                            createCodeLocation(line = 4, numExecutions = 0)))),
                 "",
                 Coverage().packages {
-                    `package`("Class") {
+                    `package`("Class", `line-rate` = 0.7) {
                         classes {
                             `class`(
                                 name = "BookBuilder",
-                                filename = "classes/BookBuilder.cls") {
+                                filename = "classes/BookBuilder.cls",
+                                `line-rate` = 0.7) {
+                                methods()
                                 lines {
                                     line(number = 1, hits = 0)
                                     line(number = 2, hits = 0)
                                     line(number = 3, hits = 1)
-                                    line(number = 4, hits = 3)
+                                    line(number = 4, hits = 0)
                                     line(number = 5, hits = 1)
                                     line(number = 6, hits = 1)
                                     line(number = 7, hits = 1)
@@ -235,11 +252,15 @@ class CoberturaCoverageReporterTestCase {
                         type = "Class")),
                 "/foo/bar/myDirectory",
                 Coverage().packages {
-                    `package`("Class") {
+                    `package`("Class", `line-rate` = 1.0) {
                         classes {
                             `class`(
                                 filename = "classes/BookBuilder.cls",
-                                name = "BookBuilder") { lines() }
+                                name = "BookBuilder",
+                                `line-rate` = 1.0) {
+                                methods()
+                                lines()
+                            }
                         }
                     }
                 },
@@ -251,11 +272,15 @@ class CoberturaCoverageReporterTestCase {
                         type = "Trigger")),
                 "/foo/bar/myDirectory",
                 Coverage().packages {
-                    `package`("Trigger") {
+                    `package`("Trigger", `line-rate` = 1.0) {
                         classes {
                             `class`(
                                 filename = "triggers/BookTrigger.trigger",
-                                name = "BookTrigger") { lines() }
+                                name = "BookTrigger",
+                                `line-rate` = 1.0) {
+                                methods()
+                                lines()
+                            }
                         }
                     }
                 },
@@ -268,11 +293,15 @@ class CoberturaCoverageReporterTestCase {
                         type = "Class")),
                 "/foo/bar/myDirectory",
                 Coverage().packages {
-                    `package`("Class") {
+                    `package`("Class", `line-rate` = 1.0) {
                         classes {
                             `class`(
                                 filename = "classes/BookBuilder.cls",
-                                name = "foo.BookBuilder") { lines() }
+                                name = "foo.BookBuilder",
+                                `line-rate` = 1.0) {
+                                methods()
+                                lines()
+                            }
                         }
                     }
                 },
@@ -287,14 +316,22 @@ class CoberturaCoverageReporterTestCase {
                         type = "Class")),
                 "/foo/bar/myDirectory",
                 Coverage().packages {
-                    `package`("Class") {
+                    `package`("Class", `line-rate` = 1.0) {
                         classes {
                             `class`(
                                 filename = "",
-                                name = "") { lines() }
+                                name = "",
+                                `line-rate` = 1.0) {
+                                methods()
+                                lines()
+                            }
                             `class`(
                                 filename = "",
-                                name = "") { lines() }
+                                name = "",
+                                `line-rate` = 1.0) {
+                                methods()
+                                lines()
+                            }
                         }
                     }
                 },
@@ -306,11 +343,15 @@ class CoberturaCoverageReporterTestCase {
                         type = "Class")),
                 "/foo/bar/myDirectory/",
                 Coverage().packages {
-                    `package`("Class") {
+                    `package`("Class", `line-rate` = 1.0) {
                         classes {
                             `class`(
                                 name = "Book",
-                                filename = "classes/Book.cls") { lines() }
+                                filename = "classes/Book.cls",
+                                `line-rate` = 1.0) {
+                                methods()
+                                lines()
+                            }
                         }
                     }
                 },

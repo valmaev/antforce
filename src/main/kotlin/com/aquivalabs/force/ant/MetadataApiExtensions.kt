@@ -9,12 +9,14 @@ fun qualifiedName(name: String?, namespace: String?) =
         name ?: ""
     else "$namespace.${name ?: ""}"
 
+fun coverage(covered: Int, total: Int) = if (total == 0) 1.0 else covered.toDouble() / total
+
 
 val CodeCoverageResult.numLocationsCovered: Int
     get() = numLocations - numLocationsNotCovered
 
 val CodeCoverageResult.coverage: Double
-    get() = if (numLocations == 0) 1.0 else numLocationsCovered.toDouble() / numLocations
+    get() = coverage(numLocationsCovered, numLocations)
 
 val CodeCoverageResult.coveragePercentage: Double
     get() = coverage * 100
@@ -45,9 +47,11 @@ val RunTestsResult.numSuccesses: Int
     get() = numTestsRun - numFailures
 
 // Line Coverage
+val RunTestsResult.totalCoverage: Double
+    get() = coverage(totalNumLocationsCovered, totalNumLocations)
+
 val RunTestsResult.totalCoveragePercentage: Double
-    get() = if (totalNumLocations == 0) 100.0
-    else totalNumLocationsCovered.toDouble() * 100 / totalNumLocations
+    get() = totalCoverage * 100
 
 val RunTestsResult.totalNumLocationsCovered: Int
     get() = codeCoverage.map { it.numLocationsCovered }.sum()
@@ -75,7 +79,7 @@ val RunTestsResult.numClassesNotCovered: Int
     get() = notCoveredClasses.size
 
 val RunTestsResult.classCoverage: Double
-    get() = if (numClasses == 0) 1.0 else numClassesCovered.toDouble() / numClasses
+    get() = coverage(numClassesCovered, numClasses)
 
 val RunTestsResult.classCoveragePercentage: Double
     get() = classCoverage * 100
@@ -97,7 +101,7 @@ val RunTestsResult.numTriggersNotCovered: Int
     get() = notCoveredTriggers.size
 
 val RunTestsResult.triggerCoverage: Double
-    get() = if (numTriggers == 0) 1.0 else numTriggersCovered.toDouble() / numTriggers
+    get() = coverage(numTriggersCovered, numTriggers)
 
 val RunTestsResult.triggerCoveragePercentage: Double
     get() = triggerCoverage * 100
