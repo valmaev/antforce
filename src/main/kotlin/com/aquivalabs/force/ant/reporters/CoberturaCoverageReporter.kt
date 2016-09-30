@@ -46,13 +46,18 @@ class CoberturaCoverageReporter(
             name = result.qualifiedName,
             filename = result.classFileName) {
             lines {
-                val notCoveredLines = result.locationsNotCovered.orEmpty().associateBy { it.line }
-                for (currentLine in 1..result.numLocations) {
-                    val hits =
-                        if (notCoveredLines.contains(currentLine))
-                            notCoveredLines[currentLine]!!.numExecutions
-                        else 1
-                    line(number = currentLine, hits = hits)
+                val locations = sortedMapOf<Int, Int>()
+                result.locationsNotCovered?.forEach { locations[it.line] = it.numExecutions }
+
+                var currentLine = 0
+                while (locations.size != result.numLocations) {
+                    if (locations.contains(++currentLine))
+                        continue
+                    locations[currentLine] = 1
+                }
+
+                locations.forEach {
+                    line(number = it.key, hits = it.value)
                 }
             }
         }

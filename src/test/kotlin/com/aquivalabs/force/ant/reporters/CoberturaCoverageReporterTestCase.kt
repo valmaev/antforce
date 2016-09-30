@@ -130,6 +130,73 @@ class CoberturaCoverageReporterTestCase {
                     createCodeCoverageResult(
                         name = "BookBuilder",
                         type = "Class",
+                        numLocations = 3,
+                        locationsNotCovered = arrayOf(
+                            createCodeLocation(line = 5, numExecutions = 0),
+                            createCodeLocation(line = 26, numExecutions = 0),
+                            createCodeLocation(line = 17, numExecutions = 0)))),
+                "",
+                Coverage().packages {
+                    `package`("Class") {
+                        classes {
+                            `class`(
+                                name = "BookBuilder",
+                                filename = "classes/BookBuilder.cls") {
+                                lines {
+                                    line(number = 5, hits = 0)
+                                    line(number = 17, hits = 0)
+                                    line(number = 26, hits = 0)
+                                }
+                            }
+                        }
+                    }
+                },
+                "Should create line for each not covered location in CodeCoverageResult " +
+                    "in ascending order (numLocations == locationsNotCovered.size)"),
+            arrayOf(
+                arrayOf(
+                    createCodeCoverageResult(
+                        name = "BookBuilder",
+                        type = "Class",
+                        numLocations = 13,
+                        locationsNotCovered = arrayOf(
+                            createCodeLocation(line = 5, numExecutions = 0),
+                            createCodeLocation(line = 7, numExecutions = 0),
+                            createCodeLocation(line = 10, numExecutions = 0)))),
+                "",
+                Coverage().packages {
+                    `package`("Class") {
+                        classes {
+                            `class`(
+                                name = "BookBuilder",
+                                filename = "classes/BookBuilder.cls") {
+                                lines {
+                                    line(number = 1, hits = 1)
+                                    line(number = 2, hits = 1)
+                                    line(number = 3, hits = 1)
+                                    line(number = 4, hits = 1)
+                                    line(number = 5, hits = 0)
+                                    line(number = 6, hits = 1)
+                                    line(number = 7, hits = 0)
+                                    line(number = 8, hits = 1)
+                                    line(number = 9, hits = 1)
+                                    line(number = 10, hits = 0)
+                                    line(number = 11, hits = 1)
+                                    line(number = 12, hits = 1)
+                                    line(number = 13, hits = 1)
+                                }
+                            }
+                        }
+                    }
+                },
+                "Should create line for each not covered location in CodeCoverageResult " +
+                    "in ascending order (numLocations > locationsNotCovered.size; " +
+                    "first notCoveredLocation on line 5)"),
+            arrayOf(
+                arrayOf(
+                    createCodeCoverageResult(
+                        name = "BookBuilder",
+                        type = "Class",
                         numLocations = 10,
                         locationsNotCovered = arrayOf(
                             createCodeLocation(line = 1, numExecutions = 0),
@@ -158,7 +225,9 @@ class CoberturaCoverageReporterTestCase {
                         }
                     }
                 },
-                "Should create line for each not covered location in CodeCoverageResult and for each covered location"),
+                "Should create line for each not covered location in CodeCoverageResult " +
+                    "in ascending order (numLocations > locationsNotCovered.size; " +
+                    "first notCoveredLocation on line 1)"),
             arrayOf(
                 arrayOf(
                     createCodeCoverageResult(
