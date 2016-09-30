@@ -3,11 +3,9 @@ package com.aquivalabs.force.ant
 import org.testng.annotations.Test
 import org.testng.Assert.*
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.containsString
-import org.hamcrest.Matchers.equalTo
-import org.xmlmatchers.XmlMatchers.*
-import org.xmlmatchers.namespace.SimpleNamespaceContext
-import org.xmlmatchers.transform.XmlConverters.*
+import org.hamcrest.Matchers.*
+import org.xmlunit.matchers.CompareMatcher.isIdenticalTo
+import org.xmlunit.matchers.EvaluateXPathMatcher.hasXPath
 import java.io.File
 import java.io.FileOutputStream
 import java.util.zip.ZipFile
@@ -15,9 +13,7 @@ import java.util.zip.ZipOutputStream
 
 
 class DeployCoverageTestClassTestCase {
-
-    private val metadataApiNamespace = SimpleNamespaceContext()
-        .withBinding("x", "http://soap.sforce.com/2006/04/metadata")
+    private val metadataApiNamespace = mapOf("x" to "http://soap.sforce.com/2006/04/metadata")
 
     @Test fun generateTestClassName_always_shouldReturnStringWithNoMoreThan40Chars() =
         assertTrue(
@@ -49,8 +45,9 @@ class DeployCoverageTestClassTestCase {
         val expectedVersion = 37.0
         val actual = generateTestClassMetadata(expectedVersion)
         assertThat(
-            the(actual),
-            hasXPath("/x:ApexClass/x:apiVersion", metadataApiNamespace, equalTo("$expectedVersion")))
+            actual,
+            hasXPath("/x:ApexClass/x:apiVersion", equalTo("$expectedVersion"))
+                .withNamespaceContext(metadataApiNamespace))
     }
 
     @Test fun generateDestructiveChanges_always_shouldReturnWellFormedXml() {
@@ -60,22 +57,26 @@ class DeployCoverageTestClassTestCase {
         val actual = generateDestructiveChanges(expectedClassName, expectedVersion)
 
         assertThat(
-            the(actual),
-            hasXPath("/x:Package/x:types/x:members", metadataApiNamespace, equalTo(expectedClassName)))
+            actual,
+            hasXPath("/x:Package/x:types/x:members", equalTo(expectedClassName))
+                .withNamespaceContext(metadataApiNamespace))
         assertThat(
-            the(actual),
-            hasXPath("/x:Package/x:types/x:name", metadataApiNamespace, equalTo("ApexClass")))
+            actual,
+            hasXPath("/x:Package/x:types/x:name", equalTo("ApexClass"))
+                .withNamespaceContext(metadataApiNamespace))
         assertThat(
-            the(actual),
-            hasXPath("/x:Package/x:version", metadataApiNamespace, equalTo("$expectedVersion")))
+            actual,
+            hasXPath("/x:Package/x:version", equalTo("$expectedVersion"))
+                .withNamespaceContext(metadataApiNamespace))
     }
 
     @Test fun generatePackage_always_shouldReturnWellFormedXml() {
         val expectedVersion = 37.0
         val actual = generatePackage(expectedVersion)
         assertThat(
-            the(actual),
-            hasXPath("/x:Package/x:version", metadataApiNamespace, equalTo("$expectedVersion")))
+            actual,
+            hasXPath("/x:Package/x:version", equalTo("$expectedVersion"))
+                .withNamespaceContext(metadataApiNamespace))
     }
 
     @Test fun stringToCodeNameElement_always_shouldReturnCodeNameElementWithProperText() {
@@ -88,7 +89,7 @@ class DeployCoverageTestClassTestCase {
         val expected = generateDestructiveChanges(generateTestClassName(), 37.0)
         val sut = parseXml(expected.toByteArray())
         val actual = sut.saveToString()
-        assertThat(the(actual), isEquivalentTo(the(expected)))
+        assertThat(actual, isIdenticalTo(expected))
     }
 
     @Test fun zipFileContainsEntry_always_shouldReturnExpectedResult() {

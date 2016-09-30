@@ -11,8 +11,7 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.*
 import org.testng.annotations.*
 import org.testng.Assert.*
-import org.xmlmatchers.XmlMatchers.*
-import org.xmlmatchers.transform.XmlConverters.*
+import org.xmlunit.matchers.CompareMatcher.isSimilarTo
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -196,7 +195,7 @@ class DeployWithTestReportsTaskTestCase {
             val expectedCoverageTestClass = generateTestClass(sut.coverageTestClassName, classFileNames)
             val expectedCoverageTestClassMetadata = generateTestClassMetadata(sut.apiVersion)
 
-            assertThat(the(actualPackageXml), isEquivalentTo(the(expectedPackageXml)))
+            assertThat(actualPackageXml, isSimilarTo(expectedPackageXml).ignoreWhitespace())
             assertThat(actualCoverageTestClass, equalTo(expectedCoverageTestClass))
             assertThat(actualCoverageTestClassMetadata, equalTo(expectedCoverageTestClassMetadata))
             assertTrue(sut.runTests!!.contains(sut.coverageTestClassName))
@@ -231,7 +230,7 @@ class DeployWithTestReportsTaskTestCase {
             val actualCoverageTestClassMetadata = sut.zipBytes.getEntryContent(
                 "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION$META_FILE_EXTENSION")
 
-            assertThat(the(actualPackageXml), isEquivalentTo(the(packageXml)))
+            assertThat(actualPackageXml, isSimilarTo(packageXml).ignoreWhitespace())
             assertEquals(actualCoverageTestClass, null)
             assertEquals(actualCoverageTestClassMetadata, null)
             assertFalse(sut.runTests!!.contains(sut.coverageTestClassName))
@@ -313,7 +312,7 @@ class DeployWithTestReportsTaskTestCase {
             val expectedCoverageTestClass = generateTestClass(sut.coverageTestClassName, classFileNames)
             val expectedCoverageTestClassMetadata = generateTestClassMetadata(sut.apiVersion)
 
-            assertThat(the(actualPackageXml), isEquivalentTo(the(expectedPackageXml)))
+            assertThat(actualPackageXml, isSimilarTo(expectedPackageXml).ignoreWhitespace())
             assertThat(actualCoverageTestClass, equalTo(expectedCoverageTestClass))
             assertThat(actualCoverageTestClassMetadata, equalTo(expectedCoverageTestClassMetadata))
             assertTrue(sut.runTests!!.contains(sut.coverageTestClassName))
@@ -339,7 +338,7 @@ class DeployWithTestReportsTaskTestCase {
             val actualCoverageTestClassMetadata = sut.zipBytes.getEntryContent(
                 "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION$META_FILE_EXTENSION")
 
-            assertThat(the(actualPackageXml), isEquivalentTo(the(packageXml)))
+            assertThat(actualPackageXml, isSimilarTo(packageXml).ignoreWhitespace())
             assertEquals(actualCoverageTestClass, null)
             assertEquals(actualCoverageTestClassMetadata, null)
             assertFalse(sut.runTests!!.contains(sut.coverageTestClassName))
