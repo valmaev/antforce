@@ -2,6 +2,7 @@ build
 .gradle
 .idea
 *.DS_Store
+gradle.properties
 sample/build.properties
 sample/artifacts
 sample/classes/antforce*.*

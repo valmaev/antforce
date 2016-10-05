@@ -6,14 +6,18 @@ buildscript {
     ext.ant_version = '1.9.7'
     repositories {
         mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1'
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'kotlin'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
 
 repositories {
     mavenCentral()
@@ -68,7 +72,51 @@ task fatJar(type: Jar) {
     with jar
 }
 
+task sourceJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier "sources"
+}
+
 artifacts {
     archives jar
     archives fatJar
+    archives sourceJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourceJar
+        }
+    }
+}
+
+if (rootProject.hasProperty('bintrayUser') && rootProject.hasProperty('bintrayApiKey')) {
+    bintray {
+        user = getProperty('bintrayUser')
+        key = getProperty('bintrayApiKey')
+        publications = ['mavenJava']
+        pkg {
+            repo = 'maven'
+            name = 'antforce'
+            desc = 'Set of extension tasks for Force.com Migration tool: reports, execution of anonymous Apex, integration with build servers, etc.'
+            userOrg = user
+            licenses = ['Apache-2.0']
+            labels = ['ant', 'salesforce', 'force.com']
+            websiteUrl = 'https://github.com/valmaev/antforce'
+            vcsUrl = 'https://github.com/valmaev/antforce.git'
+            issueTrackerUrl = 'https://github.com/valmaev/antforce/issues'
+            githubRepo = 'valmaev/antforce'
+            version {
+                name = project.version
+                released = new Date()
+                vcsTag = project.version
+            }
+        }
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.1'
 }
