@@ -8,8 +8,12 @@ import java.util.zip.ZipOutputStream
 
 
 class ZipRootHtmlCoverageReporterTestCase : HtmlCoverageReporterTestCase<ZipRootHtmlCoverageReporter>() {
-    override fun createSystemUnderTest(sourceDir: File?, outputDir: File, dateTimeProvider: () -> LocalDateTime) =
-        ZipRootHtmlCoverageReporter(sourceDir, outputDir, dateTimeProvider)
+    override fun createSystemUnderTest(
+        sourceDir: File?,
+        outputDir: File,
+        codeHighlighting: Boolean,
+        dateTimeProvider: () -> LocalDateTime) =
+        ZipRootHtmlCoverageReporter(sourceDir, outputDir, codeHighlighting, dateTimeProvider)
 
     override fun withDeployRoot(files: Map<String, String>, test: (File) -> Unit) = withTestDirectory {
 

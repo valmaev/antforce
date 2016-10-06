@@ -508,6 +508,27 @@ open class HtmlCoverageReporterTestCase<T> where T : HtmlCoverageReporter {
         }
     }
 
+    @Test(dataProvider = "createReportClassCoveragePageData")
+    fun createReport_withNonEmptySourceDirAndDisabledCodeHighlighting_shouldNotCreateClassCoverageHtmlPages(
+        sourceFiles: Map<String, String>,
+        codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) {
+        // Arrange
+        val sut = createSystemUnderTest(
+            sourceDir = sourcesRoot(it),
+            outputDir = it,
+            codeHighlighting = false)
+
+        // Act
+        val outputDir = sut.createReport(
+            createDeployResult(createRunTestsResult(codeCoverage = codeCoverage)))
+
+        // Assert
+        sourceFiles.keys.forEach { file ->
+            val actual = File(outputDir, "$file.html")
+            assertThat(actual.exists(), equalTo(false))
+        }
+    }
+
     @DataProvider
     fun createReportClassCoveragePageData(): Array<Array<Any?>> {
         return arrayOf(
@@ -535,8 +556,9 @@ open class HtmlCoverageReporterTestCase<T> where T : HtmlCoverageReporter {
     open fun createSystemUnderTest(
         sourceDir: File? = null,
         outputDir: File = createTempDir(),
+        codeHighlighting: Boolean = true,
         dateTimeProvider: () -> LocalDateTime = this.dateTimeProvider) =
-        HtmlCoverageReporter(sourceDir, outputDir, dateTimeProvider)
+        HtmlCoverageReporter(sourceDir, outputDir, codeHighlighting, dateTimeProvider)
 
     open fun withDeployRoot(
         files: Map<String, String> = mapOf("classes/Foo.cls" to "public class Foo { }"),

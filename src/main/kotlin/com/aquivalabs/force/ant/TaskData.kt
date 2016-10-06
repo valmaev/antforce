@@ -32,4 +32,4 @@ class BatchTest(val project: Project) {
 
 data class JUnitReport(var file: String = "TEST-Apex.xml", var suiteName: String = "Apex")
 data class CoberturaReport(var file: String = "Apex-Coverage.xml")
-data class HtmlCoverageReport(var dir: String = "")
+data class HtmlCoverageReport(var dir: String = "", var codeHighlighting: Boolean = false)

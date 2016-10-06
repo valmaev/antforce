@@ -20,6 +20,7 @@ internal fun Class<*>.getResourceAsString(name: String) = getResourceAsStream(na
 open class HtmlCoverageReporter(
     var sourceDir: File?,
     var outputDir: File,
+    var codeHighlighting: Boolean = false,
     val dateTimeProvider: () -> LocalDateTime = LocalDateTime::now) : Reporter<File> {
 
     private val reportTitle = "Code Coverage for Apex code"
@@ -32,7 +33,7 @@ open class HtmlCoverageReporter(
         val rootReport = createSummaryReport(testResult)
         rootReport.saveToFile("index.html")
 
-        if (sourceDir != null)
+        if (sourceDir != null && codeHighlighting)
             createClassCoverageReports(testResult)
         return outputDir
     }
@@ -251,7 +252,7 @@ open class HtmlCoverageReporter(
                         attributes["data-value"] = type
                     }
                     td(coverageLevel) {
-                        if (sourceDir == null)
+                        if (sourceDir == null || !codeHighlighting)
                             +it.qualifiedName
                         else
                             a(href = "${it.classFileName}.html") { +it.qualifiedName }
@@ -348,8 +349,9 @@ open class HtmlCoverageReporter(
 class ZipRootHtmlCoverageReporter(
     sourceDir: File?,
     outputDir: File,
+    codeHighlighting: Boolean = false,
     dateTimeProvider: () -> LocalDateTime = LocalDateTime::now)
-    : HtmlCoverageReporter(sourceDir, outputDir, dateTimeProvider) {
+    : HtmlCoverageReporter(sourceDir, outputDir, codeHighlighting, dateTimeProvider) {
 
     override fun createClassCoverageReports(testResult: RunTestsResult) {
         val zip = ZipFile(sourceDir)
