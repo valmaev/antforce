@@ -7,6 +7,10 @@ import org.apache.tools.ant.BuildException
 import java.io.File
 
 
+data class JUnitReport(var dir: String = "", var suiteName: String = "Apex", var suiteStrategy: String = "single")
+data class CoberturaReport(var file: String = "Apex-Coverage.xml")
+data class HtmlCoverageReport(var dir: String = "")
+
 class DeployWithTestReportsTask : DeployTaskAdapter() {
     internal val fileReporters = hashMapOf<String, Reporter<File>>()
     internal val consoleReporters = hashMapOf<String, Reporter<Unit>>(
@@ -17,9 +21,9 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
     var reportDir: File? = null
     var sourceDir: File? = null
         get() =
-            if (field != null) field
-            else if (deployRoot.isNullOrEmpty()) null
-            else getFileForPath(deployRoot)
+        if (field != null) field
+        else if (deployRoot.isNullOrEmpty()) null
+        else getFileForPath(deployRoot)
         set(value) { field = value }
 
     var enforceCoverageForAllClasses: Boolean? = false
@@ -31,13 +35,19 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
             && enforceCoverageForAllClasses == true
 
     fun addConfiguredJUnitReport(report: JUnitReport) {
-        fileReporters["JUnit"] = JUnitReporter(
-            outputFile = File(reportDir, report.file),
-            suiteName = report.suiteName,
-            properties = hashMapOf(
-                "username" to (username ?: ""),
-                "serverURL" to (serverURL ?: ""),
-                "apiVersion" to apiVersion.toString()))
+        val properties = hashMapOf(
+            "username" to (username ?: ""),
+            "serverURL" to (serverURL ?: ""),
+            "apiVersion" to apiVersion.toString())
+        when(report.suiteStrategy.toLowerCase()) {
+            "single" -> fileReporters["JUnit"] = SingleSuiteJUnitReporter(
+                outputDir = File(reportDir, report.dir),
+                suiteName = report.suiteName,
+                properties = properties)
+            "onepertestclass" -> fileReporters["JUnit"] = SuitePerTestClassJUnitReporter(
+                outputDir = File(reportDir, report.dir),
+                properties = properties)
+        }
     }
 
     fun addConfiguredCoberturaReport(report: CoberturaReport) {
@@ -50,13 +60,11 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         if (sourceDir != null)
             fileReporters["HtmlCoverage"] = HtmlCoverageReporter(
                 sourceDir = sourceDir,
-                outputDir = File(reportDir, report.dir),
-                codeHighlighting = report.codeHighlighting)
+                outputDir = File(reportDir, report.dir))
         else if (zipFile != null)
             fileReporters["HtmlCoverage"] = ZipRootHtmlCoverageReporter(
                 sourceDir = getFileForPath(zipFile),
-                outputDir = File(reportDir, report.dir),
-                codeHighlighting = report.codeHighlighting)
+                outputDir = File(reportDir, report.dir))
     }
 
     fun createBatchTest(): BatchTest {

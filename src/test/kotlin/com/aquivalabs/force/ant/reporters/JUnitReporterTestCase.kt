@@ -1,88 +1,86 @@
 package com.aquivalabs.force.ant.reporters
 
 import com.aquivalabs.force.ant.*
-import com.aquivalabs.force.ant.reporters.junit.*
 import com.sforce.soap.metadata.RunTestFailure
 import com.sforce.soap.metadata.RunTestSuccess
 import com.sforce.soap.metadata.RunTestsResult
 import org.hamcrest.MatcherAssert.*
-import org.hamcrest.core.IsEqual.*
+import org.hamcrest.CoreMatchers.*
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
+import org.xmlunit.diff.*
+import org.xmlunit.diff.ElementSelectors.*
+import org.xmlunit.matchers.CompareMatcher.*
+import org.xmlunit.matchers.EvaluateXPathMatcher.*
 import java.io.File
+import java.nio.file.Files
 import java.time.LocalDateTime
 
 
-class JUnitReporterTestCase {
+abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
+
     val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.MIN }
 
-    @Test(dataProvider = "createJUnitReportTesSuiteData")
-    fun createJUnitReport_always_shouldCreateProperTestSuite(
+    @Test(dataProvider = "createReportTestSuiteData")
+    fun createReport_always_shouldCreateProperTestSuite(
         input: RunTestsResult,
-        expected: TestSuite,
-        reason: String) {
+        expected: String,
+        reason: String) = withTestDirectory {
 
-        val sut = createSystemUnderTest(dateTimeProvider)
-        val report = sut.createJUnitReport(createDeployResult(input))
-        val actual = report.children.filterIsInstance<TestSuite>().single()
-        assertThat(reason, actual, equalTo(expected))
+        val sut = createSystemUnderTest(outputDir = it)
+        val reports = sut.createReport(createDeployResult(input)).getReportContents()
+
+        reports.forEach {
+            assertThat(reason, it.value, isSimilarTo(expected)
+                .withNodeFilter { n -> n.nodeName == "testsuite" }
+                .withAttributeFilter { p -> p.name != "name" })
+        }
     }
 
     @DataProvider
-    fun createJUnitReportTesSuiteData(): Array<Array<Any>> {
+    fun createReportTestSuiteData(): Array<Array<Any>> {
         return arrayOf(
             arrayOf(
                 createRunTestsResult(),
-                JUnitReportRoot().testSuite(timestamp = dateTimeProvider()),
+                """<testsuite name="" tests="0" failures="0" time="0.0" errors="0" timestamp="${dateTimeProvider()}" />""",
                 "Should create default testSuite when default RunTestsResult passed"),
             arrayOf(
-                createRunTestsResult(numTestsRun = 10, numFailures = 2),
-                JUnitReportRoot().testSuite(tests = 10 - 2, failures = 2, timestamp = dateTimeProvider()),
-                "Should properly calculate tests number (numRunTests - numFailures)"),
+                createRunTestsResult(
+                    successes = Array(8) { createRunTestSuccess() },
+                    failures = Array(2) { createRunTestFailure() }),
+                """<testsuite name="" tests="8" failures="2" time="0.0" errors="0" timestamp="${dateTimeProvider()}" />""",
+                "Should properly calculate tests number (successes.size and failures.size)"),
             arrayOf(
-                createRunTestsResult(totalTime = 1000.0),
-                JUnitReportRoot().testSuite(time = 1000.0 / 1000.0, timestamp = dateTimeProvider()),
-                "Should properly calculate time in ms (totalTime / 1000.0)"))
+                createRunTestsResult(
+                    successes = Array(3) { createRunTestSuccess(time = 2.0) },
+                    failures = Array(4) { createRunTestFailure(time = 1.0) }),
+                """<testsuite name="" tests="3" failures="4" time="${(3 * 2.0 + 4 * 1.0) / 1000.0}" errors="0" timestamp="${dateTimeProvider()}" />""",
+                "Should properly calculate time in ms (sum of times in ms for all successes and failures)"))
     }
 
-    @Test(dataProvider = "createJUnitReportSuiteNameData")
-    fun createJUnitReport_always_shouldUsePassedSuiteNameAsExpected(expected: String) {
-        val sut = createSystemUnderTest(dateTimeProvider)
-        sut.suiteName = expected
-        val report = sut.createJUnitReport(createDeployResult())
-        val actual = report.children.filterIsInstance<TestSuite>().single()
-        assertThat(actual.name, equalTo(expected))
-    }
-
-    @DataProvider
-    fun createJUnitReportSuiteNameData(): Array<Array<out Any>> =
-        arrayOf(
-            arrayOf<Any>(""),
-            arrayOf<Any>("foo"))
-
-    @Test(dataProvider = "createJUnitReportTestCaseData")
-    fun createJUnitReport_forEachSuccess_shouldCreateTestCaseInsideTestSuite(
+    @Test(dataProvider = "createReportSuccessfulTestCaseData")
+    fun createReport_forEachSuccess_shouldCreateTestCaseInsideTestSuite(
         successes: Array<RunTestSuccess>,
-        expected: Array<TestCase>,
-        reason: String) {
+        expected: String,
+        reason: String) = withTestDirectory {
 
-        val sut = createSystemUnderTest(dateTimeProvider)
+        val sut = createSystemUnderTest(outputDir = it)
         val input = createRunTestsResult(successes = successes)
 
-        val report = sut.createJUnitReport(createDeployResult(input))
-        val actual = report.children.filterIsInstance<TestSuite>().single().testCases
-
-        assertThat(actual.count(), equalTo(expected.size))
-        expected.forEach { assertThat(reason, actual.contains(it)) }
+        val reports = sut.createReport(createDeployResult(input)).getReportContents()
+        reports.forEach {
+            assertThat(reason, it.value, isSimilarTo(expected)
+                .ignoreWhitespace()
+                .withAttributeFilter { p -> p.ownerElement.tagName != "testsuite" }
+                .withNodeMatcher(DefaultNodeMatcher(
+                    selectorForElementNamed("testsuite", byName),
+                    selectorForElementNamed("testcase", byNameAndAttributes("classname", "name")))))
+        }
     }
 
     @DataProvider
-    fun createJUnitReportTestCaseData(): Array<Array<out Any>> {
+    fun createReportSuccessfulTestCaseData(): Array<Array<out Any>> {
         return arrayOf(
-            arrayOf<Any>(
-                arrayOf<RunTestSuccess>(),
-                arrayOf<TestCase>(),
-                "Should create test suite with 0 test cases for 0 successes"),
             arrayOf(
                 arrayOf(
                     createRunTestSuccess(
@@ -91,19 +89,14 @@ class JUnitReporterTestCase {
                         methodName = "testMethodName",
                         time = 1000.0),
                     createRunTestSuccess(
-                        namespace = "bar",
-                        name = "MyOtherTestClass",
+                        namespace = "foo",
+                        name = "MyTestClass",
                         methodName = "otherTestMethodName",
                         time = 2000.0)),
-                arrayOf(
-                    createTestCase(
-                        className = "foo.MyTestClass",
-                        name = "testMethodName",
-                        time = 1000.0 / 1000.0),
-                    createTestCase(
-                        className = "bar.MyOtherTestClass",
-                        name = "otherTestMethodName",
-                        time = 2000.0 / 1000.0)),
+                """<testsuite>
+                     <testcase classname="foo.MyTestClass" name="testMethodName" time="1.0" />
+                     <testcase classname="foo.MyTestClass" name="otherTestMethodName" time="2.0" />
+                   </testsuite>""",
                 "Should properly create test case for each success " +
                     "(className = namespace.name, name = methodName, time = time / 1000.0)"),
             arrayOf(
@@ -111,36 +104,39 @@ class JUnitReporterTestCase {
                     createRunTestSuccess(
                         namespace = null,
                         name = "TestClass")),
-                arrayOf(
-                    createTestCase(
-                        className = "TestClass")),
+                """<testsuite>
+                     <testcase classname="TestClass" name="" time="0.0" />
+                   </testsuite>""",
                 "Should treat null namespace as empty string " +
-                    "(className = name instead of .name or null.name)"))
+                    "(className = name instead of .name or null.name)")
+        )
     }
 
-    @Test(dataProvider = "createJUnitReportTestCaseFailureData")
-    fun createJUnitReport_forEachFailure_shouldCreateTestCaseWithFailureInsideTestSuite(
+    @Test(dataProvider = "createReportFailedTestCaseData")
+    fun createReport_forEachFailure_shouldCreateTestCaseWithFailureInsideTestSuite(
         failures: Array<RunTestFailure>,
-        expected: Array<TestCase>,
-        reason: String) {
+        expected: String,
+        reason: String) = withTestDirectory {
 
-        val sut = createSystemUnderTest(dateTimeProvider)
+        val sut = createSystemUnderTest(outputDir = it)
         val input = createRunTestsResult(failures = failures)
 
-        val report = sut.createJUnitReport(createDeployResult(input))
-        val actual = report.children.filterIsInstance<TestSuite>().single().testCases
+        val reports = sut.createReport(createDeployResult(input)).getReportContents()
 
-        assertThat(actual.count(), equalTo(expected.size))
-        expected.forEach { assertThat(reason, actual.contains(it)) }
+        reports.forEach {
+            assertThat(reason, it.value, isSimilarTo(expected)
+                .ignoreWhitespace()
+                .withAttributeFilter { p -> p.ownerElement.tagName != "testsuite" }
+                .withNodeMatcher(DefaultNodeMatcher(
+                    selectorForElementNamed("testsuite", byName),
+                    selectorForElementNamed("testcase", byNameAndAttributes("classname", "name")),
+                    selectorForElementNamed("failure", byNameAndAttributes("message", "type")))))
+        }
     }
 
     @DataProvider
-    fun createJUnitReportTestCaseFailureData(): Array<Array<out Any>> {
+    fun createReportFailedTestCaseData(): Array<Array<out Any>> {
         return arrayOf(
-            arrayOf<Any>(
-                arrayOf<RunTestFailure>(),
-                arrayOf<TestCase>(),
-                "Should create test suite with 0 test cases for 0 failures"),
             arrayOf(
                 arrayOf(
                     createRunTestFailure(
@@ -153,35 +149,24 @@ class JUnitReporterTestCase {
                         time = 1000.0),
                     createRunTestFailure(
                         message = "System.NullPointerException",
-                        type = "Trigger",
-                        stackTrace = "bar.OtherTestClass.someTestMethodName: line 21, column 1",
-                        namespace = "bar",
-                        name = "OtherTestClass",
+                        type = "Class",
+                        stackTrace = "foo.MyTestClass.someTestMethodName: line 21, column 1",
+                        namespace = "foo",
+                        name = "MyTestClass",
                         methodName = "someTestMethodName",
                         time = 2000.0)),
-                arrayOf(
-                    TestSuite().testCase(
-                        classname = "foo.MyTestClass",
-                        name = "testMethodName",
-                        time = 1000.0 / 1000.0) {
-
-                        failure(
-                            message = "System.AssertionError",
-                            type = "Class") {
-                            +"foo.MyTestClass.testMethodName: line 9, column 1"
-                        }
-                    },
-                    TestSuite().testCase(
-                        classname = "bar.OtherTestClass",
-                        name = "someTestMethodName",
-                        time = 2000.0 / 1000.0) {
-
-                        failure(
-                            message = "System.NullPointerException",
-                            type = "Trigger") {
-                            +"bar.OtherTestClass.someTestMethodName: line 21, column 1"
-                        }
-                    }),
+                """<testsuite>
+                    <testcase classname="foo.MyTestClass" name="testMethodName" time="1.0">
+                      <failure message="System.AssertionError" type="Class">
+                        <![CDATA[foo.MyTestClass.testMethodName: line 9, column 1]]>
+                      </failure>
+                    </testcase>
+                    <testcase classname="foo.MyTestClass" name="someTestMethodName" time="2.0">
+                      <failure message="System.NullPointerException" type="Class">
+                        <![CDATA[foo.MyTestClass.someTestMethodName: line 21, column 1]]>
+                      </failure>
+                    </testcase>
+                   </testsuite>""",
                 "Should properly create test case with nested failure for each failure " +
                     "(className = namespace.name, name = methodName, time = time / 1000.0 " +
                     "failure.message = message, failure.type = type, failure.CDATA = stackTrace)"),
@@ -190,53 +175,92 @@ class JUnitReporterTestCase {
                     createRunTestFailure(
                         namespace = null,
                         name = "MyTestClass")),
-                arrayOf(
-                    TestSuite().testCase(
-                        classname = "MyTestClass") {
-                        failure() { +"" }
-                    }),
+                """<testsuite>
+                    <testcase classname="MyTestClass" name="" time="0.0">
+                      <failure message="" type="">
+                        <![CDATA[]]>
+                      </failure>
+                    </testcase>
+                   </testsuite>""",
                 "Should treat null namespace as empty string " +
                     "(className = name instead of .name or null.name)"))
     }
 
-    @Test(dataProvider = "createJUnitReportTestCasePropertiesData")
-    fun createJUnitReport_forEachProperty_shouldCreateCorrespondingPropertyElement(
+    @Test(dataProvider = "createReportTestCasePropertiesData")
+    fun createReport_forEachProperty_shouldCreateCorrespondingPropertyElement(
         properties: Map<String, String>,
-        expected: Array<Property>,
-        reason: String) {
+        expected: String,
+        reason: String) = withTestDirectory {
 
-        val sut = createSystemUnderTest(dateTimeProvider)
+        val sut = createSystemUnderTest(outputDir = it)
         sut.properties = properties
-        val report = sut.createJUnitReport(createDeployResult())
-        val suite = report.children.filterIsInstance<TestSuite>().single()
-        val actual = suite
-            .children.filterIsInstance<Properties>().single()
-            .children.filterIsInstance<Property>()
 
-        assertThat(actual.count(), equalTo(expected.size))
-        expected.forEach { assertThat(reason, actual.contains(it)) }
+        val reports = sut.createReport(createDeployResult()).getReportContents()
+
+        reports.forEach {
+            assertThat(reason, it.value, isSimilarTo(expected)
+                .ignoreWhitespace()
+                .withAttributeFilter { n -> n.ownerElement.tagName != "testsuite" })
+        }
     }
 
     @DataProvider
-    fun createJUnitReportTestCasePropertiesData(): Array<Array<out Any>> {
+    fun createReportTestCasePropertiesData(): Array<Array<out Any>> {
         return arrayOf(
             arrayOf(
                 hashMapOf<String, String>(),
-                arrayOf<Property>(),
+                """<testsuite>
+                    <properties />
+                   </testsuite>""",
                 "Should create empty properties element"),
             arrayOf(
                 hashMapOf(
                     "foo" to "bar",
                     "baz" to "qux"),
-                arrayOf(
-                    createProperty("foo", "bar"),
-                    createProperty("baz", "qux")),
+                """<testsuite>
+                    <properties>
+                      <property name="baz" value="qux" />
+                      <property name="foo" value="bar" />
+                    </properties>
+                  </testsuite>""",
                 "Should create property for each map entry"))
     }
 
-    fun createSystemUnderTest(
-        dateTimeProvider: () -> LocalDateTime = this.dateTimeProvider) =
-        JUnitReporter(
-            outputFile = File("foo"),
-            dateTimeProvider = dateTimeProvider)
+    abstract fun createSystemUnderTest(
+        outputDir: File,
+        dateTimeProvider: () -> LocalDateTime = this.dateTimeProvider): T
+
+    open fun File.getReportContents(): Map<String, String> =
+        Files.newDirectoryStream(this.toPath(), "TEST-*.xml").use {
+            return it.map { path -> Pair(path.fileName.toString(), path.toFile().readText()) }.toMap()
+        }
+
+}
+
+class SingleSuiteJUnitReporterTestCase : JUnitReporterTestCase<SingleSuiteJUnitReporter>() {
+    @Test(dataProvider = "createReportSuiteNameData")
+    fun createReport_always_shouldUsePassedSuiteNameAsExpected(expected: String) = withTestDirectory {
+        val sut = createSystemUnderTest(outputDir = it)
+        sut.suiteName = expected
+
+        val reports = sut.createReport(createDeployResult()).getReportContents()
+        reports.forEach {
+            assertThat(it.value, hasXPath("/testsuite/@name", equalTo(expected)))
+        }
+    }
+
+    @DataProvider
+    fun createReportSuiteNameData(): Array<Array<out Any>> =
+        arrayOf(
+            arrayOf<Any>(""),
+            arrayOf<Any>("foo"))
+
+    override fun createSystemUnderTest(outputDir: File, dateTimeProvider: () -> LocalDateTime) =
+        SingleSuiteJUnitReporter(outputDir = outputDir, dateTimeProvider = dateTimeProvider, suiteName = "")
+}
+
+class SuitePerTestClassJUnitReporterTests : JUnitReporterTestCase<SuitePerTestClassJUnitReporter>() {
+
+    override fun createSystemUnderTest(outputDir: File, dateTimeProvider: () -> LocalDateTime) =
+        SuitePerTestClassJUnitReporter(outputDir = outputDir, dateTimeProvider = dateTimeProvider)
 }

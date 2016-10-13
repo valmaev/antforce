@@ -4,6 +4,12 @@ import com.sforce.soap.metadata.*
 import java.io.File
 
 
+const val APEX_CLASS_FILE_EXTENSION = ".cls"
+const val APEX_TRIGGER_FILE_EXTENSION = ".trigger"
+const val META_FILE_EXTENSION = "-meta.xml"
+const val NAMESPACE_SEPARATOR = "."
+
+
 fun qualifiedName(name: String?, namespace: String?) =
     if (namespace.isNullOrEmpty())
         name ?: ""

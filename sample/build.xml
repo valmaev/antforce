@@ -30,9 +30,10 @@
             <batchtest>
                 <fileset dir="src/classes" includes="*TestClass.cls" />
             </batchtest>
-            <junitReport file="TEST-ApexTests.xml" suiteName="Apex" />
+            <junitReport dir="junit" suiteName="ApexTests" suiteStrategy="single" />
+            <!--<junitReport dir="junit" suiteStrategy="onePerTestClass" />-->
             <coberturaReport file="Apex-Coverage.xml" />
-            <htmlCoverageReport dir="html-coverage" codeHighlighting="true" />
+            <htmlCoverageReport dir="html-coverage" />
         </antforce:deploy>
     </target>
 
@@ -51,9 +52,9 @@
             <batchtest>
                 <fileset dir="src/classes" includes="*TestClass.cls" />
             </batchtest>
-            <junitReport file="TEST-ApexTests.xml" suiteName="Apex" />
+            <junitReport file="TEST-ApexTests.xml" suiteName="Apex" suiteStrategy="ONE_PER_CLASS" />
             <coberturaReport file="Apex-Coverage.xml" />
-            <htmlCoverageReport dir="html-coverage" codeHighlighting="true" />
+            <htmlCoverageReport dir="html-coverage" />
         </antforce:deploy>
         <delete file="src.zip" quiet="true" />
     </target>
@@ -64,7 +65,7 @@
             password="${sf.password}${sf.token}"
             serverUrl="${sf.server}"
             expandProperties="true">
-                System.debug('Hello from ${sf.username}!');
+            System.debug('Hello from ${sf.username}!');
         </antforce:executeApex>
     </target>
 </project>

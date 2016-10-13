@@ -5,12 +5,6 @@ import org.apache.tools.ant.types.FileSet
 import org.apache.tools.ant.types.Resource
 import org.apache.tools.ant.types.resources.Resources
 
-
-const val APEX_CLASS_FILE_EXTENSION = ".cls"
-const val APEX_TRIGGER_FILE_EXTENSION = ".trigger"
-const val META_FILE_EXTENSION = "-meta.xml"
-const val NAMESPACE_SEPARATOR = "."
-
 class BatchTest(val project: Project) {
     val resources = Resources()
     var namespace = ""
@@ -29,7 +23,3 @@ class BatchTest(val project: Project) {
     private fun getTestClassNameFrom(resource: Resource) =
         resource.name.substring(0, resource.name.length - APEX_CLASS_FILE_EXTENSION.length)
 }
-
-data class JUnitReport(var file: String = "TEST-Apex.xml", var suiteName: String = "Apex")
-data class CoberturaReport(var file: String = "Apex-Coverage.xml")
-data class HtmlCoverageReport(var dir: String = "", var codeHighlighting: Boolean = false)

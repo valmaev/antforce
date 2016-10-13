@@ -399,14 +399,14 @@ class DeployWithTestReportsTaskTestCase {
             sut.serverURL = "bar"
             sut.apiVersion = 35.0
 
-            val report = JUnitReport(file = "TEST-ApexSuite.xml", suiteName = "TestSuite")
+            val report = JUnitReport(suiteName = "TestSuite")
             sut.addConfiguredJUnitReport(report)
 
             // Act
             sut.handleResponse(createMetadataConnectionMock(), createAsyncResult())
 
             // Assert
-            val actual = testDirectory.listFiles().single { it.name == report.file }
+            val actual = testDirectory.listFiles().single { it.name == "TEST-TestSuite.xml"}
             assertTrue(actual.exists(), "Report file wasn't found")
         }
     }
@@ -473,7 +473,7 @@ class DeployWithTestReportsTaskTestCase {
             sut.reportDir = it
             sut.sourceDir = it
             sut.coverageTestClassName = generateTestClassName()
-            sut.addConfiguredJUnitReport(JUnitReport(file = "JUnit.xml"))
+            sut.addConfiguredJUnitReport(JUnitReport())
             sut.addConfiguredCoberturaReport(CoberturaReport(file = "Cobertura.xml"))
             sut.addConfiguredHtmlCoverageReport(HtmlCoverageReport(dir = "coverage"))
             val teamcityLog = mutableListOf<String>()
