@@ -1,7 +1,5 @@
 package com.aquivalabs.force.ant
 
-import com.aquivalabs.force.ant.reporters.junit.Property
-import com.aquivalabs.force.ant.reporters.junit.TestCase
 import com.sforce.soap.metadata.*
 import org.apache.tools.ant.Project
 import org.apache.tools.ant.types.FileSet
@@ -141,25 +139,6 @@ fun createRunTestFailure(
     failure.stackTrace = stackTrace
     failure.time = time
     return failure
-}
-
-fun createTestCase(
-    className: String = "",
-    name: String = "",
-    time: Double = 0.0): TestCase {
-
-    val testCase = TestCase()
-    testCase.classname = className
-    testCase.name = name
-    testCase.time = time
-    return testCase
-}
-
-fun createProperty(name: String = "", value: String = ""): Property {
-    val property = Property()
-    property.name = name
-    property.value = value
-    return property
 }
 
 fun qualifiedNameCommonTestData(): Array<Array<Any?>> = arrayOf(
