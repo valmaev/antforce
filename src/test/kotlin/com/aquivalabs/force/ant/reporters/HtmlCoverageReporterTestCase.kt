@@ -13,10 +13,12 @@ import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 import org.testng.Assert.assertEquals
 import java.io.File
+import java.io.FileOutputStream
 import java.time.LocalDateTime
+import java.util.zip.ZipOutputStream
 
 
-open class HtmlCoverageReporterTestCase<T> where T : HtmlCoverageReporter {
+open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
 
     val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.MIN }
 
@@ -575,4 +577,27 @@ open class HtmlCoverageReporterTestCase<T> where T : HtmlCoverageReporter {
     }
 
     open fun sourcesRoot(dir: File) = File(dir, "src")
+}
+
+class ZipRootHtmlCoverageReporterTestCase : HtmlCoverageReporterTestCase<ZipRootHtmlCoverageReporter>() {
+    override fun createSystemUnderTest(
+        sourceDir: File?,
+        outputDir: File,
+        codeHighlighting: Boolean,
+        dateTimeProvider: () -> LocalDateTime) =
+        ZipRootHtmlCoverageReporter(sourceDir, outputDir, codeHighlighting, dateTimeProvider)
+
+    override fun withDeployRoot(files: Map<String, String>, test: (File) -> Unit) = withTestDirectory {
+
+        val zip = sourcesRoot(it)
+        val fileOutput = FileOutputStream(zip)
+        ZipOutputStream(fileOutput).use { zipOutput ->
+            zipOutput.addEntry("classes", "")
+            zipOutput.addEntry("triggers", "")
+            files.forEach { zipOutput.addEntry(it.key, it.value) }
+        }
+        test(zip.parentFile)
+    }
+
+    override fun sourcesRoot(dir: File) = File(dir, "src.zip")
 }
