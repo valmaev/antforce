@@ -68,6 +68,9 @@ class SingleSuiteJUnitReporter(
 : JUnitReporter(properties, dateTimeProvider) {
 
     override fun createReport(deployResult: DeployResult): File {
+        if (!outputDir.exists())
+            outputDir.mkdirs()
+
         val report = createReport(
             JUnitTestSuite(
                 suiteName,
@@ -106,7 +109,6 @@ class SuitePerTestClassJUnitReporter(
         }
 
         suites.values.forEach {
-
             saveSuiteToFile(it, outputDir)
         }
         return outputDir
