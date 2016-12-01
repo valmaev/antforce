@@ -21,9 +21,8 @@ import java.io.IOException;
  */
 public class DeployTaskAdapter extends DeployTask {
     @Override
-    public void handleResponse(
-        MetadataConnection metadataConnection,
-        SFDCMDAPIAntTask.StatusResult response) throws ConnectionException {
+    public void handleResponse(MetadataConnection metadataConnection, StatusResult response)
+        throws ConnectionException {
 
         AsyncResult result = new AsyncResult();
         result.setId(response.getId());
@@ -52,7 +51,9 @@ public class DeployTaskAdapter extends DeployTask {
     public void handleResponse(MetadataConnection metadataConnection, AsyncResult response) {
     }
 
-    public boolean isTaskDone(MetadataConnection port, String asyncRequestId) throws ConnectionException {
+    public boolean isTaskDone(MetadataConnection port, String asyncRequestId)
+        throws ConnectionException {
+
         StatusResult result = checkTaskStatus(port, asyncRequestId);
         return result.isDone();
     }
