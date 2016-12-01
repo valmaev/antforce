@@ -377,11 +377,11 @@ class DeployWithTestReportsTaskTestCase {
         val actualOptions = argumentCaptor<DeployOptions>()
         verify(connectionMock).deploy(actualBytes.capture(), actualOptions.capture())
 
-        assertTrue(actualOptions.value.singlePackage)
-        assertTrue(actualOptions.value.ignoreWarnings)
+        assertTrue(actualOptions.lastValue.singlePackage)
+        assertTrue(actualOptions.lastValue.ignoreWarnings)
 
-        val actualDestructiveChanges = actualBytes.value.getEntryContent("destructiveChanges.xml")
-        val actualPackage = actualBytes.value.getEntryContent("package.xml")
+        val actualDestructiveChanges = actualBytes.lastValue.getEntryContent("destructiveChanges.xml")
+        val actualPackage = actualBytes.lastValue.getEntryContent("package.xml")
 
         val expectedDestructiveChanges = generateDestructiveChanges(sut.coverageTestClassName, sut.apiVersion)
         val expectedPackage = generatePackage(sut.apiVersion)
