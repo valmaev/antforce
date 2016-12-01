@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project xmlns:antforce="antlib:com.aquivalabs.force.ant" default="deploy">
+<project xmlns:antforce="antlib:com.aquivalabs.force.ant" default="installPackages">
     <property file="build.properties" />
     <property name="sf.server" value="https://login.salesforce.com" />
     <property name="sf.testLevel" value="RunSpecifiedTests" />
@@ -15,6 +15,11 @@
         uri="antlib:com.aquivalabs.force.ant"
         name="executeApex"
         classname="com.aquivalabs.force.ant.ExecuteAnonymousApexTask"
+        classpath="${lib.dir}" />
+    <taskdef
+        uri="antlib:com.aquivalabs.force.ant"
+        name="installPackage"
+        classname="com.aquivalabs.force.ant.InstallPackageTask"
         classpath="${lib.dir}" />
 
     <target name="deploy">
@@ -67,5 +72,15 @@
             expandProperties="true">
             System.debug('Hello from ${sf.username}!');
         </antforce:executeApex>
+    </target>
+
+    <target name="installPackages">
+        <antforce:installPackage
+            username="${sf.username}"
+            password="${sf.password}${sf.token}"
+            serverUrl="${sf.server}">
+            <package namespace="Evernote" version="1.17" mode="install" />
+            <package namespace="MC4SF" version="1.67.2" mode="uninstall" />
+        </antforce:installPackage>
     </target>
 </project>

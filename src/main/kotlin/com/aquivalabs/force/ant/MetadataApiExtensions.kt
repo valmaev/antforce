@@ -125,3 +125,9 @@ private fun RunTestsResult.notCoveredTypes(type: String) =
         .filter { it.message != null && it.message.contains("$type is 0%", true) }
         .map { it.qualifiedName }
         .toSet()
+
+
+fun deployOptions(singlePackage: Boolean = false) = with(DeployOptions()) {
+    this.singlePackage = singlePackage
+    this
+}

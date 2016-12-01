@@ -21,9 +21,6 @@ import java.util.*
 
 class DeployWithTestReportsTaskTestCase {
 
-    private fun nestedElementConvention(prefix: String) =
-        "Prefix '$prefix' is one of the Ant's conventions for nested elements declaration. See the manual: http://ant.apache.org/manual/develop.html#nested-elements"
-
     @Test fun sut_always_shouldDeriveFromProperBaseClass() =
         assertThat(createSystemUnderTest(), instanceOf(DeployTask::class.java))
 
@@ -514,32 +511,6 @@ class DeployWithTestReportsTaskTestCase {
         asyncResult.id = UUID.randomUUID().toString()
         asyncResult.done = done
         return asyncResult
-    }
-
-    private fun ByteArray.getEntryContent(name: String): String? {
-        ZipInputStream(ByteArrayInputStream(this)).use { zipInput ->
-            var entry: ZipEntry?
-            do {
-                entry = zipInput.nextEntry
-                if (entry == null)
-                    break
-                if (entry.name != name)
-                    continue
-                val output = ByteArrayOutputStream()
-                output.use {
-                    val buffer = ByteArray(8192)
-                    var length: Int
-                    do {
-                        length = zipInput.read(buffer, 0, buffer.size)
-                        if (length > 0)
-                            output.write(buffer, 0, length)
-                    } while (length > 0)
-                    return String(output.toByteArray())
-                }
-
-            } while (entry != null)
-        }
-        return null
     }
 
     fun generatePackageWithApexClasses(classNames: LinkedHashSet<String>) =
