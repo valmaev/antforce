@@ -3,4 +3,5 @@
 <antlib>
     <taskdef name="deploy" classname="com.aquivalabs.force.ant.DeployWithTestReportsTask" />
     <taskdef name="executeApex" classname="com.aquivalabs.force.ant.ExecuteAnonymousApexTask" />
+    <taskdef name="installPackage" classname="com.aquivalabs.force.ant.InstallPackageTask" />
 </antlib>
