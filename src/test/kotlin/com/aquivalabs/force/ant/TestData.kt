@@ -8,6 +8,11 @@ import java.io.FileOutputStream
 import java.util.*
 import java.util.zip.ZipOutputStream
 
+
+fun nestedElementConvention(prefix: String) =
+    "Prefix '$prefix' is one of the Ant's conventions for nested elements declaration. See the manual: http://ant.apache.org/manual/develop.html#nested-elements"
+
+
 fun createFileSet(directory: File, fileNames: Iterable<String>): FileSet {
     val fileSet = FileSet()
     fileSet.dir = directory

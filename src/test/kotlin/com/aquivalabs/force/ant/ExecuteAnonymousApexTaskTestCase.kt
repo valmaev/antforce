@@ -22,8 +22,7 @@ class ExecuteAnonymousApexTaskTestCase {
 
     @Test fun addText_always_shouldFollowAntNamingConventions() {
         assertThat(
-            "Prefix 'create' is one of the Ant's conventions for nested elements declaration. " +
-                "See the manual: http://ant.apache.org/manual/develop.html#nested-elements",
+            nestedElementConvention("add"),
             ExecuteAnonymousApexTask::addText.name,
             startsWith("add"))
     }

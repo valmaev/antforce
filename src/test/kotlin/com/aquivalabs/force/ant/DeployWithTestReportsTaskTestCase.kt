@@ -21,9 +21,6 @@ import java.util.*
 
 class DeployWithTestReportsTaskTestCase {
 
-    private fun nestedElementConvention(prefix: String) =
-        "Prefix '$prefix' is one of the Ant's conventions for nested elements declaration. See the manual: http://ant.apache.org/manual/develop.html#nested-elements"
-
     @Test fun sut_always_shouldDeriveFromProperBaseClass() =
         assertThat(createSystemUnderTest(), instanceOf(DeployTask::class.java))
 
