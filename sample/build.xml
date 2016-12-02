@@ -57,7 +57,7 @@
             <batchtest>
                 <fileset dir="src/classes" includes="*TestClass.cls" />
             </batchtest>
-            <junitReport file="TEST-ApexTests.xml" suiteName="Apex" suiteStrategy="ONE_PER_CLASS" />
+            <junitReport dir="junit" suiteName="ApexTests" suiteStrategy="single" />
             <coberturaReport file="Apex-Coverage.xml" />
             <htmlCoverageReport dir="html-coverage" />
         </antforce:deploy>
