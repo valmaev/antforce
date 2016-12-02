@@ -30,6 +30,7 @@ fun fileSet(directory: File, vararg filesNames: String) = fileSet(directory, fil
 fun deployResult(
     testResult: RunTestsResult = runTestsResult(),
     status: DeployStatus = DeployStatus.Succeeded,
+    success: Boolean = true,
     done: Boolean = true): DeployResult {
 
     val result = DeployResult()
@@ -38,6 +39,7 @@ fun deployResult(
     result.details = DeployDetails()
     result.details.runTestResult = testResult
     result.status = status
+    result.success = success
     return result
 }
 
