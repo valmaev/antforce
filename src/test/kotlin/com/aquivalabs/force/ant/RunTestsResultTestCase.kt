@@ -11,7 +11,7 @@ class RunTestsResultTestCase {
     fun totalCoverage_ifTotalNumLocationsMoreThan0_shouldReturnAverageCoveragePercentageForAllCodeCoverageResults(
         codeCoverage: Array<CodeCoverageResult>) {
 
-        val sut = createRunTestsResult(codeCoverage = codeCoverage)
+        val sut = runTestsResult(codeCoverage = codeCoverage)
         assertEquals(
             sut.totalCoverage,
             sut.totalNumLocationsCovered.toDouble() / sut.totalNumLocations)
@@ -22,7 +22,7 @@ class RunTestsResultTestCase {
 
     @Test
     fun totalCoveragePercentage_ifTotalNumLocationsEquals0_shouldReturn100() {
-        val sut = createRunTestsResult()
+        val sut = runTestsResult()
         assertEquals(sut.totalCoveragePercentage, 100.0)
     }
 
@@ -30,7 +30,7 @@ class RunTestsResultTestCase {
     fun totalNumLocationsCovered_always_shouldReturnSumOfNumLocationsCoveredFromAllCodeCoverageResults(
         codeCoverage: Array<CodeCoverageResult>) {
 
-        val sut = createRunTestsResult(codeCoverage = codeCoverage)
+        val sut = runTestsResult(codeCoverage = codeCoverage)
         assertEquals(
             sut.totalNumLocationsCovered,
             sut.codeCoverage.map { it.numLocationsCovered }.sum())
@@ -40,7 +40,7 @@ class RunTestsResultTestCase {
     fun totalNumLocationsNotCovered_always_shouldReturnSumOfNumLocationsNotCoveredFromAllCodeCoverageResults(
         codeCoverage: Array<CodeCoverageResult>) {
 
-        val sut = createRunTestsResult(codeCoverage = codeCoverage)
+        val sut = runTestsResult(codeCoverage = codeCoverage)
         assertEquals(
             sut.totalNumLocationsNotCovered,
             sut.codeCoverage.map { it.numLocationsNotCovered }.sum())
@@ -50,7 +50,7 @@ class RunTestsResultTestCase {
     fun totalNumLocations_always_shouldReturnSumOfNumLocationsFromAllCodeCoverageResults(
         codeCoverage: Array<CodeCoverageResult>) {
 
-        val sut = createRunTestsResult(codeCoverage = codeCoverage)
+        val sut = runTestsResult(codeCoverage = codeCoverage)
         assertEquals(
             sut.totalNumLocations,
             sut.codeCoverage.map { it.numLocations }.sum())
@@ -58,7 +58,7 @@ class RunTestsResultTestCase {
 
     @Test
     fun numSuccesses_always_shouldReturnDifferenceBetweenNumTestsRunAndNumFailures() {
-        val sut = createRunTestsResult(numTestsRun = 10, numFailures = 1)
+        val sut = runTestsResult(numTestsRun = 10, numFailures = 1)
         assertEquals(sut.numSuccesses, sut.numTestsRun - sut.numFailures)
     }
 
@@ -67,7 +67,7 @@ class RunTestsResultTestCase {
         codeCoverage: Array<CodeCoverageResult>,
         expected: Set<String>) {
 
-        val sut = createRunTestsResult(codeCoverage = codeCoverage)
+        val sut = runTestsResult(codeCoverage = codeCoverage)
         assertEquals(sut.coveredClasses, expected)
         assertEquals(sut.numClassesCovered, expected.size)
     }
@@ -77,7 +77,7 @@ class RunTestsResultTestCase {
         codeCoverage: Array<CodeCoverageResult>,
         expected: Set<String>) {
 
-        val sut = createRunTestsResult(codeCoverage = codeCoverage)
+        val sut = runTestsResult(codeCoverage = codeCoverage)
         assertEquals(sut.coveredTriggers, expected)
         assertEquals(sut.numTriggersCovered, expected.size)
     }
@@ -87,7 +87,7 @@ class RunTestsResultTestCase {
         codeCoverageWarnings: Array<CodeCoverageWarning>,
         expected: Set<String>) {
 
-        val sut = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
+        val sut = runTestsResult(codeCoverageWarnings = codeCoverageWarnings)
         assertEquals(sut.notCoveredClasses, expected)
         assertEquals(sut.numClassesNotCovered, expected.size)
     }
@@ -97,7 +97,7 @@ class RunTestsResultTestCase {
         codeCoverageWarnings: Array<CodeCoverageWarning>,
         expected: Set<String>) {
 
-        val sut = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
+        val sut = runTestsResult(codeCoverageWarnings = codeCoverageWarnings)
         assertEquals(sut.notCoveredTriggers, expected)
         assertEquals(sut.numTriggersNotCovered, expected.size)
     }
@@ -108,7 +108,7 @@ class RunTestsResultTestCase {
         codeCoverageWarnings: Array<CodeCoverageWarning>,
         expected: Int) {
 
-        val sut = createRunTestsResult(
+        val sut = runTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
         assertEquals(sut.numClasses, expected)
@@ -121,7 +121,7 @@ class RunTestsResultTestCase {
         codeCoverageWarnings: Array<CodeCoverageWarning>,
         expected: Int) {
 
-        val sut = createRunTestsResult(
+        val sut = runTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
         assertEquals(sut.numTriggers, expected)
@@ -130,7 +130,7 @@ class RunTestsResultTestCase {
 
     @Test
     fun classCoverage_ifNumClassesEquals0_shouldReturn1() {
-        val sut = createRunTestsResult()
+        val sut = runTestsResult()
         assertEquals(sut.numClasses, 0)
         assertEquals(sut.classCoverage, 1.0)
         assertEquals(sut.classCoveragePercentage, 100.0)
@@ -139,7 +139,7 @@ class RunTestsResultTestCase {
 
     @Test
     fun triggerCoverage_ifNumTriggersEquals0_shouldReturn1() {
-        val sut = createRunTestsResult()
+        val sut = runTestsResult()
         assertEquals(sut.numTriggers, 0)
         assertEquals(sut.triggerCoverage, 1.0)
         assertEquals(sut.triggerCoveragePercentage, 100.0)
@@ -150,7 +150,7 @@ class RunTestsResultTestCase {
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
 
-        val sut = createRunTestsResult(
+        val sut = runTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
         assertEquals(sut.classCoverage, sut.numClassesCovered.toDouble() / sut.numClasses)
@@ -162,7 +162,7 @@ class RunTestsResultTestCase {
         codeCoverage: Array<CodeCoverageResult>,
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
 
-        val sut = createRunTestsResult(
+        val sut = runTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
         assertEquals(sut.triggerCoverage, sut.numTriggersCovered.toDouble() / sut.numTriggers)
@@ -176,19 +176,19 @@ class RunTestsResultTestCase {
             setOf<String>()),
         arrayOf<Any?>(
             arrayOf(
-                createCodeCoverageResult(
+                codeCoverageResult(
                     name = "Foo",
                     namespace = "nmspc",
                     type = "Class",
                     numLocations = 10,
                     numLocationsNotCovered = 0),
-                createCodeCoverageResult(
+                codeCoverageResult(
                     name = "Bar",
                     namespace = "nmspc",
                     type = "Class",
                     numLocations = 10,
                     numLocationsNotCovered = 10),
-                createCodeCoverageResult(
+                codeCoverageResult(
                     name = "Baz",
                     namespace = "nmspc",
                     type = "Trigger",
@@ -203,19 +203,19 @@ class RunTestsResultTestCase {
             setOf<String>()),
         arrayOf<Any?>(
             arrayOf(
-                createCodeCoverageResult(
+                codeCoverageResult(
                     name = "Foo",
                     namespace = "nmspc",
                     type = "Trigger",
                     numLocations = 10,
                     numLocationsNotCovered = 0),
-                createCodeCoverageResult(
+                codeCoverageResult(
                     name = "Bar",
                     namespace = "nmspc",
                     type = "Trigger",
                     numLocations = 10,
                     numLocationsNotCovered = 10),
-                createCodeCoverageResult(
+                codeCoverageResult(
                     name = "Baz",
                     namespace = "nmspc",
                     type = "Class",
@@ -230,19 +230,19 @@ class RunTestsResultTestCase {
             setOf<String>()),
         arrayOf<Any?>(
             arrayOf(
-                createCodeCoverageWarning(
+                codeCoverageWarning(
                     name = "Foo",
                     namespace = "nmspc",
                     message = "Test coverage of selected Apex Class is 0%, at least 75% test coverage is required"),
-                createCodeCoverageWarning(
+                codeCoverageWarning(
                     name = "Bar",
                     namespace = "nmspc",
                     message = "Test coverage of selected Apex Class is 12%, at least 75% test coverage is required"),
-                createCodeCoverageWarning(
+                codeCoverageWarning(
                     name = "Baz",
                     namespace = "nmspc",
                     message = "Test coverage of selected Apex Trigger is 0%, at least 75% test coverage is required"),
-                createCodeCoverageWarning(
+                codeCoverageWarning(
                     name = "Qux",
                     namespace = "nmspc",
                     message = "Test coverage of selected Apex Trigger is 33%, at least 75% test coverage is required")),
@@ -255,19 +255,19 @@ class RunTestsResultTestCase {
             setOf<String>()),
         arrayOf<Any?>(
             arrayOf(
-                createCodeCoverageWarning(
+                codeCoverageWarning(
                     name = "Foo",
                     namespace = "nmspc",
                     message = "Test coverage of selected Apex Trigger is 0%, at least 75% test coverage is required"),
-                createCodeCoverageWarning(
+                codeCoverageWarning(
                     name = "Bar",
                     namespace = "nmspc",
                     message = "Test coverage of selected Apex Trigger is 12%, at least 75% test coverage is required"),
-                createCodeCoverageWarning(
+                codeCoverageWarning(
                     name = "Baz",
                     namespace = "nmspc",
                     message = "Test coverage of selected Apex Class is 0%, at least 75% test coverage is required"),
-                createCodeCoverageWarning(
+                codeCoverageWarning(
                     name = "Qux",
                     namespace = "nmspc",
                     message = "Test coverage of selected Apex Class is 33%, at least 75% test coverage is required")),
@@ -282,57 +282,57 @@ class RunTestsResultTestCase {
                 0),
             arrayOf<Any?>(
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Foo",
                         namespace = "nmspc",
                         type = "Trigger",
                         numLocations = 10,
                         numLocationsNotCovered = 0),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Bar",
                         namespace = "nmspc",
                         type = "Trigger",
                         numLocations = 10,
                         numLocationsNotCovered = 10),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Baz",
                         namespace = "nmspc",
                         type = "Class",
                         numLocations = 10,
                         numLocationsNotCovered = 0)),
                 arrayOf(
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Foo",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Trigger is 0%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Bar",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Trigger is 12%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Baz",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Class is 0%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Qux",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Class is 33%, at least 75% test coverage is required")),
                 1 + 1),
             arrayOf<Any?>(
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Foo",
                         namespace = "nmspc",
                         type = "Trigger",
                         numLocations = 10,
                         numLocationsNotCovered = 0),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Bar",
                         namespace = "nmspc",
                         type = "Trigger",
                         numLocations = 10,
                         numLocationsNotCovered = 10),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Baz",
                         namespace = "nmspc",
                         type = "Class",
@@ -343,19 +343,19 @@ class RunTestsResultTestCase {
             arrayOf<Any?>(
                 arrayOf<CodeCoverageResult>(),
                 arrayOf(
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Foo",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Trigger is 0%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Bar",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Trigger is 12%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Baz",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Class is 0%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Qux",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Class is 33%, at least 75% test coverage is required")),
@@ -367,56 +367,56 @@ class RunTestsResultTestCase {
         return arrayOf(
             arrayOf<Any?>(
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Foo",
                         namespace = "nmspc",
                         type = "Trigger",
                         numLocations = 10,
                         numLocationsNotCovered = 0),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Bar",
                         namespace = "nmspc",
                         type = "Trigger",
                         numLocations = 10,
                         numLocationsNotCovered = 10),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Baz",
                         namespace = "nmspc",
                         type = "Class",
                         numLocations = 10,
                         numLocationsNotCovered = 0)),
                 arrayOf(
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Foo",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Trigger is 0%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Bar",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Trigger is 12%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Baz",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Class is 0%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Qux",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Class is 33%, at least 75% test coverage is required"))),
             arrayOf<Any?>(
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Foo",
                         namespace = "nmspc",
                         type = "Trigger",
                         numLocations = 10,
                         numLocationsNotCovered = 0),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Bar",
                         namespace = "nmspc",
                         type = "Trigger",
                         numLocations = 10,
                         numLocationsNotCovered = 10),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Baz",
                         namespace = "nmspc",
                         type = "Class",
@@ -426,19 +426,19 @@ class RunTestsResultTestCase {
             arrayOf<Any?>(
                 arrayOf<CodeCoverageResult>(),
                 arrayOf(
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Foo",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Trigger is 0%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Bar",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Trigger is 12%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Baz",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Class is 0%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Qux",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Class is 33%, at least 75% test coverage is required"))))
@@ -453,13 +453,13 @@ class RunTestsResultTestCase {
     fun nonEmptyCoverageTestData(): Array<Array<Any>> = arrayOf(
         arrayOf<Any>(
             arrayOf(
-                createCodeCoverageResult(numLocations = 0, numLocationsNotCovered = 0),
-                createCodeCoverageResult(numLocations = 1, numLocationsNotCovered = 1))),
+                codeCoverageResult(numLocations = 0, numLocationsNotCovered = 0),
+                codeCoverageResult(numLocations = 1, numLocationsNotCovered = 1))),
         arrayOf<Any>(
             arrayOf(
-                createCodeCoverageResult(numLocations = 0, numLocationsNotCovered = 0),
-                createCodeCoverageResult(numLocations = 100, numLocationsNotCovered = 56),
-                createCodeCoverageResult(numLocations = 11, numLocationsNotCovered = 4),
-                createCodeCoverageResult(numLocations = 23, numLocationsNotCovered = 16),
-                createCodeCoverageResult(numLocations = 1, numLocationsNotCovered = 1))))
+                codeCoverageResult(numLocations = 0, numLocationsNotCovered = 0),
+                codeCoverageResult(numLocations = 100, numLocationsNotCovered = 56),
+                codeCoverageResult(numLocations = 11, numLocationsNotCovered = 4),
+                codeCoverageResult(numLocations = 23, numLocationsNotCovered = 16),
+                codeCoverageResult(numLocations = 1, numLocationsNotCovered = 1))))
 }

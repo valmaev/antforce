@@ -13,7 +13,7 @@ class RunTestSuccessTestCase {
         name: String?,
         expected: String) {
 
-        val sut = createRunTestSuccess(name = name, namespace = namespace)
+        val sut = runTestSuccess(name = name, namespace = namespace)
         assertEquals(sut.qualifiedClassName, expected)
     }
 
@@ -29,7 +29,7 @@ class RunTestFailureTestCase {
         name: String?,
         expected: String) {
 
-        val sut = createRunTestFailure(name = name, namespace = namespace)
+        val sut = runTestFailure(name = name, namespace = namespace)
         assertEquals(sut.qualifiedClassName, expected)
     }
 

@@ -393,7 +393,7 @@ class DeployWithTestReportsTaskTestCase {
             sut.addConfiguredJUnitReport(report)
 
             // Act
-            sut.handleResponse(createMetadataConnection(), createAsyncResult())
+            sut.handleResponse(metadataConnection(), asyncResult())
 
             // Assert
             val actual = testDirectory.listFiles().single { it.name == "TEST-TestSuite.xml"}
@@ -411,7 +411,7 @@ class DeployWithTestReportsTaskTestCase {
             sut.addConfiguredCoberturaReport(report)
 
             // Act
-            sut.handleResponse(createMetadataConnection(), createAsyncResult())
+            sut.handleResponse(metadataConnection(), asyncResult())
 
             // Assert
             val actual = testDirectory.listFiles().single { it.name == report.file }
@@ -429,7 +429,7 @@ class DeployWithTestReportsTaskTestCase {
             sut.addConfiguredHtmlCoverageReport(report)
 
             // Act
-            sut.handleResponse(createMetadataConnection(), createAsyncResult())
+            sut.handleResponse(metadataConnection(), asyncResult())
 
             // Assert
             val actual = testDirectory.listFiles().single { it.name == report.dir }
@@ -447,7 +447,7 @@ class DeployWithTestReportsTaskTestCase {
             sut.addConfiguredHtmlCoverageReport(report)
 
             // Act
-            sut.handleResponse(createMetadataConnection(), createAsyncResult())
+            sut.handleResponse(metadataConnection(), asyncResult())
 
             // Assert
             val actual = zipFile.parentFile.listFiles().single { it.name == report.dir }
@@ -461,15 +461,15 @@ class DeployWithTestReportsTaskTestCase {
             // Arrange
             val numTestsRun = 3
             val coverageTestClassName = generateTestClassName()
-            val deployResult = createDeployResult(
-                testResult = createRunTestsResult(
+            val deployResult = deployResult(
+                testResult = runTestsResult(
                     numTestsRun = numTestsRun,
                     successes = arrayOf(
-                        createRunTestSuccess(name = coverageTestClassName),
-                        createRunTestSuccess(name = "foo"),
-                        createRunTestSuccess(name = "bar"))))
+                        runTestSuccess(name = coverageTestClassName),
+                        runTestSuccess(name = "foo"),
+                        runTestSuccess(name = "bar"))))
 
-            val sut = createMockedSystemUnderTest(metadataConnection = createMetadataConnection(deployResult))
+            val sut = createMockedSystemUnderTest(metadataConnection = metadataConnection(deployResult))
             sut.reportDir = it
             sut.sourceDir = it
             sut.coverageTestClassName = coverageTestClassName
@@ -480,7 +480,7 @@ class DeployWithTestReportsTaskTestCase {
             sut.consoleReporters["TeamCity"] = createTeamCityReporter { teamcityLog.add(it) }
 
             // Act
-            sut.handleResponse(sut.metadataConnection, createAsyncResult())
+            sut.handleResponse(sut.metadataConnection, asyncResult())
 
             // Assert
             Files.walk(it.toPath())
@@ -503,7 +503,7 @@ class DeployWithTestReportsTaskTestCase {
     fun generatePackageWithoutApexClasses() = generatePackage(37.0)
 
     fun createSystemUnderTest(
-        project: Project = createProject(),
+        project: Project = project(),
         testLevel: String? = TestLevel.RunSpecifiedTests.name,
         deployRoot: String? = null,
         zipFile: String? = null,
@@ -519,7 +519,7 @@ class DeployWithTestReportsTaskTestCase {
     }
 
     fun createMockedSystemUnderTest(
-        metadataConnection: MetadataConnection = createMetadataConnection()): DeployWithTestReportsTask {
+        metadataConnection: MetadataConnection = metadataConnection()): DeployWithTestReportsTask {
 
         val sut = spy(createSystemUnderTest())
         doReturn(metadataConnection).whenever(sut).metadataConnection
@@ -533,7 +533,7 @@ class DeployWithTestReportsTaskTestCase {
     }
 
     fun createTestClassesFileSet(directory: File, fileNames: Iterable<String>): FileSet =
-        createFileSet(
+        fileSet(
             directory,
             fileNames.map { it + APEX_CLASS_FILE_EXTENSION })
 

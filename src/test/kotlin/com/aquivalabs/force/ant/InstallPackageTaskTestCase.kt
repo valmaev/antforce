@@ -192,7 +192,7 @@ class InstallPackageTaskTestCase {
 
     fun createSystemUnderTest() = InstallPackageTask()
     fun createMockedSystemUnderTest(
-        metadataConnection: MetadataConnection = createMetadataConnection()): InstallPackageTask {
+        metadataConnection: MetadataConnection = metadataConnection()): InstallPackageTask {
 
         val sut = spy<InstallPackageTask>()
         doReturn(metadataConnection).whenever(sut).metadataConnection

@@ -28,7 +28,7 @@ abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
         reason: String) = withTestDirectory {
 
         val sut = createSystemUnderTest(outputDir = it)
-        val reports = sut.createReport(createDeployResult(input)).getReportContents()
+        val reports = sut.createReport(deployResult(input)).getReportContents()
 
         reports.forEach {
             assertThat(reason, it.value, isSimilarTo(expected)
@@ -41,19 +41,19 @@ abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
     fun createReportTestSuiteData(): Array<Array<Any>> {
         return arrayOf(
             arrayOf(
-                createRunTestsResult(),
+                runTestsResult(),
                 """<testsuite name="" tests="0" failures="0" time="0.0" errors="0" timestamp="${dateTimeProvider()}" />""",
                 "Should create default testSuite when default RunTestsResult passed"),
             arrayOf(
-                createRunTestsResult(
-                    successes = Array(8) { createRunTestSuccess() },
-                    failures = Array(2) { createRunTestFailure() }),
+                runTestsResult(
+                    successes = Array(8) { runTestSuccess() },
+                    failures = Array(2) { runTestFailure() }),
                 """<testsuite name="" tests="8" failures="2" time="0.0" errors="0" timestamp="${dateTimeProvider()}" />""",
                 "Should properly calculate tests number (successes.size and failures.size)"),
             arrayOf(
-                createRunTestsResult(
-                    successes = Array(3) { createRunTestSuccess(time = 2.0) },
-                    failures = Array(4) { createRunTestFailure(time = 1.0) }),
+                runTestsResult(
+                    successes = Array(3) { runTestSuccess(time = 2.0) },
+                    failures = Array(4) { runTestFailure(time = 1.0) }),
                 """<testsuite name="" tests="3" failures="4" time="${(3 * 2.0 + 4 * 1.0) / 1000.0}" errors="0" timestamp="${dateTimeProvider()}" />""",
                 "Should properly calculate time in ms (sum of times in ms for all successes and failures)"))
     }
@@ -65,9 +65,9 @@ abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
         reason: String) = withTestDirectory {
 
         val sut = createSystemUnderTest(outputDir = it)
-        val input = createRunTestsResult(successes = successes)
+        val input = runTestsResult(successes = successes)
 
-        val reports = sut.createReport(createDeployResult(input)).getReportContents()
+        val reports = sut.createReport(deployResult(input)).getReportContents()
         reports.forEach {
             assertThat(reason, it.value, isSimilarTo(expected)
                 .ignoreWhitespace()
@@ -83,12 +83,12 @@ abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
         return arrayOf(
             arrayOf(
                 arrayOf(
-                    createRunTestSuccess(
+                    runTestSuccess(
                         namespace = "foo",
                         name = "MyTestClass",
                         methodName = "testMethodName",
                         time = 1000.0),
-                    createRunTestSuccess(
+                    runTestSuccess(
                         namespace = "foo",
                         name = "MyTestClass",
                         methodName = "otherTestMethodName",
@@ -101,7 +101,7 @@ abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
                     "(className = namespace.name, name = methodName, time = time / 1000.0)"),
             arrayOf(
                 arrayOf(
-                    createRunTestSuccess(
+                    runTestSuccess(
                         namespace = null,
                         name = "TestClass")),
                 """<testsuite>
@@ -119,9 +119,9 @@ abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
         reason: String) = withTestDirectory {
 
         val sut = createSystemUnderTest(outputDir = it)
-        val input = createRunTestsResult(failures = failures)
+        val input = runTestsResult(failures = failures)
 
-        val reports = sut.createReport(createDeployResult(input)).getReportContents()
+        val reports = sut.createReport(deployResult(input)).getReportContents()
 
         reports.forEach {
             assertThat(reason, it.value, isSimilarTo(expected)
@@ -139,7 +139,7 @@ abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
         return arrayOf(
             arrayOf(
                 arrayOf(
-                    createRunTestFailure(
+                    runTestFailure(
                         message = "System.AssertionError",
                         type = "Class",
                         stackTrace = "foo.MyTestClass.testMethodName: line 9, column 1",
@@ -147,7 +147,7 @@ abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
                         name = "MyTestClass",
                         methodName = "testMethodName",
                         time = 1000.0),
-                    createRunTestFailure(
+                    runTestFailure(
                         message = "System.NullPointerException",
                         type = "Class",
                         stackTrace = "foo.MyTestClass.someTestMethodName: line 21, column 1",
@@ -172,7 +172,7 @@ abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
                     "failure.message = message, failure.type = type, failure.CDATA = stackTrace)"),
             arrayOf(
                 arrayOf(
-                    createRunTestFailure(
+                    runTestFailure(
                         namespace = null,
                         name = "MyTestClass")),
                 """<testsuite>
@@ -195,7 +195,7 @@ abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
         val sut = createSystemUnderTest(outputDir = it)
         sut.properties = properties
 
-        val reports = sut.createReport(createDeployResult()).getReportContents()
+        val reports = sut.createReport(deployResult()).getReportContents()
 
         reports.forEach {
             assertThat(reason, it.value, isSimilarTo(expected)
@@ -243,7 +243,7 @@ class SingleSuiteJUnitReporterTestCase : JUnitReporterTestCase<SingleSuiteJUnitR
         val sut = createSystemUnderTest(outputDir = it)
         sut.suiteName = expected
 
-        val reports = sut.createReport(createDeployResult()).getReportContents()
+        val reports = sut.createReport(deployResult()).getReportContents()
         reports.forEach {
             assertThat(it.value, hasXPath("/testsuite/@name", equalTo(expected)))
         }

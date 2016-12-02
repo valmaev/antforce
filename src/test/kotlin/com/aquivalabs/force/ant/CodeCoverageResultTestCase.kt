@@ -13,7 +13,7 @@ class CodeCoverageResultTestCase {
         numLocationsNotCovered: Int,
         expected: Int) {
 
-        val sut = createCodeCoverageResult(
+        val sut = codeCoverageResult(
             numLocations = numLocations,
             numLocationsNotCovered = numLocationsNotCovered)
         assertEquals(sut.numLocationsCovered, expected)
@@ -27,7 +27,7 @@ class CodeCoverageResultTestCase {
 
     @Test
     fun coverage_ifNumLocationsEquals0_shouldReturn1() {
-        val sut = createCodeCoverageResult(numLocations = 0)
+        val sut = codeCoverageResult(numLocations = 0)
         assertEquals(sut.coverage, 1.0)
     }
 
@@ -36,7 +36,7 @@ class CodeCoverageResultTestCase {
         numLocations: Int,
         numLocationsNotCovered: Int) {
 
-        val sut = createCodeCoverageResult(
+        val sut = codeCoverageResult(
             numLocations = numLocations,
             numLocationsNotCovered = numLocationsNotCovered)
         assertEquals(sut.coverage, sut.numLocationsCovered.toDouble() / sut.numLocations)
@@ -53,7 +53,7 @@ class CodeCoverageResultTestCase {
         numLocations: Int,
         numLocationsNotCovered: Int) {
 
-        val sut = createCodeCoverageResult(
+        val sut = codeCoverageResult(
             numLocations = numLocations,
             numLocationsNotCovered = numLocationsNotCovered)
         assertEquals(sut.coveragePercentage, sut.coverage * 100)
@@ -65,7 +65,7 @@ class CodeCoverageResultTestCase {
         name: String?,
         expected: String) {
 
-        val sut = createCodeCoverageResult(name = name, namespace = namespace)
+        val sut = codeCoverageResult(name = name, namespace = namespace)
         assertEquals(sut.qualifiedName, expected)
     }
 
@@ -79,7 +79,7 @@ class CodeCoverageResultTestCase {
         type: String?,
         expected: String) {
 
-        val sut = createCodeCoverageResult(name = name, namespace = namespace, type = type)
+        val sut = codeCoverageResult(name = name, namespace = namespace, type = type)
         assertEquals(sut.classFileName, expected)
     }
 

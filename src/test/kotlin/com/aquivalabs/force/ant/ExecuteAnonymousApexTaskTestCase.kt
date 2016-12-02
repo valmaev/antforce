@@ -219,7 +219,7 @@ class ExecuteAnonymousApexTaskTestCase {
                 createLocation("build.xml", lineNumber = 5, columnNumber = 1)))
     }
 
-    fun createSystemUnderTest(project: Project = createProject()): ExecuteAnonymousApexTask {
+    fun createSystemUnderTest(project: Project = project()): ExecuteAnonymousApexTask {
         val sut = ExecuteAnonymousApexTask()
         sut.project = project
         return sut

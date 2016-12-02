@@ -20,7 +20,7 @@ class BatchTestTestCase() {
 
     @Test fun addFileSet_always_shouldFillProjectPropertyOfPassedValue() = withTestDirectory {
         val sut = createSystemUnderTest()
-        val input = createFileSet(it)
+        val input = fileSet(it)
 
         sut.addFileSet(input)
 
@@ -29,7 +29,7 @@ class BatchTestTestCase() {
 
     @Test fun addFileSet_always_shouldAddFileSetToResources() = withTestDirectory {
         val sut = createSystemUnderTest()
-        val input = createFileSet(it , "foo", "bar")
+        val input = fileSet(it , "foo", "bar")
 
         sut.addFileSet(input)
 
@@ -47,7 +47,7 @@ class BatchTestTestCase() {
 
         val sut = createSystemUnderTest()
         sut.namespace = namespace
-        val fileSet = createFileSet(it, inputFileNames)
+        val fileSet = fileSet(it, inputFileNames)
         sut.addFileSet(fileSet)
 
         assertEquals(sut.getFileNames(), expected, message)

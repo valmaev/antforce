@@ -21,12 +21,12 @@ class TeamCityReporterTestCase {
         val sut = createSystemUnderTest(
             systemEnvironment = { env[it] },
             log = { actual.add(it) })
-        val runTestsResult = createRunTestsResult(
+        val runTestsResult = runTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        sut.createReport(createDeployResult(runTestsResult))
+        sut.createReport(deployResult(runTestsResult))
 
         // Assert
         assertTrue(
@@ -65,38 +65,38 @@ class TeamCityReporterTestCase {
                 arrayOf<CodeCoverageWarning>()),
             arrayOf<Any?>(
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Foo",
                         namespace = "nmspc",
                         type = "Trigger",
                         numLocations = 10,
                         numLocationsNotCovered = 0),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Bar",
                         namespace = "nmspc",
                         type = "Trigger",
                         numLocations = 10,
                         numLocationsNotCovered = 10),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Baz",
                         namespace = "nmspc",
                         type = "Class",
                         numLocations = 10,
                         numLocationsNotCovered = 0)),
                 arrayOf(
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Foo",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Trigger is 0%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Bar",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Trigger is 12%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Baz",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Class is 0%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Qux",
                         namespace = "qwe"))))
     }
@@ -108,10 +108,10 @@ class TeamCityReporterTestCase {
         val sut = createSystemUnderTest(
             systemEnvironment = { null },
             log = { actual.add(it) })
-        val runTestsResult = createRunTestsResult()
+        val runTestsResult = runTestsResult()
 
         // Act
-        sut.createReport(createDeployResult(runTestsResult))
+        sut.createReport(deployResult(runTestsResult))
 
         // Assert
         assertThat(actual, empty())
@@ -125,10 +125,10 @@ class TeamCityReporterTestCase {
         val sut = createSystemUnderTest(
             systemEnvironment = { env[it] },
             log = { actual.add(it) })
-        val runTestsResult = createRunTestsResult(totalTime = 2000.0)
+        val runTestsResult = runTestsResult(totalTime = 2000.0)
 
         // Act
-        sut.createReport(createDeployResult(runTestsResult))
+        sut.createReport(deployResult(runTestsResult))
 
         // Assert
         assertTrue(actual.contains("##teamcity[testSuiteStarted name='Apex']"))
@@ -144,24 +144,24 @@ class TeamCityReporterTestCase {
         val sut = createSystemUnderTest(
             systemEnvironment = { env[it] },
             log = { actual.add(it) })
-        val runTestsResult = createRunTestsResult(successes = arrayOf(
-            createRunTestSuccess(
+        val runTestsResult = runTestsResult(successes = arrayOf(
+            runTestSuccess(
                 namespace = "foo",
                 name = "BookTestClass",
                 methodName = "testMethod",
                 time = 2500.0),
-            createRunTestSuccess(
+            runTestSuccess(
                 namespace = "bar",
                 name = "BarTestClass",
                 methodName = "testAnotherMethod",
                 time = 300.0),
-            createRunTestSuccess(
+            runTestSuccess(
                 name = "BookTestClass",
                 methodName = "testMethod",
                 time = 100.0)))
 
         // Act
-        sut.createReport(createDeployResult(runTestsResult))
+        sut.createReport(deployResult(runTestsResult))
 
         // Assert
         runTestsResult.successes.forEach {
@@ -183,8 +183,8 @@ class TeamCityReporterTestCase {
         val sut = createSystemUnderTest(
             systemEnvironment = { env[it] },
             log = { actual.add(it) })
-        val runTestsResult = createRunTestsResult(failures = arrayOf(
-            createRunTestFailure(
+        val runTestsResult = runTestsResult(failures = arrayOf(
+            runTestFailure(
                 namespace = "foo",
                 name = "BookTestClass",
                 methodName = "testMethod",
@@ -192,7 +192,7 @@ class TeamCityReporterTestCase {
                 type = "Error",
                 message = "Exception was thrown",
                 stackTrace = "long stacktrace"),
-            createRunTestFailure(
+            runTestFailure(
                 name = "barTestClass",
                 methodName = "testAnotherMethod",
                 time = 143.0,
@@ -201,7 +201,7 @@ class TeamCityReporterTestCase {
                 stackTrace = "Class.TestPortalController.constructor_always_shouldSetContactAndAccount: line 16, column 1")))
 
         // Act
-        sut.createReport(createDeployResult(runTestsResult))
+        sut.createReport(deployResult(runTestsResult))
 
         // Assert
         runTestsResult.failures.forEach {
@@ -233,17 +233,17 @@ class TeamCityReporterTestCase {
             log = { actual.add(it) })
         val beforeEscape = "|\n\r\'[]\u0085\u2028\u2029foobar"
         val afterEscape = "|||n|r|'|[|]|x|l|pfoobar"
-        val failure = createRunTestFailure(
+        val failure = runTestFailure(
             namespace = beforeEscape,
             name = beforeEscape,
             methodName = beforeEscape,
             type = beforeEscape,
             message = beforeEscape,
             stackTrace = beforeEscape)
-        val runTestsResult = createRunTestsResult(failures = arrayOf(failure))
+        val runTestsResult = runTestsResult(failures = arrayOf(failure))
 
         // Act
-        sut.createReport(createDeployResult(runTestsResult))
+        sut.createReport(deployResult(runTestsResult))
 
         // Assert
         assertTrue(actual.contains(
@@ -268,14 +268,14 @@ class TeamCityReporterTestCase {
         val beforeEscape = "|\n\r\'[]\u0085\u2028\u2029foobar"
         val afterEscape = "|||n|r|'|[|]|x|l|pfoobar"
 
-        val success = createRunTestSuccess(
+        val success = runTestSuccess(
             namespace = beforeEscape,
             name = beforeEscape,
             methodName = beforeEscape)
-        val runTestsResult = createRunTestsResult(successes = arrayOf(success))
+        val runTestsResult = runTestsResult(successes = arrayOf(success))
 
         // Act
-        sut.createReport(createDeployResult(runTestsResult))
+        sut.createReport(deployResult(runTestsResult))
 
         // Assert
         assertTrue(actual.contains(

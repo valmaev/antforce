@@ -12,10 +12,10 @@ import java.util.zip.ZipOutputStream
 
 
 fun nestedElementConvention(prefix: String) =
-    "Prefix '$prefix' is one of the Ant's conventions for nested elements declaration. See the manual: http://ant.apache.org/manual/develop.html#nested-elements"
+    "Prefix '$prefix' is one of the Ant's conventions for nested elements declaration. " +
+        "See the manual: http://ant.apache.org/manual/develop.html#nested-elements"
 
-
-fun createFileSet(directory: File, fileNames: Iterable<String>): FileSet {
+fun fileSet(directory: File, fileNames: Iterable<String>): FileSet {
     val fileSet = FileSet()
     fileSet.dir = directory
     fileNames.forEach {
@@ -25,11 +25,10 @@ fun createFileSet(directory: File, fileNames: Iterable<String>): FileSet {
     return fileSet
 }
 
-fun createFileSet(directory: File, vararg filesNames: String) =
-    createFileSet(directory, filesNames.asIterable())
+fun fileSet(directory: File, vararg filesNames: String) = fileSet(directory, filesNames.asIterable())
 
-fun createDeployResult(
-    testResult: RunTestsResult = createRunTestsResult(),
+fun deployResult(
+    testResult: RunTestsResult = runTestsResult(),
     status: DeployStatus = DeployStatus.Succeeded,
     done: Boolean = true): DeployResult {
 
@@ -42,14 +41,14 @@ fun createDeployResult(
     return result
 }
 
-fun createAsyncResult(id: String = randomString(), done: Boolean = true): AsyncResult {
+fun asyncResult(id: String = randomString(), done: Boolean = true): AsyncResult {
     val result = AsyncResult()
     result.id = id
     result.done = done
     return result
 }
 
-fun createRunTestsResult(
+fun runTestsResult(
     numTestsRun: Int = 0,
     numFailures: Int = 0,
     totalTime: Double = 0.0,
@@ -69,13 +68,13 @@ fun createRunTestsResult(
     return result
 }
 
-fun createProject(name: String = "TestProject"): Project {
+fun project(name: String = "TestProject"): Project {
     val project = Project()
     project.name = name
     return project
 }
 
-fun createCodeCoverageResult(
+fun codeCoverageResult(
     numLocations: Int = 0,
     numLocationsNotCovered: Int = 0): CodeCoverageResult {
     val result = CodeCoverageResult()
@@ -84,7 +83,7 @@ fun createCodeCoverageResult(
     return result
 }
 
-fun createCodeCoverageResult(
+fun codeCoverageResult(
     name: String? = null,
     namespace: String? = null,
     type: String? = null,
@@ -101,7 +100,7 @@ fun createCodeCoverageResult(
     return result
 }
 
-fun createCodeCoverageWarning(
+fun codeCoverageWarning(
     name: String? = null,
     namespace: String? = null,
     message: String? = null): CodeCoverageWarning {
@@ -112,7 +111,7 @@ fun createCodeCoverageWarning(
     return warning
 }
 
-fun createCodeLocation(
+fun codeLocation(
     line: Int = 0,
     numExecutions: Int = 0): CodeLocation {
     val location = CodeLocation()
@@ -121,9 +120,9 @@ fun createCodeLocation(
     return location
 }
 
-fun Int.toCodeLocation(): CodeLocation = createCodeLocation(this)
+fun Int.toCodeLocation(): CodeLocation = codeLocation(this)
 
-fun createRunTestSuccess(
+fun runTestSuccess(
     namespace: String? = "",
     name: String? = "",
     methodName: String? = "",
@@ -137,7 +136,7 @@ fun createRunTestSuccess(
     return success
 }
 
-fun createRunTestFailure(
+fun runTestFailure(
     namespace: String? = "",
     name: String? = "",
     methodName: String? = "",
@@ -157,10 +156,10 @@ fun createRunTestFailure(
     return failure
 }
 
-fun createMetadataConnection(deployResult: DeployResult = createDeployResult()): MetadataConnection {
+fun metadataConnection(deployResult: DeployResult = deployResult()): MetadataConnection {
     val connection = mock<MetadataConnection>(withSettings().defaultAnswer(RETURNS_DEEP_STUBS))
     doReturn(deployResult).whenever(connection).checkDeployStatus(any(), any())
-    doReturn(createAsyncResult()).whenever(connection).deploy(any(), any())
+    doReturn(asyncResult()).whenever(connection).deploy(any(), any())
     return connection
 }
 

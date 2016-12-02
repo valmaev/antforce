@@ -1,9 +1,9 @@
 package com.aquivalabs.force.ant.reporters
 
-import com.aquivalabs.force.ant.createCodeCoverageResult
-import com.aquivalabs.force.ant.createCodeLocation
-import com.aquivalabs.force.ant.createDeployResult
-import com.aquivalabs.force.ant.createRunTestsResult
+import com.aquivalabs.force.ant.codeCoverageResult
+import com.aquivalabs.force.ant.codeLocation
+import com.aquivalabs.force.ant.deployResult
+import com.aquivalabs.force.ant.runTestsResult
 import com.aquivalabs.force.ant.reporters.cobertura.Coverage
 import com.aquivalabs.force.ant.reporters.cobertura.Packages
 import com.sforce.soap.metadata.CodeCoverageResult
@@ -23,8 +23,8 @@ class CoberturaCoverageReporterTestCase {
         reason: String) {
 
         val sut = createSystemUnderTest(projectRootPath)
-        val testResult = createRunTestsResult(codeCoverage = codeCoverage)
-        val report = sut.createCoberturaReport(createDeployResult(testResult))
+        val testResult = runTestsResult(codeCoverage = codeCoverage)
+        val report = sut.createCoberturaReport(deployResult(testResult))
 
         val actual = report
             .children.filterIsInstance<Coverage>().single()
@@ -43,8 +43,8 @@ class CoberturaCoverageReporterTestCase {
                 "Should create empty packages element for empty array of CodeCoverageResult"),
             arrayOf(
                 arrayOf(
-                    createCodeCoverageResult(type = "Class"),
-                    createCodeCoverageResult(type = "Trigger")),
+                    codeCoverageResult(type = "Class"),
+                    codeCoverageResult(type = "Trigger")),
                 "",
                 Coverage().packages {
                     `package`("Class", `line-rate` = 1.0) {
@@ -67,7 +67,7 @@ class CoberturaCoverageReporterTestCase {
                 "Should create two packages for two types of CodeCoverageResult"),
             arrayOf(
                 arrayOf(
-                    createCodeCoverageResult(type = null)),
+                    codeCoverageResult(type = null)),
                 "",
                 Coverage().packages {
                     `package`(name = "", `line-rate` = 1.0) {
@@ -82,17 +82,17 @@ class CoberturaCoverageReporterTestCase {
                 "Should create package with empty name if type of CodeCoverageResult is null"),
             arrayOf(
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         type = "Class",
                         name = "Book"),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         type = "Class",
                         name = "BookBuilder",
                         namespace = "foo"),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         type = "Trigger",
                         name = "AccountTrigger"),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         type = "Trigger",
                         name = "BookTrigger",
                         namespace = "bar")),
@@ -138,14 +138,14 @@ class CoberturaCoverageReporterTestCase {
                 "Should create class tag using name and namespace of CodeCoverageResult"),
             arrayOf(
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "BookBuilder",
                         type = "Class",
                         numLocations = 3,
                         locationsNotCovered = arrayOf(
-                            createCodeLocation(line = 5, numExecutions = 0),
-                            createCodeLocation(line = 26, numExecutions = 0),
-                            createCodeLocation(line = 17, numExecutions = 0)))),
+                            codeLocation(line = 5, numExecutions = 0),
+                            codeLocation(line = 26, numExecutions = 0),
+                            codeLocation(line = 17, numExecutions = 0)))),
                 "",
                 Coverage().packages {
                     `package`("Class", `line-rate` = 0.0) {
@@ -168,14 +168,14 @@ class CoberturaCoverageReporterTestCase {
                     "in ascending order (numLocations == locationsNotCovered.size)"),
             arrayOf(
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "BookBuilder",
                         type = "Class",
                         numLocations = 13,
                         locationsNotCovered = arrayOf(
-                            createCodeLocation(line = 5, numExecutions = 0),
-                            createCodeLocation(line = 7, numExecutions = 0),
-                            createCodeLocation(line = 10, numExecutions = 0)))),
+                            codeLocation(line = 5, numExecutions = 0),
+                            codeLocation(line = 7, numExecutions = 0),
+                            codeLocation(line = 10, numExecutions = 0)))),
                 "",
                 Coverage().packages {
                     `package`("Class", `line-rate` = 10.0 / 13) {
@@ -209,14 +209,14 @@ class CoberturaCoverageReporterTestCase {
                     "first notCoveredLocation on line 5)"),
             arrayOf(
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "BookBuilder",
                         type = "Class",
                         numLocations = 10,
                         locationsNotCovered = arrayOf(
-                            createCodeLocation(line = 1, numExecutions = 0),
-                            createCodeLocation(line = 2, numExecutions = 0),
-                            createCodeLocation(line = 4, numExecutions = 0)))),
+                            codeLocation(line = 1, numExecutions = 0),
+                            codeLocation(line = 2, numExecutions = 0),
+                            codeLocation(line = 4, numExecutions = 0)))),
                 "",
                 Coverage().packages {
                     `package`("Class", `line-rate` = 0.7) {
@@ -247,7 +247,7 @@ class CoberturaCoverageReporterTestCase {
                     "first notCoveredLocation on line 1)"),
             arrayOf(
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "BookBuilder",
                         type = "Class")),
                 "/foo/bar/myDirectory",
@@ -267,7 +267,7 @@ class CoberturaCoverageReporterTestCase {
                 "Should properly construct file names for Classes – {projectRootPath}/classes/{name}.cls"),
             arrayOf(
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "BookTrigger",
                         type = "Trigger")),
                 "/foo/bar/myDirectory",
@@ -287,7 +287,7 @@ class CoberturaCoverageReporterTestCase {
                 "Should properly construct file names for Triggers – {projectRootPath}/triggers/{name}.trigger"),
             arrayOf(
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "BookBuilder",
                         namespace = "foo",
                         type = "Class")),
@@ -308,10 +308,10 @@ class CoberturaCoverageReporterTestCase {
                 "Should generate fileName for coverage results with non-empty namespace"),
             arrayOf(
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = null,
                         type = "Class"),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "",
                         type = "Class")),
                 "/foo/bar/myDirectory",
@@ -338,7 +338,7 @@ class CoberturaCoverageReporterTestCase {
                 "Should not generate fileName for coverage results with null or empty name"),
             arrayOf(
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Book",
                         type = "Class")),
                 "/foo/bar/myDirectory/",

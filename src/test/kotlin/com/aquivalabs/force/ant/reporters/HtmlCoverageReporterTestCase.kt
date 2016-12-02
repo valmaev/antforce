@@ -1,6 +1,6 @@
 package com.aquivalabs.force.ant.reporters
 
-import com.aquivalabs.force.ant.createRunTestsResult
+import com.aquivalabs.force.ant.runTestsResult
 import com.aquivalabs.force.ant.*
 import com.sforce.soap.metadata.*
 import org.hamcrest.core.IsNull.*
@@ -28,12 +28,12 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
-        val runTestsResult = createRunTestsResult(
+        val runTestsResult = runTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val outputDir = sut.createReport(deployResult(runTestsResult))
         val reportFile = File(outputDir, "index.html")
 
         // Assert
@@ -49,12 +49,12 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
-        val runTestsResult = createRunTestsResult(
+        val runTestsResult = runTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val outputDir = sut.createReport(deployResult(runTestsResult))
         val reportFile = File(outputDir, "index.html")
 
         // Assert
@@ -70,12 +70,12 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
-        val runTestsResult = createRunTestsResult(
+        val runTestsResult = runTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val outputDir = sut.createReport(deployResult(runTestsResult))
         val reportFile = File(outputDir, "index.html")
 
         // Assert
@@ -91,12 +91,12 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
-        val runTestsResult = createRunTestsResult(
+        val runTestsResult = runTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val outputDir = sut.createReport(deployResult(runTestsResult))
         val reportFile = File(outputDir, "index.html")
 
         // Assert
@@ -112,12 +112,12 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
-        val runTestsResult = createRunTestsResult(
+        val runTestsResult = runTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val outputDir = sut.createReport(deployResult(runTestsResult))
         val reportFile = File(outputDir, "index.html")
 
         // Assert
@@ -133,12 +133,12 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
-        val runTestsResult = createRunTestsResult(
+        val runTestsResult = runTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val outputDir = sut.createReport(deployResult(runTestsResult))
         val reportFile = File(outputDir, "index.html")
 
         // Assert
@@ -153,38 +153,38 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         return arrayOf(
             arrayOf<Any?>(
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Foo",
                         namespace = "nmspc",
                         type = "Trigger",
                         numLocations = 10,
                         numLocationsNotCovered = 0),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Bar",
                         namespace = "nmspc",
                         type = "Trigger",
                         numLocations = 10,
                         numLocationsNotCovered = 10),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Baz",
                         namespace = "nmspc",
                         type = "Class",
                         numLocations = 10,
                         numLocationsNotCovered = 0)),
                 arrayOf(
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Foo",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Trigger is 0%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Bar",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Trigger is 12%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Baz",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Class is 0%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Qux",
                         namespace = "qwe"))))
     }
@@ -194,10 +194,10 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         codeCoverageWarnings: Array<CodeCoverageWarning>?) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
-        val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
+        val runTestsResult = runTestsResult(codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val outputDir = sut.createReport(deployResult(runTestsResult))
         val reportFile = File(outputDir, "index.html")
 
         // Assert
@@ -213,7 +213,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
             .plus(nonEmptyCoverageWarningsTestData())
             .plus(arrayOf(arrayOf<Any?>(
                 arrayOf(
-                    createCodeCoverageWarning()))))
+                    codeCoverageWarning()))))
 
     @DataProvider
     fun emptyCoverageWarningTestData(): Array<Array<Any?>> {
@@ -228,15 +228,15 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         return arrayOf(
             arrayOf<Any?>(
                 arrayOf(
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "Book",
                         namespace = "fdc",
                         message = "Test coverage of selected Apex Class is 0%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "bar",
                         namespace = "",
                         message = "Test coverage of selected Apex Class is 20%, at least 75% test coverage is required"),
-                    createCodeCoverageWarning(
+                    codeCoverageWarning(
                         name = "baz",
                         namespace = "fdc",
                         message = "Test coverage of selected Apex Class is 66%, at least 75% test coverage is required"))))
@@ -247,10 +247,10 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
-        val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
+        val runTestsResult = runTestsResult(codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val outputDir = sut.createReport(deployResult(runTestsResult))
         val reportFile = File(outputDir, "index.html")
 
         // Assert
@@ -280,10 +280,10 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         codeCoverageWarnings: Array<CodeCoverageWarning>?) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
-        val runTestsResult = createRunTestsResult(codeCoverageWarnings = codeCoverageWarnings)
+        val runTestsResult = runTestsResult(codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val outputDir = sut.createReport(deployResult(runTestsResult))
         val reportFile = File(outputDir, "index.html")
 
         // Assert
@@ -298,12 +298,12 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         codeCoverageWarnings: Array<CodeCoverageWarning>) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
-        val runTestsResult = createRunTestsResult(
+        val runTestsResult = runTestsResult(
             codeCoverage = codeCoverage,
             codeCoverageWarnings = codeCoverageWarnings)
 
         // Act
-        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val outputDir = sut.createReport(deployResult(runTestsResult))
         val reportFile = File(outputDir, "index.html")
 
         // Assert
@@ -346,10 +346,10 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         expected: String) {
         // Arrange
         val sut = createSystemUnderTest(dateTimeProvider = dateTimeProvider)
-        val runTestsResult = createRunTestsResult(codeCoverage = arrayOf(codeCoverageResult))
+        val runTestsResult = runTestsResult(codeCoverage = arrayOf(codeCoverageResult))
 
         // Act
-        val outputDir = sut.createReport(createDeployResult(runTestsResult))
+        val outputDir = sut.createReport(deployResult(runTestsResult))
         val reportFile = File(outputDir, "index.html")
 
         // Assert
@@ -368,22 +368,22 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
     fun createReportHighlightingTestData(): Array<Array<Any>> {
         return arrayOf(
             arrayOf(
-                createCodeCoverageResult(
+                codeCoverageResult(
                     numLocationsNotCovered = 0,
                     numLocations = 0),
                 "high"),
             arrayOf(
-                createCodeCoverageResult(
+                codeCoverageResult(
                     numLocationsNotCovered = 25,
                     numLocations = 100),
                 "high"),
             arrayOf(
-                createCodeCoverageResult(
+                codeCoverageResult(
                     numLocationsNotCovered = 26,
                     numLocations = 100),
                 "low"),
             arrayOf(
-                createCodeCoverageResult(
+                codeCoverageResult(
                     numLocationsNotCovered = 100,
                     numLocations = 100),
                 "low"))
@@ -394,7 +394,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         val expected = LocalDateTime.now()
         val sut = createSystemUnderTest(dateTimeProvider = { expected })
 
-        val outputDir = sut.createReport(createDeployResult())
+        val outputDir = sut.createReport(deployResult())
         val reportFile = File(outputDir, "index.html")
 
         val html = Jsoup.parse(reportFile, Charsets.UTF_8.name())
@@ -408,7 +408,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         val sut = createSystemUnderTest(dateTimeProvider = { LocalDateTime.now() })
 
         // Act
-        val outputDir = sut.createReport(createDeployResult())
+        val outputDir = sut.createReport(deployResult())
         val reportFile = File(outputDir, "index.html")
 
         // Assert
@@ -428,7 +428,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
 
         // Act
         val outputDir = sut.createReport(
-            createDeployResult(createRunTestsResult(codeCoverage = codeCoverage)))
+            deployResult(runTestsResult(codeCoverage = codeCoverage)))
 
         // Assert
         sourceFiles.keys.forEach { expected ->
@@ -453,7 +453,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
 
         // Act
         val outputDir = sut.createReport(
-            createDeployResult(createRunTestsResult(codeCoverage = codeCoverage)))
+            deployResult(runTestsResult(codeCoverage = codeCoverage)))
 
         // Assert
         sourceFiles.keys.forEach { file ->
@@ -474,7 +474,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
 
         // Act
         val outputDir = sut.createReport(
-            createDeployResult(createRunTestsResult(codeCoverage = codeCoverage)))
+            deployResult(runTestsResult(codeCoverage = codeCoverage)))
 
         // Assert
         sourceFiles.keys.forEach { file ->
@@ -495,7 +495,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
 
         // Act
         val outputDir = sut.createReport(
-            createDeployResult(createRunTestsResult(codeCoverage = codeCoverage)))
+            deployResult(runTestsResult(codeCoverage = codeCoverage)))
 
         // Assert
         sourceFiles.keys.forEach { file ->
@@ -522,7 +522,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
 
         // Act
         val outputDir = sut.createReport(
-            createDeployResult(createRunTestsResult(codeCoverage = codeCoverage)))
+            deployResult(runTestsResult(codeCoverage = codeCoverage)))
 
         // Assert
         sourceFiles.keys.forEach { file ->
@@ -539,7 +539,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
                     "classes/Foo.cls" to "public class Foo{\npublic String field;\n}",
                     "triggers/Bar.trigger" to "trigger Bar on Bar (before insert){\n System.debug('test');\n}"),
                 arrayOf(
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Foo",
                         type = "Class",
                         numLocations = 3,
@@ -547,7 +547,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
                         locationsNotCovered = arrayOf(2,3)
                             .map(Int::toCodeLocation)
                             .toTypedArray()),
-                    createCodeCoverageResult(
+                    codeCoverageResult(
                         name = "Bar",
                         namespace = "nmspc",
                         type = "Trigger",
