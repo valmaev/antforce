@@ -197,7 +197,7 @@ class TeamCityReporterTestCase {
                 methodName = "testAnotherMethod",
                 time = 143.0,
                 type = "Exception",
-                message = "System.Excepton was thrown",
+                message = "System.Exception was thrown",
                 stackTrace = "Class.TestPortalController.constructor_always_shouldSetContactAndAccount: line 16, column 1")))
 
         // Act
@@ -286,6 +286,6 @@ class TeamCityReporterTestCase {
 
     fun createSystemUnderTest(
         systemEnvironment: (String) -> String? = { null },
-        log: (String) -> Unit = { println(it) }) =
+        log: (String) -> Unit = ::println) =
         TeamCityReporter(systemEnvironment, log)
 }

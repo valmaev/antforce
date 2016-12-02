@@ -295,7 +295,7 @@ open class HtmlCoverageReporter(
     }
 
     private fun HtmlBlockTag.coverageWarningsList(result: RunTestsResult) {
-        if (result.codeCoverageWarnings.orEmpty().size == 0)
+        if (result.codeCoverageWarnings.orEmpty().isEmpty())
             return
 
         div("pad1") {

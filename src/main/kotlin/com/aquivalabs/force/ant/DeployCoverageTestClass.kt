@@ -2,7 +2,6 @@ package com.aquivalabs.force.ant
 
 import com.salesforce.ant.DeployTask
 import com.salesforce.ant.ZipUtil
-import com.sforce.soap.metadata.MetadataConnection
 import org.w3c.dom.Document
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList

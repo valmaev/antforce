@@ -33,9 +33,6 @@ class JUnitReportRoot : EmptyTag() {
 }
 
 class TestSuite : Tag("testsuite") {
-    val testCases: Iterable<TestCase>
-        get() = children.filterIsInstance<TestCase>()
-
     var errors: Int by attributes
     var failures: Int by attributes
     var tests: Int by attributes
