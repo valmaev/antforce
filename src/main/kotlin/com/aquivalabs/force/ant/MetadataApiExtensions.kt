@@ -127,7 +127,10 @@ private fun RunTestsResult.notCoveredTypes(type: String) =
         .toSet()
 
 
-fun deployOptions(singlePackage: Boolean = false) = with(DeployOptions()) {
+fun deployOptions(
+    ignoreWarnings: Boolean = false,
+    singlePackage: Boolean = false) = with(DeployOptions()) {
+    this.ignoreWarnings = ignoreWarnings
     this.singlePackage = singlePackage
     this
 }

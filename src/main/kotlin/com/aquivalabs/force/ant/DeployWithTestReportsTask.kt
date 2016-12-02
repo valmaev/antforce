@@ -11,7 +11,7 @@ data class JUnitReport(var dir: String = "", var suiteName: String = "Apex", var
 data class CoberturaReport(var file: String = "Apex-Coverage.xml")
 data class HtmlCoverageReport(var dir: String = "", var codeHighlighting: Boolean = false)
 
-class DeployWithTestReportsTask : DeployTaskAdapter() {
+open class DeployWithTestReportsTask : DeployTaskAdapter() {
     internal val fileReporters = hashMapOf<String, Reporter<File>>()
     internal val consoleReporters = hashMapOf<String, Reporter<Unit>>(
         "TeamCity" to TeamCityReporter())
@@ -94,9 +94,9 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         throw BuildException(INVALID_ZIP_ROOT)
     }
 
-    override fun handleResponse(metadataConnection: MetadataConnection?, response: AsyncResult?) = try {
+    override fun handleResponse(metadataConnection: MetadataConnection, response: AsyncResult) = try {
         if (testLevel != null && testLevel != TestLevel.NoTestRun.name) {
-            val deployResult = metadataConnection!!.checkDeployStatus(response!!.id, true)
+            val deployResult = metadataConnection.checkDeployStatus(response.id, true)
             removeCoverageTestClassFrom(deployResult.details.runTestResult)
 
             consoleReporters.values.forEach { it.createReport(deployResult) }
@@ -113,7 +113,7 @@ class DeployWithTestReportsTask : DeployTaskAdapter() {
         }
         super.handleResponse(metadataConnection, response)
     } finally {
-        removeCoverageTestClassFromOrg(metadataConnection!!)
+        removeCoverageTestClassFromOrg()
     }
 
     internal fun removeCoverageTestClassFrom(testResult: RunTestsResult) {

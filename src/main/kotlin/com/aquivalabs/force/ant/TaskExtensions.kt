@@ -5,7 +5,11 @@ import com.sforce.soap.metadata.AsyncResult
 import com.sforce.soap.metadata.DeployStatus
 
 
-fun SFDCAntTask.waitFor(maxPoll: Int = 200, pollWaitMillis: Int = 1000, action: () -> AsyncResult) {
+fun SFDCAntTask.waitFor(
+    maxPoll: Int = 200,
+    pollWaitMillis: Int = 1000,
+    onError: (Exception) -> Unit = {},
+    action: () -> AsyncResult) {
     try {
         val result = action()
         log("Request ID for the current deploy task: ${result.id}")
@@ -26,6 +30,7 @@ fun SFDCAntTask.waitFor(maxPoll: Int = 200, pollWaitMillis: Int = 1000, action: 
         }
     } catch (ex: Exception) {
         log("Request status: Failed")
+        onError(ex)
         throw ex
     }
 }

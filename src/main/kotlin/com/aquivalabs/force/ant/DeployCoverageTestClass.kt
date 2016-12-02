@@ -2,7 +2,6 @@ package com.aquivalabs.force.ant
 
 import com.salesforce.ant.DeployTask
 import com.salesforce.ant.ZipUtil
-import com.sforce.soap.metadata.DeployOptions
 import com.sforce.soap.metadata.MetadataConnection
 import org.w3c.dom.Document
 import org.w3c.dom.Node
@@ -139,7 +138,7 @@ fun DeployWithTestReportsTask.addCoverageTestClassToDeployRootPackage(deployDir:
 
         val classes = classesDir
             .listFiles { file, name -> name.endsWith(APEX_CLASS_FILE_EXTENSION) }
-            .map { it.nameWithoutExtension }
+            .map(File::nameWithoutExtension)
             .toSet()
 
         coverageTestClassName = generateTestClassName(existingClasses = classes)
@@ -215,7 +214,7 @@ fun DeployWithTestReportsTask.addCoverageTestClassToZipFilePackage(zipFile: File
     zipBytes = byteArrayStream.toByteArray()
 }
 
-fun DeployWithTestReportsTask.removeCoverageTestClassFromOrg(metadataConnection: MetadataConnection) {
+fun DeployWithTestReportsTask.removeCoverageTestClassFromOrg() {
     if (coverageTestClassName.isNullOrBlank())
         return
 
@@ -229,32 +228,17 @@ fun DeployWithTestReportsTask.removeCoverageTestClassFromOrg(metadataConnection:
             generatePackage(apiVersion))
     }
 
-    val deployOptions = DeployOptions()
-    deployOptions.singlePackage = true
-    // ignoreWarnings = true will guarantee that deployment will be successful
-    // even if generated coverage test class didn't exist on org
-    deployOptions.ignoreWarnings = true
+    log("\nRequest for removing $coverageTestClassName class submitted successfully.")
 
-    try {
-        val result = metadataConnection.deploy(byteArrayStream.toByteArray(), deployOptions)
-        log("\nRequest for removing $coverageTestClassName class submitted successfully.")
-        log("Request ID for the current deploy task: ${result.id}")
-        log("Waiting for server to finish processing the request...")
+    fun warnAboutManualRemoving() = log(
+        "Please, remove generated $coverageTestClassName class " +
+        "from ${metadataConnection.config.serviceEndpoint} org manually")
 
-        repeat(maxPoll) {
-            val done = isTaskDone(metadataConnection, result.id)
-            if (!done) {
-                log("Request Status: InProgress")
-                Thread.sleep(pollWaitMillis.toLong())
-            } else {
-                log("Request Status: Succeeded")
-                log("Finished request ${result.id} successfully.")
-                return
-            }
-        }
-    } catch(ex: Exception) {
-        log("Request status: Failed")
-        log("Please, remove generated $coverageTestClassName class from ${metadataConnection.config.serviceEndpoint} org manually")
-        throw ex
+    waitFor(onError = { warnAboutManualRemoving() }) {
+        metadataConnection.deploy(
+            byteArrayStream.toByteArray(),
+            // ignoreWarnings = true will guarantee that deployment will be successful
+            // even if generated coverage test class didn't exist on org
+            deployOptions(singlePackage = true, ignoreWarnings = true))
     }
 }

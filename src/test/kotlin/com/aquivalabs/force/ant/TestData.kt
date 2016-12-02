@@ -1,8 +1,10 @@
 package com.aquivalabs.force.ant
 
+import com.nhaarman.mockito_kotlin.*
 import com.sforce.soap.metadata.*
 import org.apache.tools.ant.Project
 import org.apache.tools.ant.types.FileSet
+import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
@@ -28,6 +30,7 @@ fun createFileSet(directory: File, vararg filesNames: String) =
 
 fun createDeployResult(
     testResult: RunTestsResult = createRunTestsResult(),
+    status: DeployStatus = DeployStatus.Succeeded,
     done: Boolean = true): DeployResult {
 
     val result = DeployResult()
@@ -35,6 +38,14 @@ fun createDeployResult(
     result.done = done
     result.details = DeployDetails()
     result.details.runTestResult = testResult
+    result.status = status
+    return result
+}
+
+fun createAsyncResult(id: String = randomString(), done: Boolean = true): AsyncResult {
+    val result = AsyncResult()
+    result.id = id
+    result.done = done
     return result
 }
 
@@ -144,6 +155,13 @@ fun createRunTestFailure(
     failure.stackTrace = stackTrace
     failure.time = time
     return failure
+}
+
+fun createMetadataConnection(deployResult: DeployResult = createDeployResult()): MetadataConnection {
+    val connection = mock<MetadataConnection>(withSettings().defaultAnswer(RETURNS_DEEP_STUBS))
+    doReturn(deployResult).whenever(connection).checkDeployStatus(any(), any())
+    doReturn(createAsyncResult()).whenever(connection).deploy(any(), any())
+    return connection
 }
 
 fun qualifiedNameCommonTestData(): Array<Array<Any?>> = arrayOf(

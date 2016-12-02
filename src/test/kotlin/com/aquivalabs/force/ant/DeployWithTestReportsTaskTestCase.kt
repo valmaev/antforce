@@ -12,10 +12,7 @@ import org.hamcrest.Matchers.*
 import org.testng.annotations.*
 import org.testng.Assert.*
 import org.xmlunit.matchers.CompareMatcher.isSimilarTo
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.util.zip.*
 import java.nio.file.Files
 import java.util.*
 
@@ -345,13 +342,12 @@ class DeployWithTestReportsTaskTestCase {
     @Test(dataProvider = "blankCoverageTestNameData")
     fun removeCoverageTestClassFromOrg_withBlankCoverageTestClassName_shouldNotDeployAnything(
         blankTestName: String) {
-        val sut = createSystemUnderTest()
+        val sut = createMockedSystemUnderTest()
         sut.coverageTestClassName = blankTestName
-        val connectionMock = mock<MetadataConnection>()
 
-        sut.removeCoverageTestClassFromOrg(connectionMock)
+        sut.removeCoverageTestClassFromOrg()
 
-        verifyZeroInteractions(connectionMock)
+        verifyZeroInteractions(sut.metadataConnection)
     }
 
     @DataProvider
@@ -362,20 +358,17 @@ class DeployWithTestReportsTaskTestCase {
     @Test
     fun removeCoverageTestClassFromOrg_withNonBlankCoverageTestClassName_shouldDeployDestructiveChanges() {
         // Arrange
-        val sut = createSystemUnderTest()
+        val sut = createMockedSystemUnderTest()
         sut.coverageTestClassName = generateTestClassName()
-        val connectionMock = createMetadataConnectionMock()
 
         // Act
-        sut.removeCoverageTestClassFromOrg(connectionMock)
+        sut.removeCoverageTestClassFromOrg()
 
         // Assert
         val actualBytes = argumentCaptor<ByteArray>()
-        val actualOptions = argumentCaptor<DeployOptions>()
-        verify(connectionMock).deploy(actualBytes.capture(), actualOptions.capture())
-
-        assertTrue(actualOptions.lastValue.singlePackage)
-        assertTrue(actualOptions.lastValue.ignoreWarnings)
+        verify(sut.metadataConnection).deploy(
+            actualBytes.capture(),
+            argThat { singlePackage && ignoreWarnings })
 
         val actualDestructiveChanges = actualBytes.lastValue.getEntryContent("destructiveChanges.xml")
         val actualPackage = actualBytes.lastValue.getEntryContent("package.xml")
@@ -400,7 +393,7 @@ class DeployWithTestReportsTaskTestCase {
             sut.addConfiguredJUnitReport(report)
 
             // Act
-            sut.handleResponse(createMetadataConnectionMock(), createAsyncResult())
+            sut.handleResponse(createMetadataConnection(), createAsyncResult())
 
             // Assert
             val actual = testDirectory.listFiles().single { it.name == "TEST-TestSuite.xml"}
@@ -418,7 +411,7 @@ class DeployWithTestReportsTaskTestCase {
             sut.addConfiguredCoberturaReport(report)
 
             // Act
-            sut.handleResponse(createMetadataConnectionMock(), createAsyncResult())
+            sut.handleResponse(createMetadataConnection(), createAsyncResult())
 
             // Assert
             val actual = testDirectory.listFiles().single { it.name == report.file }
@@ -436,7 +429,7 @@ class DeployWithTestReportsTaskTestCase {
             sut.addConfiguredHtmlCoverageReport(report)
 
             // Act
-            sut.handleResponse(createMetadataConnectionMock(), createAsyncResult())
+            sut.handleResponse(createMetadataConnection(), createAsyncResult())
 
             // Assert
             val actual = testDirectory.listFiles().single { it.name == report.dir }
@@ -454,7 +447,7 @@ class DeployWithTestReportsTaskTestCase {
             sut.addConfiguredHtmlCoverageReport(report)
 
             // Act
-            sut.handleResponse(createMetadataConnectionMock(), createAsyncResult())
+            sut.handleResponse(createMetadataConnection(), createAsyncResult())
 
             // Assert
             val actual = zipFile.parentFile.listFiles().single { it.name == report.dir }
@@ -466,30 +459,28 @@ class DeployWithTestReportsTaskTestCase {
     fun handleResponse_withNonBlankCoverageTestClassName_shouldRemoveItFromTestResult() {
         withTestDirectory {
             // Arrange
-            val sut = createSystemUnderTest()
+            val numTestsRun = 3
+            val coverageTestClassName = generateTestClassName()
+            val deployResult = createDeployResult(
+                testResult = createRunTestsResult(
+                    numTestsRun = numTestsRun,
+                    successes = arrayOf(
+                        createRunTestSuccess(name = coverageTestClassName),
+                        createRunTestSuccess(name = "foo"),
+                        createRunTestSuccess(name = "bar"))))
+
+            val sut = createMockedSystemUnderTest(metadataConnection = createMetadataConnection(deployResult))
             sut.reportDir = it
             sut.sourceDir = it
-            sut.coverageTestClassName = generateTestClassName()
+            sut.coverageTestClassName = coverageTestClassName
             sut.addConfiguredJUnitReport(JUnitReport())
             sut.addConfiguredCoberturaReport(CoberturaReport(file = "Cobertura.xml"))
             sut.addConfiguredHtmlCoverageReport(HtmlCoverageReport(dir = "coverage"))
             val teamcityLog = mutableListOf<String>()
             sut.consoleReporters["TeamCity"] = createTeamCityReporter { teamcityLog.add(it) }
 
-            val numTestsRun = 3
-            val deployResult = createDeployResult(
-                testResult = createRunTestsResult(
-                    numTestsRun = numTestsRun,
-                    successes = arrayOf(
-                        createRunTestSuccess(name = sut.coverageTestClassName),
-                        createRunTestSuccess(name = "foo"),
-                        createRunTestSuccess(name = "bar"))))
-
-            val connectionMock = createMetadataConnectionMock(deployResult)
-            val asyncResult = createAsyncResult()
-
             // Act
-            sut.handleResponse(connectionMock, asyncResult)
+            sut.handleResponse(sut.metadataConnection, createAsyncResult())
 
             // Assert
             Files.walk(it.toPath())
@@ -497,20 +488,6 @@ class DeployWithTestReportsTaskTestCase {
                 .forEach { assertFalse(it.toFile().readText().contains(sut.coverageTestClassName)) }
             assertEquals(teamcityLog.filter { it.contains(sut.coverageTestClassName) }.size, 0)
         }
-    }
-
-    private fun createMetadataConnectionMock(deployResult: DeployResult = createDeployResult()): MetadataConnection {
-        val connectionMock = mock<MetadataConnection>()
-        whenever(connectionMock.deploy(any(), any())).thenReturn(createAsyncResult())
-        whenever(connectionMock.checkDeployStatus(any(), any())).thenReturn(deployResult)
-        return connectionMock
-    }
-
-    private fun createAsyncResult(done: Boolean = true): AsyncResult {
-        val asyncResult = AsyncResult()
-        asyncResult.id = UUID.randomUUID().toString()
-        asyncResult.done = done
-        return asyncResult
     }
 
     fun generatePackageWithApexClasses(classNames: LinkedHashSet<String>) =
@@ -538,6 +515,14 @@ class DeployWithTestReportsTaskTestCase {
         sut.deployRoot = deployRoot
         sut.zipFile = zipFile
         sut.enforceCoverageForAllClasses = enforceCoverageForAllClasses
+        return sut
+    }
+
+    fun createMockedSystemUnderTest(
+        metadataConnection: MetadataConnection = createMetadataConnection()): DeployWithTestReportsTask {
+
+        val sut = spy(createSystemUnderTest())
+        doReturn(metadataConnection).whenever(sut).metadataConnection
         return sut
     }
 

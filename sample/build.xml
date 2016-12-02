@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project xmlns:antforce="antlib:com.aquivalabs.force.ant" default="installPackages">
+<project xmlns:antforce="antlib:com.aquivalabs.force.ant" default="deploy">
     <property file="build.properties" />
     <property name="sf.server" value="https://login.salesforce.com" />
     <property name="sf.testLevel" value="RunSpecifiedTests" />

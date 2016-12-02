@@ -192,35 +192,11 @@ class InstallPackageTaskTestCase {
 
     fun createSystemUnderTest() = InstallPackageTask()
     fun createMockedSystemUnderTest(
-        metadataConnection: MetadataConnection = metadataConnection()): InstallPackageTask {
+        metadataConnection: MetadataConnection = createMetadataConnection()): InstallPackageTask {
 
         val sut = spy<InstallPackageTask>()
         doReturn(metadataConnection).whenever(sut).metadataConnection
         return sut
-    }
-
-    fun metadataConnection(deployResult: DeployResult = deployResult()): MetadataConnection {
-        val connection = mock<MetadataConnection>()
-        doReturn(deployResult).whenever(connection).checkDeployStatus(any(), any())
-        doReturn(asyncResult()).whenever(connection).deploy(any(), any())
-        return connection
-    }
-
-    fun deployResult(
-        done: Boolean = true,
-        status: DeployStatus = DeployStatus.Succeeded): DeployResult {
-
-        val result = DeployResult()
-        result.done = done
-        result.status = status
-        return result
-    }
-
-    fun asyncResult(id: String = randomString(), done: Boolean = true): AsyncResult {
-        val result = AsyncResult()
-        result.id = id
-        result.done = done
-        return result
     }
 
     fun `package`(
