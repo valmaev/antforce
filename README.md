@@ -1,2 +1,2 @@
-[![Build Status](https://travis-ci.org/valmaev/antforce.svg?branch=master)](https://travis-ci.org/valmaev/antforce) 
-[![Coverage Status](https://codecov.io/gh/valmaev/antforce/branch/master/graph/badge.svg)](https://codecov.io/gh/valmaev/antforce)
+[![Build Status](https://img.shields.io/travis/valmaev/antforce/master.svg)](https://travis-ci.org/valmaev/antforce.svg?branch=master)
+[![Coverage Status](https://img.shields.io/codecov/c/github/valmaev/antforce/master.svg)](https://codecov.io/gh/valmaev/antforce)
