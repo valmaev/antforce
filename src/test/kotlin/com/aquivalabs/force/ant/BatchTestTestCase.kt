@@ -9,7 +9,7 @@ import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 
 
-class BatchTestTestCase() {
+class BatchTestTestCase {
     @Test fun addFileSet_always_shouldFollowAntNamingConventions() {
         MatcherAssert.assertThat(
             "Prefix 'add' is one of the Ant's conventions for nested elements declaration. " +

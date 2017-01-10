@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
+
 fun ByteArray.getEntryContent(name: String): String? {
     ZipInputStream(ByteArrayInputStream(this)).use { zipInput ->
         var entry: ZipEntry?
