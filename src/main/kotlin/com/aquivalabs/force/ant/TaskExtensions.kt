@@ -17,16 +17,15 @@ fun SFDCAntTask.waitFor(
 
         repeat(maxPoll) {
             val deployStatus = metadataConnection.checkDeployStatus(result.id, false)
+            log("Request Status: ${deployStatus.status}")
+
             if (deployStatus.done) {
-                log("Request Status: ${deployStatus.status}")
                 if (deployStatus.status == DeployStatus.Succeeded
                     || deployStatus.status == DeployStatus.SucceededPartial)
                     log("Finished request ${result.id} successfully.")
                 return
-            } else {
-                log("Request Status: InProgress")
+            } else
                 Thread.sleep(pollWaitMillis.toLong())
-            }
         }
     } catch (ex: Exception) {
         log("Request status: Failed")
