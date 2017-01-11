@@ -1,6 +1,6 @@
 [![Build Status](https://img.shields.io/travis/valmaev/antforce/master.svg)](https://travis-ci.org/valmaev/antforce)
 [![Coverage Status](https://img.shields.io/codecov/c/github/valmaev/antforce/master.svg)](https://codecov.io/gh/valmaev/antforce)
-[![Bintray](https://img.shields.io/bintray/v/valmaev/maven/antforce.svg)](https://bintray.com/valmaev/maven/antforce/_latestVersion)
+[![GitHub Release](https://img.shields.io/github/release/valmaev/antforce.svg)](https://github.com/valmaev/antforce/releases/latest)
 [![JDK Version](https://img.shields.io/badge/jdk-1.8+-A92B7D.svg)](https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
 [![Ant Version](https://img.shields.io/badge/ant-1.9.7+-A92B7D.svg)](https://ant.apache.org)
 
