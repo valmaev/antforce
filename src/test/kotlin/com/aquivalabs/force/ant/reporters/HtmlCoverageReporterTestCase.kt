@@ -8,6 +8,7 @@ import org.hamcrest.core.IsEqual.*
 import org.hamcrest.core.StringContains.*
 import org.hamcrest.collection.IsIn.*
 import org.hamcrest.MatcherAssert.*
+import org.hamcrest.core.IsCollectionContaining.hasItems
 import org.jsoup.Jsoup
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
@@ -553,6 +554,185 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
                         type = "Trigger",
                         numLocations = 10,
                         locationsNotCovered = arrayOf()))))
+    }
+
+    @Test(dataProvider = "createReportSummaryReportStatusLineData")
+    fun createReport_forSummaryReport_shouldSetCssClassForStatusLineDependingOnTotalCoverageLevel(
+        sourceFiles: Map<String, String>,
+        codeCoverage: Array<CodeCoverageResult>,
+        expectedTotalCoverage: Double,
+        expected: String) = withDeployRoot(sourceFiles) {
+
+        // Arrange
+        val sut = createSystemUnderTest(
+            sourceDir = sourcesRoot(it),
+            outputDir = it,
+            codeHighlighting = false)
+        val testResult = runTestsResult(codeCoverage = codeCoverage)
+        assertEquals(testResult.totalCoverage, expectedTotalCoverage)
+
+        // Act
+        val outputDir = sut.createReport(deployResult(testResult = testResult))
+        val reportFile = File(outputDir, "index.html")
+
+        // Assert
+        val html = Jsoup.parse(reportFile, Charsets.UTF_8.name())
+        val actual = html
+            .getElementsByAttributeValueContaining("class", "status-line")
+            .single()
+            .classNames()
+        assertThat(
+            "For $expectedTotalCoverage total coverage status line should have '$expected' css class.",
+            actual,
+            hasItems(expected))
+    }
+
+    @DataProvider
+    fun createReportSummaryReportStatusLineData(): Array<Array<Any?>> {
+        return arrayOf(
+            arrayOf<Any?>(
+                mapOf(
+                    "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
+                arrayOf(
+                    codeCoverageResult(
+                        name = "Foo",
+                        type = "Class",
+                        numLocations = 100,
+                        numLocationsNotCovered = 100,
+                        locationsNotCovered = (1..100)
+                            .map(Int::toCodeLocation)
+                            .toTypedArray())),
+                0.0,
+                "low"),
+            arrayOf<Any?>(
+                mapOf(
+                    "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
+                arrayOf(
+                    codeCoverageResult(
+                        name = "Foo",
+                        type = "Class",
+                        numLocations = 100,
+                        numLocationsNotCovered = 50,
+                        locationsNotCovered = (51..100)
+                            .map(Int::toCodeLocation)
+                            .toTypedArray())),
+                0.5,
+                "low"),
+            arrayOf<Any?>(
+                mapOf(
+                    "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
+                arrayOf(
+                    codeCoverageResult(
+                        name = "Foo",
+                        type = "Class",
+                        numLocations = 100,
+                        numLocationsNotCovered = 25,
+                        locationsNotCovered = (76..100)
+                            .map(Int::toCodeLocation)
+                            .toTypedArray())),
+                0.75,
+                "high"),
+            arrayOf<Any?>(
+                mapOf(
+                    "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
+                arrayOf(
+                    codeCoverageResult(
+                        name = "Foo",
+                        type = "Class",
+                        numLocations = 100,
+                        numLocationsNotCovered = 0)),
+                1.0,
+                "high"))
+    }
+
+    @Test(dataProvider = "createReportCoverageReportStatusLineData")
+    fun createReport_forClassCoverageReport_shouldSetCssClassForStatusLineDependingOnTotalCoverageLevel(
+        sourceFiles: Map<String, String>,
+        codeCoverage: Array<CodeCoverageResult>,
+        expectedCoverage: Double,
+        expected: String) = withDeployRoot(sourceFiles) {
+
+        // Arrange
+        val sut = createSystemUnderTest(
+            sourceDir = sourcesRoot(it),
+            outputDir = it,
+            codeHighlighting = true)
+        val testResult = runTestsResult(codeCoverage = codeCoverage)
+        assertEquals(testResult.totalCoverage, expectedCoverage)
+
+        // Act
+        val outputDir = sut.createReport(deployResult(testResult = testResult))
+
+        // Assert
+        sourceFiles.keys.forEach { file ->
+            val html = Jsoup.parse(File(outputDir, "$file.html"), Charsets.UTF_8.name())
+            val actual = html
+                .getElementsByAttributeValueContaining("class", "status-line")
+                .single()
+                .classNames()
+            assertThat(
+                "For $expectedCoverage total coverage status line should have '$expected' css class.",
+                actual,
+                hasItems(expected))
+        }
+    }
+
+    @DataProvider
+    fun createReportCoverageReportStatusLineData(): Array<Array<Any?>> {
+        return arrayOf(
+            arrayOf<Any?>(
+                mapOf(
+                    "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
+                arrayOf(
+                    codeCoverageResult(
+                        name = "Foo",
+                        type = "Class",
+                        numLocations = 100,
+                        numLocationsNotCovered = 100,
+                        locationsNotCovered = (1..100)
+                            .map(Int::toCodeLocation)
+                            .toTypedArray())),
+                0.0,
+                "low"),
+            arrayOf<Any?>(
+                mapOf(
+                    "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
+                arrayOf(
+                    codeCoverageResult(
+                        name = "Foo",
+                        type = "Class",
+                        numLocations = 100,
+                        numLocationsNotCovered = 50,
+                        locationsNotCovered = (51..100)
+                            .map(Int::toCodeLocation)
+                            .toTypedArray())),
+                0.5,
+                "low"),
+            arrayOf<Any?>(
+                mapOf(
+                    "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
+                arrayOf(
+                    codeCoverageResult(
+                        name = "Foo",
+                        type = "Class",
+                        numLocations = 100,
+                        numLocationsNotCovered = 25,
+                        locationsNotCovered = (76..100)
+                            .map(Int::toCodeLocation)
+                            .toTypedArray())),
+                0.75,
+                "high"),
+            arrayOf<Any?>(
+                mapOf(
+                    "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
+                arrayOf(
+                    codeCoverageResult(
+                        name = "Foo",
+                        type = "Class",
+                        numLocations = 100,
+                        numLocationsNotCovered = 0)),
+                1.0,
+                "high"))
     }
 
     open fun createSystemUnderTest(

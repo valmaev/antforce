@@ -38,7 +38,7 @@
             <junitReport dir="junit" suiteName="ApexTests" suiteStrategy="single" />
             <!--<junitReport dir="junit" suiteStrategy="onePerTestClass" />-->
             <coberturaReport file="Apex-Coverage.xml" />
-            <htmlCoverageReport dir="html-coverage" />
+            <htmlCoverageReport dir="html-coverage" codeHighlighting="true" />
         </antforce:deploy>
     </target>
 
@@ -59,7 +59,7 @@
             </batchtest>
             <junitReport dir="junit" suiteName="ApexTests" suiteStrategy="single" />
             <coberturaReport file="Apex-Coverage.xml" />
-            <htmlCoverageReport dir="html-coverage" />
+            <htmlCoverageReport dir="html-coverage" codeHighlighting="true" />
         </antforce:deploy>
         <delete file="src.zip" quiet="true" />
     </target>

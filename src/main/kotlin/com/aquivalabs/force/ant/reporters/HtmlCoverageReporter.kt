@@ -54,7 +54,7 @@ open class HtmlCoverageReporter(
 
     private fun createSummaryReport(result: RunTestsResult): Document {
         return htmlDocument(
-            statusCssClass = result.totalCoveragePercentage.toTestLevel(),
+            statusCssClass = result.totalCoverage.toTestLevel(),
             summary = {
                 h1 { +reportTitle }
                 coverageStatistics(result)
@@ -74,7 +74,7 @@ open class HtmlCoverageReporter(
 
         val notCoveredLines = coverageResult.locationsNotCovered.orEmpty().map { it.line }
         return htmlDocument(
-            statusCssClass = coverageResult.coveragePercentage.toTestLevel(),
+            statusCssClass = coverageResult.coverage.toTestLevel(),
             summary = {
                 h1 {
                     a("../index.html") { +"all files" }
