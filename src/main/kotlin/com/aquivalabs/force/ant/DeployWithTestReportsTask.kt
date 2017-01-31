@@ -1,6 +1,7 @@
 package com.aquivalabs.force.ant
 
 import com.aquivalabs.force.ant.reporters.*
+import com.salesforce.ant.DeployTask
 import com.salesforce.ant.DeployTaskAdapter
 import com.sforce.soap.metadata.*
 import org.apache.tools.ant.BuildException
@@ -16,14 +17,19 @@ open class DeployWithTestReportsTask : DeployTaskAdapter() {
     internal val consoleReporters = hashMapOf<String, Reporter<Unit>>(
         "TeamCity" to TeamCityReporter())
 
+    fun getDeployRoot(): String? = DeployTask::class.java.getDeclaredFieldValue(this, "deployRoot")
+    var zipBytesField: ByteArray
+        get() = DeployTask::class.java.getDeclaredFieldValue(this, "zipBytes") ?: ByteArray(0)
+        set(value) = DeployTask::class.java.setDeclaredFieldValue(this, "zipBytes", value)
+
     val batchTests = hashSetOf<BatchTest>()
 
     var reportDir: File? = null
     var sourceDir: File? = null
         get() =
         if (field != null) field
-        else if (deployRoot.isNullOrEmpty()) null
-        else getFileForPath(deployRoot)
+        else if (getDeployRoot().isNullOrEmpty()) null
+        else getFileForPath(getDeployRoot())
         set(value) { field = value }
 
     var enforceCoverageForAllClasses: Boolean? = false
@@ -39,7 +45,7 @@ open class DeployWithTestReportsTask : DeployTaskAdapter() {
             "username" to (username ?: ""),
             "serverURL" to (serverURL ?: ""),
             "apiVersion" to apiVersion.toString())
-        when(report.suiteStrategy.toLowerCase()) {
+        when (report.suiteStrategy.toLowerCase()) {
             "single" -> fileReporters["JUnit"] = SingleSuiteJUnitReporter(
                 outputDir = File(reportDir, report.dir),
                 suiteName = report.suiteName,
@@ -83,7 +89,7 @@ open class DeployWithTestReportsTask : DeployTaskAdapter() {
     }
 
     override fun setZipBytes() {
-        val deployDir = getFileForPath(deployRoot)
+        val deployDir = getFileForPath(getDeployRoot())
         if (deployDir != null && deployDir.exists() && deployDir.isDirectory)
             return addCoverageTestClassToDeployRootPackage(deployDir)
 

@@ -95,8 +95,8 @@ class DeployWithTestReportsTaskTestCase {
     @Test fun deployRoot_always_shouldReturnValueFromCorrespondingBaseClassPrivateField() {
         val sut = createSystemUnderTest()
         val expected = "foobar"
-        sut.deployRoot = expected
-        assertEquals(sut.deployRoot, expected)
+        sut.setDeployRoot(expected)
+        assertEquals(sut.getDeployRoot(), expected)
     }
 
     @Test(dataProvider = "improperTestLevelForCoverageTestClassData")
@@ -115,7 +115,7 @@ class DeployWithTestReportsTaskTestCase {
 
             // Assert
             val expected = ZipUtil.zipRoot(it)
-            assertEquals(sut.zipBytes, expected)
+            assertEquals(sut.zipBytesField, expected)
         }
     }
 
@@ -149,7 +149,7 @@ class DeployWithTestReportsTaskTestCase {
             // Assert
             val expected = ZipUtil.zipRoot(it)
             assertEquals(
-                sut.zipBytes,
+                sut.zipBytesField,
                 expected,
                 "Should not generate coverage test class if deployRoot didn't contain $fileToRemove")
         }
@@ -177,10 +177,10 @@ class DeployWithTestReportsTaskTestCase {
             sut.addCoverageTestClassToDeployRootPackage(it)
 
             // Assert
-            val actualPackageXml = sut.zipBytes.getEntryContent("package.xml")
-            val actualCoverageTestClass = sut.zipBytes.getEntryContent(
+            val actualPackageXml = sut.zipBytesField.getEntryContent("package.xml")
+            val actualCoverageTestClass = sut.zipBytesField.getEntryContent(
                 "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION")
-            val actualCoverageTestClassMetadata = sut.zipBytes.getEntryContent(
+            val actualCoverageTestClassMetadata = sut.zipBytesField.getEntryContent(
                 "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION$META_FILE_EXTENSION")
 
             val expectedClassMembers = linkedSetOf(sut.coverageTestClassName)
@@ -218,10 +218,10 @@ class DeployWithTestReportsTaskTestCase {
             sut.addCoverageTestClassToDeployRootPackage(it)
 
             // Assert
-            val actualPackageXml = sut.zipBytes.getEntryContent("package.xml")
-            val actualCoverageTestClass = sut.zipBytes.getEntryContent(
+            val actualPackageXml = sut.zipBytesField.getEntryContent("package.xml")
+            val actualCoverageTestClass = sut.zipBytesField.getEntryContent(
                 "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION")
-            val actualCoverageTestClassMetadata = sut.zipBytes.getEntryContent(
+            val actualCoverageTestClassMetadata = sut.zipBytesField.getEntryContent(
                 "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION$META_FILE_EXTENSION")
 
             assertThat(actualPackageXml, isSimilarTo(packageXml).ignoreWhitespace())
@@ -248,7 +248,7 @@ class DeployWithTestReportsTaskTestCase {
 
             // Assert
             val expected = ZipUtil.readZip(it)
-            assertEquals(sut.zipBytes, expected)
+            assertEquals(sut.zipBytesField, expected)
         }
     }
 
@@ -268,7 +268,7 @@ class DeployWithTestReportsTaskTestCase {
 
             // Assert
             val expected = ZipUtil.readZip(it)
-            assertEquals(sut.zipBytes, expected)
+            assertEquals(sut.zipBytesField, expected)
         }
     }
 
@@ -294,10 +294,10 @@ class DeployWithTestReportsTaskTestCase {
             sut.addCoverageTestClassToZipFilePackage(it)
 
             // Assert
-            val actualPackageXml = sut.zipBytes.getEntryContent("package.xml")
-            val actualCoverageTestClass = sut.zipBytes.getEntryContent(
+            val actualPackageXml = sut.zipBytesField.getEntryContent("package.xml")
+            val actualCoverageTestClass = sut.zipBytesField.getEntryContent(
                 "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION")
-            val actualCoverageTestClassMetadata = sut.zipBytes.getEntryContent(
+            val actualCoverageTestClassMetadata = sut.zipBytesField.getEntryContent(
                 "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION$META_FILE_EXTENSION")
 
             val expectedClassMembers = linkedSetOf(sut.coverageTestClassName)
@@ -326,10 +326,10 @@ class DeployWithTestReportsTaskTestCase {
             sut.addCoverageTestClassToZipFilePackage(it)
 
             // Assert
-            val actualPackageXml = sut.zipBytes.getEntryContent("package.xml")
-            val actualCoverageTestClass = sut.zipBytes.getEntryContent(
+            val actualPackageXml = sut.zipBytesField.getEntryContent("package.xml")
+            val actualCoverageTestClass = sut.zipBytesField.getEntryContent(
                 "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION")
-            val actualCoverageTestClassMetadata = sut.zipBytes.getEntryContent(
+            val actualCoverageTestClassMetadata = sut.zipBytesField.getEntryContent(
                 "classes/${sut.coverageTestClassName}$APEX_CLASS_FILE_EXTENSION$META_FILE_EXTENSION")
 
             assertThat(actualPackageXml, isSimilarTo(packageXml).ignoreWhitespace())
@@ -512,7 +512,7 @@ class DeployWithTestReportsTaskTestCase {
         val sut = DeployWithTestReportsTask()
         sut.project = project
         sut.testLevel = testLevel
-        sut.deployRoot = deployRoot
+        sut.setDeployRoot(deployRoot)
         sut.zipFile = zipFile
         sut.enforceCoverageForAllClasses = enforceCoverageForAllClasses
         return sut
