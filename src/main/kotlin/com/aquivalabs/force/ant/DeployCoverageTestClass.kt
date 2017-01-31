@@ -117,17 +117,24 @@ internal fun Document.saveToString(): String {
 }
 
 fun DeployWithTestReportsTask.addCoverageTestClassToDeployRootPackage(deployDir: File) {
-    if (!needToAddCoverageTestClass)
-        return setZipBytes(ZipUtil.zipRoot(deployDir))
+    if (!needToAddCoverageTestClass) {
+        zipBytesField = ZipUtil.zipRoot(deployDir)
+        return
+    }
 
     val classesDir = File(deployDir, "classes")
     val packageXml = File(deployDir, "package.xml")
-    if (!classesDir.exists() || !packageXml.exists())
-        return setZipBytes(ZipUtil.zipRoot(deployDir))
+    if (!classesDir.exists() || !packageXml.exists()) {
+        zipBytesField = ZipUtil.zipRoot(deployDir)
+        return
+    }
 
     val packageXmlDoc = parseXml(packageXml.readBytes())
     val apexClassNode = packageXmlDoc.searchApexClassNode()
-        ?: return setZipBytes(ZipUtil.zipRoot(deployDir))
+    if (apexClassNode == null) {
+        zipBytesField = ZipUtil.zipRoot(deployDir)
+        return
+    }
 
     val byteArrayStream = ByteArrayOutputStream()
     ZipOutputStream(byteArrayStream).use { output ->
@@ -154,16 +161,20 @@ fun DeployWithTestReportsTask.addCoverageTestClassToDeployRootPackage(deployDir:
             "classes/$coverageTestClassName$APEX_CLASS_FILE_EXTENSION$META_FILE_EXTENSION",
             generateTestClassMetadata(apiVersion))
     }
-    zipBytes = byteArrayStream.toByteArray()
+    zipBytesField = byteArrayStream.toByteArray()
 }
 
 fun DeployWithTestReportsTask.addCoverageTestClassToZipFilePackage(zipFile: File) {
-    if (!needToAddCoverageTestClass)
-        return setZipBytes(ZipUtil.readZip(zipFile))
+    if (!needToAddCoverageTestClass) {
+        zipBytesField = (ZipUtil.readZip(zipFile))
+        return
+    }
 
     val zip = ZipFile(zipFile)
-    if (!zip.containsEntry("package.xml") || !zip.containsEntry("classes"))
-        return setZipBytes(ZipUtil.readZip(zipFile))
+    if (!zip.containsEntry("package.xml") || !zip.containsEntry("classes")) {
+        zipBytesField = ZipUtil.readZip(zipFile)
+        return
+    }
 
     val zipEntries = zip.entries()
 
@@ -179,7 +190,10 @@ fun DeployWithTestReportsTask.addCoverageTestClassToZipFilePackage(zipFile: File
                 zip.getInputStream(entry).use {
                     packageXmlDoc = parseXml(it.readBytes())
                     apexClassNode = packageXmlDoc!!.searchApexClassNode()
-                        ?: return setZipBytes(ZipUtil.readZip(zipFile))
+                    if (apexClassNode == null) {
+                        zipBytesField = ZipUtil.readZip(zipFile)
+                        return
+                    }
                 }
                 continue
             }
@@ -210,7 +224,7 @@ fun DeployWithTestReportsTask.addCoverageTestClassToZipFilePackage(zipFile: File
             "classes/$coverageTestClassName$APEX_CLASS_FILE_EXTENSION$META_FILE_EXTENSION",
             generateTestClassMetadata(apiVersion))
     }
-    zipBytes = byteArrayStream.toByteArray()
+    zipBytesField = byteArrayStream.toByteArray()
 }
 
 fun DeployWithTestReportsTask.removeCoverageTestClassFromOrg() {
