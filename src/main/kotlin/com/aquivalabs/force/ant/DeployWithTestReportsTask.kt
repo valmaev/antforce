@@ -11,11 +11,13 @@ import java.io.File
 data class JUnitReport(var dir: String = "", var suiteName: String = "Apex", var suiteStrategy: String = "single")
 data class CoberturaReport(var file: String = "Apex-Coverage.xml")
 data class HtmlCoverageReport(var dir: String = "", var codeHighlighting: Boolean = false)
+data class CoverageFilter(var excludes: String = "", var excludeNamespaces: String = "")
 
 open class DeployWithTestReportsTask : DeployTaskAdapter() {
     internal val fileReporters = hashMapOf<String, Reporter<File>>()
-    internal val consoleReporters = hashMapOf<String, Reporter<Unit>>(
-        "TeamCity" to TeamCityReporter())
+    internal val consoleReporters = hashMapOf<String, Reporter<Unit>>("TeamCity" to TeamCityReporter())
+    internal var excludedFromCoverageRegex = Regex("")
+    internal val excludedNamespacesFromCoverage = hashSetOf<String>()
 
     fun getDeployRoot(): String? = DeployTask::class.java.getDeclaredFieldValue(this, "deployRoot")
     var zipBytesField: ByteArray
@@ -75,6 +77,13 @@ open class DeployWithTestReportsTask : DeployTaskAdapter() {
                 codeHighlighting = report.codeHighlighting)
     }
 
+    fun addConfiguredCoverageFilter(filter: CoverageFilter) {
+        excludedFromCoverageRegex = Regex(
+            filter.excludes.replace(" ", "").replace("*", "\\w*").replace(",", "|"),
+            RegexOption.IGNORE_CASE)
+        excludedNamespacesFromCoverage += filter.excludeNamespaces.split(',').map(String::trim)
+    }
+
     fun createBatchTest(): BatchTest {
         val batch = BatchTest(getProject())
         batchTests.add(batch)
@@ -82,8 +91,10 @@ open class DeployWithTestReportsTask : DeployTaskAdapter() {
     }
 
     override fun getRunTests(): Array<out String>? = when (testLevel) {
-        TestLevel.RunSpecifiedTests.name -> super.getRunTests()
-            .union(batchTests.flatMap { it.getFileNames() })
+        TestLevel.RunSpecifiedTests.name -> batchTests
+            .flatMap { it.getFileNames() }
+            .map { it.substringAfterLast('/')}
+            .union(super.getRunTests().asIterable())
             .toTypedArray()
         else -> emptyArray()
     }
@@ -104,6 +115,7 @@ open class DeployWithTestReportsTask : DeployTaskAdapter() {
         if (testLevel != null && testLevel != TestLevel.NoTestRun.name) {
             val deployResult = metadataConnection.checkDeployStatus(response.id, true)
             removeCoverageTestClassFrom(deployResult.details.runTestResult)
+            applyCoverageFilter(deployResult.details.runTestResult)
 
             consoleReporters.values.forEach { it.createReport(deployResult) }
 
@@ -129,5 +141,18 @@ open class DeployWithTestReportsTask : DeployTaskAdapter() {
                 .toTypedArray()
             testResult.numTestsRun -= 1
         }
+    }
+
+    internal fun applyCoverageFilter(testResult: RunTestsResult) {
+        testResult.codeCoverage = testResult.codeCoverage
+            .filterNot {
+                it.name.matches(excludedFromCoverageRegex)
+                    || excludedNamespacesFromCoverage.contains(it.namespace)
+            }.toTypedArray()
+        testResult.codeCoverageWarnings = testResult.codeCoverageWarnings
+            .filterNot {
+                it.name.matches(excludedFromCoverageRegex)
+                    || excludedNamespacesFromCoverage.contains(it.namespace)
+            }.toTypedArray()
     }
 }

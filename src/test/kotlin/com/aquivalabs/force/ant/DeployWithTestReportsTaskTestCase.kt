@@ -490,6 +490,182 @@ class DeployWithTestReportsTaskTestCase {
         }
     }
 
+    @Test
+    fun handleResponse_withDefaultCoverageFilter_shouldNotModifyTestResult() {
+        withTestDirectory { testDirectory ->
+            // Arrange
+            val expectedCoverage = arrayOf(codeCoverageResult(name = "foo"))
+            val expectedWarnings = arrayOf(codeCoverageWarning(name = "foo"))
+            val deployResult = deployResult(
+                testResult = runTestsResult(
+                    codeCoverage = expectedCoverage,
+                    codeCoverageWarnings = expectedWarnings))
+            val sut = createMockedSystemUnderTest(metadataConnection = metadataConnection(deployResult))
+            sut.reportDir = testDirectory
+
+            val mockConsoleReporter = mock<Reporter<Unit>>()
+            val mockFileReporter = mock<Reporter<File>>()
+            whenever(mockFileReporter.createReport(any())).thenReturn(testDirectory)
+
+            sut.consoleReporters.put("TestConsoleReporter", mockConsoleReporter)
+            sut.fileReporters.put("TestFileReporter", mockFileReporter)
+
+            // Act
+            sut.handleResponse(sut.metadataConnection, asyncResult())
+
+            // Assert
+            verify(mockConsoleReporter).createReport(argThat {
+                Arrays.equals(expectedCoverage, details.runTestResult.codeCoverage)
+                    && Arrays.equals(expectedWarnings, details.runTestResult.codeCoverageWarnings)})
+            verify(mockFileReporter).createReport(argThat {
+                Arrays.equals(expectedCoverage, details.runTestResult.codeCoverage)
+                    && Arrays.equals(expectedWarnings, details.runTestResult.codeCoverageWarnings)})
+        }
+    }
+
+    @Test(dataProvider = "coverageFilterTestData")
+    fun handleResponse_always_shouldFilterCoverageDataAccordingToFilter(
+        inputCoverageResult: Array<CodeCoverageResult>,
+        coverageFilter: CoverageFilter,
+        expectedClassNames: Array<String>) = withTestDirectory { testDirectory ->
+        // Arrange
+        val deployResult = deployResult(
+            testResult = runTestsResult(
+                codeCoverage = inputCoverageResult,
+                codeCoverageWarnings = inputCoverageResult
+                    .map { codeCoverageWarning(name = it.name, namespace = it.namespace) }
+                    .toTypedArray()))
+        val sut = createMockedSystemUnderTest(metadataConnection = metadataConnection(deployResult))
+        sut.reportDir = testDirectory
+        sut.addConfiguredCoverageFilter(coverageFilter)
+
+        val mockConsoleReporter = mock<Reporter<Unit>>()
+        val mockFileReporter = mock<Reporter<File>>()
+        whenever(mockFileReporter.createReport(any())).thenReturn(testDirectory)
+
+        sut.consoleReporters.put("TestConsoleReporter", mockConsoleReporter)
+        sut.fileReporters.put("TestFileReporter", mockFileReporter)
+
+        // Act
+        sut.handleResponse(sut.metadataConnection, asyncResult())
+
+        // Assert
+        verify(mockConsoleReporter).createReport(argThat {
+            Arrays.equals(expectedClassNames, coverageClassNames())
+                && Arrays.equals(expectedClassNames, coverageWarningsClassNames())})
+        verify(mockFileReporter).createReport(argThat {
+            Arrays.equals(expectedClassNames, coverageClassNames())
+                && Arrays.equals(expectedClassNames, coverageWarningsClassNames())})
+    }
+
+    @DataProvider
+    fun coverageFilterTestData(): Array<Array<Any>> {
+        return arrayOf(
+            arrayOf(
+                arrayOf(codeCoverageResult(name = "foo")),
+                CoverageFilter(excludes = "foo"),
+                arrayOf<String>()),
+            arrayOf(
+                arrayOf(codeCoverageResult(name = "foo"), codeCoverageResult(name = "bar")),
+                CoverageFilter(excludes = "foo"),
+                arrayOf("bar")),
+            arrayOf(
+                arrayOf(
+                    codeCoverageResult(name = "foo"),
+                    codeCoverageResult(name = "foobar"),
+                    codeCoverageResult(name = "bar")),
+                CoverageFilter(excludes = "fo*"),
+                arrayOf("bar")),
+            arrayOf(
+                arrayOf(
+                    codeCoverageResult(name = "foo"),
+                    codeCoverageResult(name = "foobar"),
+                    codeCoverageResult(name = "bar")),
+                CoverageFilter(excludes = "fo*, fo*, fo*"),
+                arrayOf("bar")),
+            arrayOf(
+                arrayOf(
+                    codeCoverageResult(name = "foo"),
+                    codeCoverageResult(name = "foobar"),
+                    codeCoverageResult(name = "bar")),
+                CoverageFilter(excludes = "*oo*"),
+                arrayOf("bar")),
+            arrayOf(
+                arrayOf(
+                    codeCoverageResult(name = "foo"),
+                    codeCoverageResult(name = "bar")),
+                CoverageFilter(excludes = ""),
+                arrayOf("foo", "bar")),
+            arrayOf(
+                arrayOf(
+                    codeCoverageResult(name = "foo"),
+                    codeCoverageResult(name = "foobar"),
+                    codeCoverageResult(name = "bar")),
+                CoverageFilter(excludes = "foo,bar"),
+                arrayOf("foobar")),
+            arrayOf(
+                arrayOf(
+                    codeCoverageResult(name = "foo"),
+                    codeCoverageResult(name = "foobar"),
+                    codeCoverageResult(name = "bar"),
+                    codeCoverageResult(name = "baz")),
+                CoverageFilter(excludes = "foo*,*az"),
+                arrayOf("bar")),
+            arrayOf(
+                arrayOf(
+                    codeCoverageResult(name = "foo"),
+                    codeCoverageResult(name = "foobar"),
+                    codeCoverageResult(name = "bar"),
+                    codeCoverageResult(name = "baz")),
+                CoverageFilter(excludes = "foo*, *az"),
+                arrayOf("bar")),
+            arrayOf(
+                arrayOf(
+                    codeCoverageResult(name = "foo"),
+                    codeCoverageResult(name = "foobar"),
+                    codeCoverageResult(name = "bar"),
+                    codeCoverageResult(name = "baz")),
+                CoverageFilter(excludes = "foo*, *az,bar"),
+                arrayOf<String>()),
+            arrayOf(
+                arrayOf(
+                    codeCoverageResult(name = "foo"),
+                    codeCoverageResult(name = "foobar"),
+                    codeCoverageResult(name = "bar", namespace = "a"),
+                    codeCoverageResult(name = "baz")),
+                CoverageFilter(excludes = "foo*", excludeNamespaces = "a"),
+                arrayOf("baz")),
+            arrayOf(
+                arrayOf(
+                    codeCoverageResult(name = "foo", namespace = "a"),
+                    codeCoverageResult(name = "foobar", namespace = "b"),
+                    codeCoverageResult(name = "bar"),
+                    codeCoverageResult(name = "baz", namespace = "c")),
+                CoverageFilter(excludeNamespaces = "a,b, c"),
+                arrayOf("bar")),
+            arrayOf(
+                arrayOf(
+                    codeCoverageResult(name = "foo", namespace = "a"),
+                    codeCoverageResult(name = "foobar", namespace = "b"),
+                    codeCoverageResult(name = "bar"),
+                    codeCoverageResult(name = "baz", namespace = "c")),
+                CoverageFilter(excludeNamespaces = "a"),
+                arrayOf("b.foobar", "bar", "c.baz")),
+            arrayOf(
+                arrayOf(
+                    codeCoverageResult(name = "foo", namespace = "a"),
+                    codeCoverageResult(name = "foobar", namespace = "b"),
+                    codeCoverageResult(name = "bar"),
+                    codeCoverageResult(name = "baz", namespace = "c")),
+                CoverageFilter(excludeNamespaces = "a, a, a,a,a"),
+                arrayOf("b.foobar", "bar", "c.baz")))
+    }
+
+    private fun DeployResult.coverageClassNames() =
+        details.runTestResult.codeCoverage.map { it.qualifiedName }.toTypedArray()
+    private fun DeployResult.coverageWarningsClassNames() =
+        details.runTestResult.codeCoverageWarnings.map { it.qualifiedName }.toTypedArray()
+
     fun generatePackageWithApexClasses(classNames: LinkedHashSet<String>) =
         """<?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
