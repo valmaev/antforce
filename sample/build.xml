@@ -56,7 +56,7 @@
             reportDir="${outputdir}/test-reports"
             enforceCoverageForAllClasses="true">
             <batchtest>
-                <fileset dir="src/classes" includes="*TestClass.cls" />
+                <zipfileset src="src.zip" includes="classes/*TestClass.cls" />
             </batchtest>
             <junitReport dir="junit" suiteName="ApexTests" suiteStrategy="single" />
             <coberturaReport file="Apex-Coverage.xml" />
