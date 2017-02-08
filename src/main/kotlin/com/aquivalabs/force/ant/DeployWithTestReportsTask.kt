@@ -11,12 +11,13 @@ import java.io.File
 data class JUnitReport(var dir: String = "", var suiteName: String = "Apex", var suiteStrategy: String = "single")
 data class CoberturaReport(var file: String = "Apex-Coverage.xml")
 data class HtmlCoverageReport(var dir: String = "", var codeHighlighting: Boolean = false)
-data class CoverageFilter(var excludes: String = "")
+data class CoverageFilter(var excludes: String = "", var excludeNamespaces: String = "")
 
 open class DeployWithTestReportsTask : DeployTaskAdapter() {
     internal val fileReporters = hashMapOf<String, Reporter<File>>()
     internal val consoleReporters = hashMapOf<String, Reporter<Unit>>("TeamCity" to TeamCityReporter())
-    internal var excludeFromCoverageRegex = Regex("")
+    internal var excludedFromCoverageRegex = Regex("")
+    internal val excludedNamespacesFromCoverage = hashSetOf<String>()
 
     fun getDeployRoot(): String? = DeployTask::class.java.getDeclaredFieldValue(this, "deployRoot")
     var zipBytesField: ByteArray
@@ -77,9 +78,10 @@ open class DeployWithTestReportsTask : DeployTaskAdapter() {
     }
 
     fun addConfiguredCoverageFilter(filter: CoverageFilter) {
-        excludeFromCoverageRegex = Regex(
+        excludedFromCoverageRegex = Regex(
             filter.excludes.replace(" ", "").replace("*", "\\w*").replace(",", "|"),
             RegexOption.IGNORE_CASE)
+        excludedNamespacesFromCoverage += filter.excludeNamespaces.split(',').map(String::trim)
     }
 
     fun createBatchTest(): BatchTest {
@@ -143,10 +145,14 @@ open class DeployWithTestReportsTask : DeployTaskAdapter() {
 
     internal fun applyCoverageFilter(testResult: RunTestsResult) {
         testResult.codeCoverage = testResult.codeCoverage
-            .filterNot { it.name.matches(excludeFromCoverageRegex) }
-            .toTypedArray()
+            .filterNot {
+                it.name.matches(excludedFromCoverageRegex)
+                    || excludedNamespacesFromCoverage.contains(it.namespace)
+            }.toTypedArray()
         testResult.codeCoverageWarnings = testResult.codeCoverageWarnings
-            .filterNot { it.name.matches(excludeFromCoverageRegex) }
-            .toTypedArray()
+            .filterNot {
+                it.name.matches(excludedFromCoverageRegex)
+                    || excludedNamespacesFromCoverage.contains(it.namespace)
+            }.toTypedArray()
     }
 }

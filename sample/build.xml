@@ -35,7 +35,7 @@
             <batchtest>
                 <fileset dir="src/classes" includes="*TestClass.cls" />
             </batchtest>
-            <!--<coverageFilter excludes="Book*,*gram, ContactTrigger" />-->
+            <!--<coverageFilter excludes="Book*,*gram, ContactTrigger" excludeNamespaces="aaa, bbb" />-->
             <junitReport dir="junit" suiteName="ApexTests" suiteStrategy="single" />
             <!--<junitReport dir="junit" suiteStrategy="onePerTestClass" />-->
             <coberturaReport file="Apex-Coverage.xml" />
