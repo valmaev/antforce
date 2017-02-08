@@ -56,6 +56,13 @@ class DeployWithTestReportsTaskTestCase {
             startsWith("addConfigured"))
     }
 
+    @Test fun addConfiguredCoverageFilter_always_shouldFollowAntNamingConventions() {
+        assertThat(
+            nestedElementConvention("addConfigured"),
+            DeployWithTestReportsTask::addConfiguredCoverageFilter.name,
+            startsWith("addConfigured"))
+    }
+
     @Test(dataProvider = "getRunTestsEmptyArrayTestLevels")
     fun getRunTests_forAnyOtherTestLevel_shouldReturnEmptyArray(testLevel: TestLevel) {
         val sut = createSystemUnderTest(testLevel = testLevel.name)
