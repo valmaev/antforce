@@ -490,6 +490,118 @@ class DeployWithTestReportsTaskTestCase {
         }
     }
 
+    @Test
+    fun handleResponse_withDefaultCoverageFilter_shouldNotModifyTestResult() {
+        withTestDirectory { testDirectory ->
+            // Arrange
+            val expectedCoverage = arrayOf(codeCoverageResult(name = "foo"))
+            val expectedWarnings = arrayOf(codeCoverageWarning(name = "foo"))
+            val deployResult = deployResult(
+                testResult = runTestsResult(
+                    codeCoverage = expectedCoverage,
+                    codeCoverageWarnings = expectedWarnings))
+            val sut = createMockedSystemUnderTest(metadataConnection = metadataConnection(deployResult))
+            sut.reportDir = testDirectory
+
+            val mockConsoleReporter = mock<Reporter<Unit>>()
+            val mockFileReporter = mock<Reporter<File>>()
+            whenever(mockFileReporter.createReport(any())).thenReturn(testDirectory)
+
+            sut.consoleReporters.put("TestConsoleReporter", mockConsoleReporter)
+            sut.fileReporters.put("TestFileReporter", mockFileReporter)
+
+            // Act
+            sut.handleResponse(sut.metadataConnection, asyncResult())
+
+            // Assert
+            verify(mockConsoleReporter).createReport(argThat {
+                Arrays.equals(expectedCoverage, details.runTestResult.codeCoverage)
+                    && Arrays.equals(expectedWarnings, details.runTestResult.codeCoverageWarnings)})
+            verify(mockFileReporter).createReport(argThat {
+                Arrays.equals(expectedCoverage, details.runTestResult.codeCoverage)
+                    && Arrays.equals(expectedWarnings, details.runTestResult.codeCoverageWarnings)})
+        }
+    }
+
+    @Test(dataProvider = "coverageFilterTestData")
+    fun handleResponse_always_shouldFilterCoverageDataAccordingToFilter(
+        inputClassNames: Array<String>,
+        coverageFilter: CoverageFilter,
+        expectedClassNames: Array<String>) = withTestDirectory { testDirectory ->
+        // Arrange
+        val deployResult = deployResult(
+            testResult = runTestsResult(
+                codeCoverage = inputClassNames.map { codeCoverageResult(name = it) }.toTypedArray(),
+                codeCoverageWarnings = inputClassNames.map { codeCoverageWarning(name = it) }.toTypedArray()))
+        val sut = createMockedSystemUnderTest(metadataConnection = metadataConnection(deployResult))
+        sut.reportDir = testDirectory
+        sut.addConfiguredCoverageFilter(coverageFilter)
+
+        val mockConsoleReporter = mock<Reporter<Unit>>()
+        val mockFileReporter = mock<Reporter<File>>()
+        whenever(mockFileReporter.createReport(any())).thenReturn(testDirectory)
+
+        sut.consoleReporters.put("TestConsoleReporter", mockConsoleReporter)
+        sut.fileReporters.put("TestFileReporter", mockFileReporter)
+
+        // Act
+        sut.handleResponse(sut.metadataConnection, asyncResult())
+
+        // Assert
+        verify(mockConsoleReporter).createReport(argThat {
+            Arrays.equals(expectedClassNames, coverageClassNames())
+                && Arrays.equals(expectedClassNames, coverageWarningsClassNames())})
+        verify(mockFileReporter).createReport(argThat {
+            Arrays.equals(expectedClassNames, coverageClassNames())
+                && Arrays.equals(expectedClassNames, coverageWarningsClassNames())})
+    }
+
+    @DataProvider
+    fun coverageFilterTestData(): Array<Array<Any>> {
+        return arrayOf(
+            arrayOf(
+                arrayOf("foo"),
+                CoverageFilter(excludes = "foo"),
+                arrayOf<String>()),
+            arrayOf(
+                arrayOf("foo", "bar"),
+                CoverageFilter(excludes = "foo"),
+                arrayOf("bar")),
+            arrayOf(
+                arrayOf("foo", "foobar", "bar"),
+                CoverageFilter(excludes = "fo*"),
+                arrayOf("bar")),
+            arrayOf(
+                arrayOf("foo", "foobar", "bar"),
+                CoverageFilter(excludes = "*oo*"),
+                arrayOf("bar")),
+            arrayOf(
+                arrayOf("foo", "bar"),
+                CoverageFilter(excludes = ""),
+                arrayOf("foo", "bar")),
+            arrayOf(
+                arrayOf("foo", "foobar", "bar"),
+                CoverageFilter(excludes = "foo,bar"),
+                arrayOf("foobar")),
+            arrayOf(
+                arrayOf("foo", "foobar", "bar", "baz"),
+                CoverageFilter(excludes = "foo*,*az"),
+                arrayOf("bar")),
+            arrayOf(
+                arrayOf("foo", "foobar", "bar", "baz"),
+                CoverageFilter(excludes = "foo*, *az"),
+                arrayOf("bar")),
+            arrayOf(
+                arrayOf("foo", "foobar", "bar", "baz"),
+                CoverageFilter(excludes = "foo*, *az,bar"),
+                arrayOf<String>()))
+    }
+
+    private fun DeployResult.coverageClassNames() =
+        details.runTestResult.codeCoverage.map { it.name }.toTypedArray()
+    private fun DeployResult.coverageWarningsClassNames() =
+        details.runTestResult.codeCoverageWarnings.map { it.name }.toTypedArray()
+
     fun generatePackageWithApexClasses(classNames: LinkedHashSet<String>) =
         """<?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
