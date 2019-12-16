@@ -32,7 +32,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile 'org.jetbrains.kotlinx:kotlinx.html.jvm:0.5.12'
     compile "org.apache.ant:ant:$ant_version"
-    compile 'org.valmaev.force:ant-salesforce:37.0'
+    compile 'org.valmaev.force:ant-salesforce:47.0'
     testCompile 'org.testng:testng:6.9.13.6'
     testCompile 'org.hamcrest:hamcrest-all:1.3'
     testCompile "org.xmlunit:xmlunit-core:$xmlunit_version"
