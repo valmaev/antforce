@@ -565,6 +565,20 @@ class DeployWithTestReportsTaskTestCase {
                 && Arrays.equals(expectedClassNames, coverageWarningsClassNames())})
     }
 
+    @Test
+    fun handleResponse_withNullNamesInCodeCoverage_shouldNotThrow() = withTestDirectory { testDirectory ->
+        // Arrange
+        val deployResult = deployResult(
+            testResult = runTestsResult(
+                codeCoverage = arrayOf(codeCoverageResult(name = null)),
+                codeCoverageWarnings = arrayOf(codeCoverageWarning(name = null))))
+        val sut = createMockedSystemUnderTest(metadataConnection = metadataConnection(deployResult))
+        sut.reportDir = testDirectory
+
+        // Act & Assert
+        sut.handleResponse(sut.metadataConnection, asyncResult())
+    }
+
     @DataProvider
     fun coverageFilterTestData(): Array<Array<Any>> {
         return arrayOf(

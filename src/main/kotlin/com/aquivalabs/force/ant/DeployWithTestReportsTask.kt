@@ -146,12 +146,12 @@ open class DeployWithTestReportsTask : DeployTaskAdapter() {
     internal fun applyCoverageFilter(testResult: RunTestsResult) {
         testResult.codeCoverage = testResult.codeCoverage
             .filterNot {
-                it.name.matches(excludedFromCoverageRegex)
+                it.name?.matches(excludedFromCoverageRegex) == true
                     || excludedNamespacesFromCoverage.contains(it.namespace)
             }.toTypedArray()
         testResult.codeCoverageWarnings = testResult.codeCoverageWarnings
             .filterNot {
-                it.name.matches(excludedFromCoverageRegex)
+                it.name?.matches(excludedFromCoverageRegex) == true
                     || excludedNamespacesFromCoverage.contains(it.namespace)
             }.toTypedArray()
     }
