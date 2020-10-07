@@ -232,7 +232,7 @@ open class HtmlCoverageReporter(
                         attributes["data-fmt"] = "html"
                     }
                 }
-                tbody { coverageRows(result) }
+                this@table.tbody { coverageRows(result) }
             }
         }
     }

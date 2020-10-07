@@ -210,11 +210,10 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
 
     @DataProvider
     fun createReportWarningsTestData(): Array<Array<Any?>> =
-        emptyCoverageWarningTestData()
-            .plus(nonEmptyCoverageWarningsTestData())
-            .plus(arrayOf(arrayOf<Any?>(
-                arrayOf(
-                    codeCoverageWarning()))))
+        emptyCoverageWarningTestData() +
+            nonEmptyCoverageWarningsTestData() +
+                arrayOf<Array<Any?>>(arrayOf(
+                    arrayOf(codeCoverageWarning())))
 
     @DataProvider
     fun emptyCoverageWarningTestData(): Array<Array<Any?>> {

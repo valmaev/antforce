@@ -38,7 +38,7 @@ class DeployCoverageTestClassTestCase {
         assertThat(
             actual,
             containsString(
-                expectedClassesToTouch.joinToString(transform = { it -> "'$it'" })))
+                expectedClassesToTouch.sorted().joinToString(transform = { it -> "'$it'" })))
     }
 
     @Test fun generateTestClassMetadata_always_shouldReturnWellFormedXml() {

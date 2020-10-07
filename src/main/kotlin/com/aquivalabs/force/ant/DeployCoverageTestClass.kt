@@ -35,7 +35,7 @@ private class $testClassName {
     private static void touchEveryClassFromDeploymentPackage() {
         try {
             Set<String> classNames = new Set<String> {
-                ${classesToTouch.joinToString(transform = { it -> "'$it'" })}
+                ${classesToTouch.sorted().joinToString(transform = { it -> "'$it'" })}
             };
             for (String className : classNames)
                 Type.forName(className);
