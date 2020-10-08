@@ -8,7 +8,7 @@ import org.testng.Assert.assertTrue
 import org.testng.annotations.Test
 import java.lang.reflect.Modifier.isPublic
 import kotlin.reflect.jvm.javaMethod
-import kotlin.reflect.memberFunctions
+import kotlin.reflect.full.memberFunctions
 
 
 class DeployTaskAdapterTestCase {

@@ -62,7 +62,7 @@ class InstallPackageTaskTestCase {
     }
 
     @DataProvider
-    fun blankStrings(): Array<Array<Any>> = arrayOf(arrayOf<Any>(""), arrayOf<Any>("   "))
+    fun blankStrings(): Array<Array<Any>> = arrayOf(arrayOf(""), arrayOf("   "))
 
     @Test fun addConfiguredPackage_withAlreadyAddedPackage_shouldThrowBuildException() {
         val sut = createMockedSystemUnderTest()
@@ -178,20 +178,20 @@ class InstallPackageTaskTestCase {
 
     @DataProvider
     fun packagesToInstallTestData(): Array<Array<Any>> = arrayOf(
-        arrayOf<Any>(`package`(mode = PackageInstallMode.INSTALL.name)),
-        arrayOf<Any>(
+        arrayOf(`package`(mode = PackageInstallMode.INSTALL.name)),
+        arrayOf(
             `package`(namespace = "foo", mode = PackageInstallMode.INSTALL.name),
             `package`(namespace = "bar", mode = PackageInstallMode.INSTALL.name)))
 
     @DataProvider
     fun packagesToUninstallTestData(): Array<Array<Any>> = arrayOf(
-        arrayOf<Any>(`package`(mode = PackageInstallMode.UNINSTALL.name)),
-        arrayOf<Any>(
+        arrayOf(`package`(mode = PackageInstallMode.UNINSTALL.name)),
+        arrayOf(
             `package`(namespace = "foo", mode = PackageInstallMode.UNINSTALL.name),
             `package`(namespace = "bar", mode = PackageInstallMode.UNINSTALL.name)))
 
-    fun createSystemUnderTest() = InstallPackageTask()
-    fun createMockedSystemUnderTest(
+    private fun createSystemUnderTest() = InstallPackageTask()
+    private fun createMockedSystemUnderTest(
         metadataConnection: MetadataConnection = metadataConnection()): InstallPackageTask {
 
         val sut = spy<InstallPackageTask>()

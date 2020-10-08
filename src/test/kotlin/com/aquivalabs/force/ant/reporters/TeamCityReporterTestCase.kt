@@ -60,10 +60,10 @@ class TeamCityReporterTestCase {
     @DataProvider
     fun createReportTestData(): Array<Array<Any?>> {
         return arrayOf(
-            arrayOf<Any?>(
+            arrayOf(
                 arrayOf<CodeCoverageResult>(),
                 arrayOf<CodeCoverageWarning>()),
-            arrayOf<Any?>(
+            arrayOf(
                 arrayOf(
                     codeCoverageResult(
                         name = "Foo",
@@ -284,7 +284,7 @@ class TeamCityReporterTestCase {
             "name='$afterEscape.$afterEscape.$afterEscape' duration='${success.time / 1000}']"))
     }
 
-    fun createSystemUnderTest(
+    private fun createSystemUnderTest(
         systemEnvironment: (String) -> String? = { null },
         log: (String) -> Unit = ::println) =
         TeamCityReporter(systemEnvironment, log)

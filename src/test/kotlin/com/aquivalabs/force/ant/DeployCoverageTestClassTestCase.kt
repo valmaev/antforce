@@ -38,7 +38,7 @@ class DeployCoverageTestClassTestCase {
         assertThat(
             actual,
             containsString(
-                expectedClassesToTouch.sorted().joinToString(transform = { it -> "'$it'" })))
+                expectedClassesToTouch.sorted().joinToString(transform = { "'$it'" })))
     }
 
     @Test fun generateTestClassMetadata_always_shouldReturnWellFormedXml() {
@@ -115,7 +115,7 @@ class DeployCoverageTestClassTestCase {
         }
     }
 
-    fun generateClassNames(): Set<String> = setOf(
+    private fun generateClassNames(): Set<String> = setOf(
         generateTestClassName(),
         generateTestClassName(),
         generateTestClassName())

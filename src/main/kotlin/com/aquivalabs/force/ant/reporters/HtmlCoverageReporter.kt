@@ -131,8 +131,8 @@ open class HtmlCoverageReporter(
             attributes["lang"] = "en"
             head {
                 title(reportTitle)
-                style("text/css", javaClass.getResourceAsString("/coverage-report.css"))
-                style("text/css", javaClass.getResourceAsString("/prettify.css"))
+                style(type = StyleType.textCss) { unsafe { raw(javaClass.getResourceAsString("/coverage-report.css")) } }
+                style(type = StyleType.textCss) { unsafe { raw(javaClass.getResourceAsString("/prettify.css")) } }
             }
             body {
                 div("wrapper") {
@@ -145,7 +145,7 @@ open class HtmlCoverageReporter(
                 script(type = ScriptType.textJavaScript) { +javaClass.getResourceAsString("/sorter.js") }
                 script(type = ScriptType.textJavaScript) { +javaClass.getResourceAsString("/prettify.js") }
                 script(type = ScriptType.textJavaScript) {
-                    +"window.onload = function () { if (typeof prettyPrint === 'function') { prettyPrint(); } };"
+                    unsafe { raw("window.onload = function () { if (typeof prettyPrint === 'function') { prettyPrint(); } };") }
                 }
             }
         }
@@ -244,8 +244,8 @@ open class HtmlCoverageReporter(
 
         coverageResultsByType.forEach {
             val (type, coverageResults) = it
-            coverageResults.forEach {
-                val coverageLevel = it.coverage.toTestLevel()
+            coverageResults.forEach { result ->
+                val coverageLevel = result.coverage.toTestLevel()
                 tr {
                     td(coverageLevel) {
                         +type
@@ -253,22 +253,22 @@ open class HtmlCoverageReporter(
                     }
                     td(coverageLevel) {
                         if (sourceDir == null || !codeHighlighting)
-                            +it.qualifiedName
+                            +result.qualifiedName
                         else
-                            a(href = "${it.classFileName}.html") { +it.qualifiedName }
-                        attributes["data-value"] = it.qualifiedName
+                            a(href = "${result.classFileName}.html") { +result.qualifiedName }
+                        attributes["data-value"] = result.qualifiedName
                     }
                     td("pic $coverageLevel") {
-                        coverageChart(it)
-                        attributes["data-value"] = it.coveragePercentage.format(2)
+                        coverageChart(result)
+                        attributes["data-value"] = result.coveragePercentage.format(2)
                     }
                     td("pct $coverageLevel") {
-                        +"${it.coveragePercentage.format(2)}%"
-                        attributes["data-value"] = it.coveragePercentage.format(2)
+                        +"${result.coveragePercentage.format(2)}%"
+                        attributes["data-value"] = result.coveragePercentage.format(2)
                     }
                     td("abs $coverageLevel") {
-                        +"${it.numLocationsCovered}/${it.numLocations}"
-                        attributes["data-value"] = it.numLocations.toString()
+                        +"${result.numLocationsCovered}/${result.numLocations}"
+                        attributes["data-value"] = result.numLocations.toString()
                     }
                 }
             }
@@ -319,17 +319,17 @@ open class HtmlCoverageReporter(
             h3 { +"Coverage Calculation Notes" }
             ul {
                 li {
-                    +"Since Force.com Metadata API don't provide total number "
+                    +"Since Force.com Metadata API doesn't provide total number "
                     +"of lines for zero-coverage classes, then total coverage "
                     +"will be inaccurate in this case"
                 }
                 li {
-                    +"To force build failure in such cases use "
+                    +"To force build failure in such cases, use "
                     span("inline-code") { +"ignoreWarnings=\"false\"" }
                     +" attribute"
                 }
                 li {
-                    +"To overcome the issue use "
+                    +"To overcome the issue, use "
                     span("inline-code") { +"enforceCoverageForAllClasses=\"true\"" }
                     +" attribute"
                 }

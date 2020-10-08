@@ -16,8 +16,8 @@ data class CoverageFilter(var excludes: String = "", var excludeNamespaces: Stri
 open class DeployWithTestReportsTask : DeployTaskAdapter() {
     internal val fileReporters = hashMapOf<String, Reporter<File>>()
     internal val consoleReporters = hashMapOf<String, Reporter<Unit>>("TeamCity" to TeamCityReporter())
-    internal var excludedFromCoverageRegex = Regex("")
-    internal val excludedNamespacesFromCoverage = hashSetOf<String>()
+    private var excludedFromCoverageRegex = Regex("")
+    private val excludedNamespacesFromCoverage = hashSetOf<String>()
 
     fun getDeployRoot(): String? = DeployTask::class.java.getDeclaredFieldValue(this, "deployRoot")
     var zipBytesField: ByteArray
@@ -28,12 +28,11 @@ open class DeployWithTestReportsTask : DeployTaskAdapter() {
 
     var reportDir: File? = null
     var sourceDir: File? = null
-        get() =
-        if (field != null) field
-        else if (getDeployRoot().isNullOrEmpty()) null
-        else getFileForPath(getDeployRoot())
-        set(value) { field = value }
-
+        get() = when {
+            field != null -> field
+            getDeployRoot().isNullOrEmpty() -> null
+            else -> getFileForPath(getDeployRoot())
+        }
     var enforceCoverageForAllClasses: Boolean? = false
 
     internal var coverageTestClassName: String = ""
@@ -123,7 +122,7 @@ open class DeployWithTestReportsTask : DeployTaskAdapter() {
                 if (!reportDir!!.exists())
                     reportDir!!.mkdirs()
 
-                fileReporters.forEach { type, reporter ->
+                fileReporters.forEach { (type, reporter) ->
                     val file = reporter.createReport(deployResult)
                     log("$type Report: ${file.absolutePath}")
                 }
@@ -134,8 +133,8 @@ open class DeployWithTestReportsTask : DeployTaskAdapter() {
         removeCoverageTestClassFromOrg()
     }
 
-    internal fun removeCoverageTestClassFrom(testResult: RunTestsResult) {
-        if (!coverageTestClassName.isNullOrBlank()) {
+    private fun removeCoverageTestClassFrom(testResult: RunTestsResult) {
+        if (!coverageTestClassName.isBlank()) {
             testResult.successes = testResult.successes
                 .filter { it.name != coverageTestClassName }
                 .toTypedArray()
@@ -143,7 +142,7 @@ open class DeployWithTestReportsTask : DeployTaskAdapter() {
         }
     }
 
-    internal fun applyCoverageFilter(testResult: RunTestsResult) {
+    private fun applyCoverageFilter(testResult: RunTestsResult) {
         testResult.codeCoverage = testResult.codeCoverage
             .filterNot {
                 it.name?.matches(excludedFromCoverageRegex) == true

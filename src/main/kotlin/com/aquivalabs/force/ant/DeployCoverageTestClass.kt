@@ -35,7 +35,7 @@ private class $testClassName {
     private static void touchEveryClassFromDeploymentPackage() {
         try {
             Set<String> classNames = new Set<String> {
-                ${classesToTouch.sorted().joinToString(transform = { it -> "'$it'" })}
+                ${classesToTouch.sorted().joinToString(transform = { "'$it'" })}
             };
             for (String className : classNames)
                 Type.forName(className);
@@ -143,9 +143,10 @@ fun DeployWithTestReportsTask.addCoverageTestClassToDeployRootPackage(deployDir:
         ZipUtil.zipFiles("", topLevelFiles, output)
 
         val classes = classesDir
-            .listFiles { file, name -> name.endsWith(APEX_CLASS_FILE_EXTENSION) }
-            .map(File::nameWithoutExtension)
-            .toSet()
+            .listFiles { _, name -> name.endsWith(APEX_CLASS_FILE_EXTENSION) }
+            ?.map(File::nameWithoutExtension)
+            ?.toSet()
+            .orEmpty()
 
         coverageTestClassName = generateTestClassName(existingClasses = classes)
         addRunTest(coverageTestClassName.toCodeNameElement())
@@ -228,7 +229,7 @@ fun DeployWithTestReportsTask.addCoverageTestClassToZipFilePackage(zipFile: File
 }
 
 fun DeployWithTestReportsTask.removeCoverageTestClassFromOrg() {
-    if (coverageTestClassName.isNullOrBlank())
+    if (coverageTestClassName.isBlank())
         return
 
     val byteArrayStream = ByteArrayOutputStream()

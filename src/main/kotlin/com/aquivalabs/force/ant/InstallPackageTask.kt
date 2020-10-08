@@ -32,9 +32,9 @@ open class InstallPackageTask : SFDCAntTask() {
     var pollWaitMillis: Int = 10000
 
     fun addConfiguredPackage(`package`: Package) {
-        if (`package`.namespace.isNullOrBlank())
+        if (`package`.namespace.isBlank())
             throw BuildException("You should provide namespace for package")
-        if (`package`.version.isNullOrBlank())
+        if (`package`.version.isBlank())
             throw BuildException("You should provide version for package")
         if (packages.containsKey(`package`.namespace))
             throw BuildException("You already added package with namespace '${`package`.namespace}")
@@ -87,7 +87,7 @@ open class InstallPackageTask : SFDCAntTask() {
         }
     }
 
-    internal fun packageXmlWithInstalledPackage(members: String) =
+    private fun packageXmlWithInstalledPackage(members: String) =
         """<?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>

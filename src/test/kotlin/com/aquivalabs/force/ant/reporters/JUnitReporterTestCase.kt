@@ -25,9 +25,9 @@ abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
     fun createReport_always_shouldCreateProperTestSuite(
         input: RunTestsResult,
         expected: String,
-        reason: String) = withTestDirectory {
+        reason: String) = withTestDirectory { directory ->
 
-        val sut = createSystemUnderTest(outputDir = it)
+        val sut = createSystemUnderTest(outputDir = directory)
         val reports = sut.createReport(deployResult(input)).getReportContents()
 
         reports.forEach {
@@ -62,9 +62,9 @@ abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
     fun createReport_forEachSuccess_shouldCreateTestCaseInsideTestSuite(
         successes: Array<RunTestSuccess>,
         expected: String,
-        reason: String) = withTestDirectory {
+        reason: String) = withTestDirectory { directory ->
 
-        val sut = createSystemUnderTest(outputDir = it)
+        val sut = createSystemUnderTest(outputDir = directory)
         val input = runTestsResult(successes = successes)
 
         val reports = sut.createReport(deployResult(input)).getReportContents()
@@ -116,9 +116,9 @@ abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
     fun createReport_forEachFailure_shouldCreateTestCaseWithFailureInsideTestSuite(
         failures: Array<RunTestFailure>,
         expected: String,
-        reason: String) = withTestDirectory {
+        reason: String) = withTestDirectory { directory ->
 
-        val sut = createSystemUnderTest(outputDir = it)
+        val sut = createSystemUnderTest(outputDir = directory)
         val input = runTestsResult(failures = failures)
 
         val reports = sut.createReport(deployResult(input)).getReportContents()
@@ -190,9 +190,9 @@ abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
     fun createReport_forEachProperty_shouldCreateCorrespondingPropertyElement(
         properties: Map<String, String>,
         expected: String,
-        reason: String) = withTestDirectory {
+        reason: String) = withTestDirectory { directory ->
 
-        val sut = createSystemUnderTest(outputDir = it)
+        val sut = createSystemUnderTest(outputDir = directory)
         sut.properties = properties
 
         val reports = sut.createReport(deployResult()).getReportContents()
@@ -239,8 +239,8 @@ abstract class JUnitReporterTestCase<out T> where T : JUnitReporter {
 
 class SingleSuiteJUnitReporterTestCase : JUnitReporterTestCase<SingleSuiteJUnitReporter>() {
     @Test(dataProvider = "createReportSuiteNameData")
-    fun createReport_always_shouldUsePassedSuiteNameAsExpected(expected: String) = withTestDirectory {
-        val sut = createSystemUnderTest(outputDir = it)
+    fun createReport_always_shouldUsePassedSuiteNameAsExpected(expected: String) = withTestDirectory { directory ->
+        val sut = createSystemUnderTest(outputDir = directory)
         sut.suiteName = expected
 
         val reports = sut.createReport(deployResult()).getReportContents()

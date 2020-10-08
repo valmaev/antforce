@@ -43,13 +43,13 @@ class ExecuteAnonymousApexTaskTestCase {
 
     @DataProvider
     fun executeBlankCodeTestData(): Array<Array<Any?>> = arrayOf(
-        arrayOf<Any?>(""),
-        arrayOf<Any?>("   "),
-        arrayOf<Any?>("\t"),
-        arrayOf<Any?>("\n"),
-        arrayOf<Any?>("\r\n"),
-        arrayOf<Any?>("\n  \n"),
-        arrayOf<Any?>("\r\n  \r\n"))
+        arrayOf(""),
+        arrayOf("   "),
+        arrayOf("\t"),
+        arrayOf("\n"),
+        arrayOf("\r\n"),
+        arrayOf("\n  \n"),
+        arrayOf("\r\n  \r\n"))
 
     @Test fun processResult_whenCodeIsNotCompiled_shouldThrowBuildException() {
         val input = createExecutionResult(
@@ -121,7 +121,7 @@ class ExecuteAnonymousApexTaskTestCase {
     @DataProvider
     fun processResultLocationTestData(): Array<Array<Any?>> {
         return arrayOf(
-            arrayOf<Any?>(
+            arrayOf(
                 "Apex code: 1 line, Execution result line number: 1, Expected line: 1",
                 "System.debug('Hello');",
                 createLocation("build.xml", lineNumber = 1, columnNumber = 2),
@@ -131,87 +131,87 @@ class ExecuteAnonymousApexTaskTestCase {
             // Case when Execution line number more than code lines count is possible
             // when we're miss semicolon in Apex code
             // Apex compiler returns error that points to next line number after erroneous one
-            arrayOf<Any?>(
+            arrayOf(
                 "Apex code: 1 line, Execution result line number: 2, Expected line: 1",
                 "System.debug('Hello')",
                 createLocation("build.xml", lineNumber = 1, columnNumber = 2),
                 createExecutionResult(success = false, line = 2, column = 1),
                 createLocation("build.xml", lineNumber = 1, columnNumber = 1)),
-            arrayOf<Any?>(
+            arrayOf(
                 "Apex code: 2 lines, Execution result line number: 1, Expected line: 1",
                 "System.debug('Hello');\nSystem.debug('Hello')",
                 createLocation("build.xml", lineNumber = 1, columnNumber = 2),
                 createExecutionResult(success = false, line = 1, column = 1),
                 createLocation("build.xml", lineNumber = 1, columnNumber = 1)),
-            arrayOf<Any?>(
+            arrayOf(
                 "Apex code: 2 lines, Execution result line number: 2, Expected line: 2",
                 "System.debug('Hello');\nSystem.debug('Hello')",
                 createLocation("build.xml", lineNumber = 1, columnNumber = 2),
                 createExecutionResult(success = false, line = 2, column = 1),
                 createLocation("build.xml", lineNumber = 2, columnNumber = 1)),
-            arrayOf<Any?>(
+            arrayOf(
                 "Apex code: 2 lines, Execution result line number: 2, Expected line: 2",
                 "System.debug('Hello');\nSystem.debug('Hello')",
                 createLocation("build.xml", lineNumber = 1, columnNumber = 2),
                 createExecutionResult(success = false, line = 3, column = 1),
                 createLocation("build.xml", lineNumber = 2, columnNumber = 1)),
 
-            arrayOf<Any?>(
+            arrayOf(
                 "Apex code: 2 Unix empty lines before 1 line of code, Execution result line number: 1, Expected line: 3",
                 "\n\nSystem.debug('Hello');",
                 createLocation("build.xml", lineNumber = 1, columnNumber = 5),
                 createExecutionResult(success = false, line = 1, column = 1),
                 createLocation("build.xml", lineNumber = 3, columnNumber = 1)),
-            arrayOf<Any?>(
+            arrayOf(
                 "Apex code: 2 Windows empty lines before 1 line of code, Execution result line number: 1, Expected line: 3",
                 "\r\n\r\nSystem.debug('Hello');",
                 createLocation("build.xml", lineNumber = 1, columnNumber = 3),
                 createExecutionResult(success = false, line = 1, column = 1),
                 createLocation("build.xml", lineNumber = 3, columnNumber = 1)),
-            arrayOf<Any?>(
+            arrayOf(
                 "Apex code: 2 Unix empty lines before 2 lines of code, Execution result line number: 2, Expected line: 4",
                 "\n\nSystem.debug('Hello');\nSystem.debug('Hello')",
                 createLocation("build.xml", lineNumber = 1, columnNumber = 2),
                 createExecutionResult(success = false, line = 2, column = 1),
                 createLocation("build.xml", lineNumber = 4, columnNumber = 1)),
-            arrayOf<Any?>(
+            arrayOf(
                 "Apex code: 2 Unix empty lines before 2 lines of code, Execution result line number: 3, Expected line: 4",
                 "\n\nSystem.debug('Hello');\nSystem.debug('Hello')",
                 createLocation("build.xml", lineNumber = 1, columnNumber = 2),
                 createExecutionResult(success = false, line = 3, column = 1),
                 createLocation("build.xml", lineNumber = 4, columnNumber = 1)),
 
-            arrayOf<Any?>(
+            arrayOf(
                 "Apex code: 2 Unix empty lines after 1 line of code, Execution result line number: 1, Expected line: 1",
                 "System.debug('Hello');\n\n",
                 createLocation("build.xml", lineNumber = 1, columnNumber = 5),
                 createExecutionResult(success = false, line = 1, column = 1),
                 createLocation("build.xml", lineNumber = 1, columnNumber = 1)),
-            arrayOf<Any?>(
+            arrayOf(
                 "Apex code: 1 Unix empty line after 1 line of code, Execution result line number: 2, Expected line: 2",
                 "System.debug('Hello')\n",
                 createLocation("build.xml", lineNumber = 1, columnNumber = 5),
                 createExecutionResult(success = false, line = 2, column = 1),
                 createLocation("build.xml", lineNumber = 2, columnNumber = 1)),
-            arrayOf<Any?>(
+            arrayOf(
                 "Apex code: 2 Unix empty lines after 1 line of code, Execution result line number: 2, Expected line: 2",
                 "System.debug('Hello')\n\n",
                 createLocation("build.xml", lineNumber = 1, columnNumber = 5),
                 createExecutionResult(success = false, line = 2, column = 1),
                 createLocation("build.xml", lineNumber = 2, columnNumber = 1)),
-            arrayOf<Any?>(
+            arrayOf(
                 "Apex code: 1 Unix empty line before and after 1 line of code, Execution result line number: 2, Expected line: 3",
                 "\nSystem.debug('Hello');\n",
                 createLocation("build.xml", lineNumber = 1, columnNumber = 5),
                 createExecutionResult(success = false, line = 2, column = 1),
                 createLocation("build.xml", lineNumber = 3, columnNumber = 1)),
-            arrayOf<Any?>(
+            arrayOf(
                 "Apex code: 2 Unix empty lines before and after 2 lines of code, Execution result line number: 2, Expected line: 4",
                 "\n\nSystem.debug('Hello');\nSystem.debug('Hello');\n\n",
                 createLocation("build.xml", lineNumber = 1, columnNumber = 5),
                 createExecutionResult(success = false, line = 2, column = 1),
                 createLocation("build.xml", lineNumber = 4, columnNumber = 1)),
-            arrayOf<Any?>(
+            arrayOf(
                 "Apex code: 2 Unix empty lines before and after 2 lines of code, Execution result line number: 3, Expected line: 4",
                 "\n\nSystem.debug('Hello');\nSystem.debug('Hello')\n\n",
                 createLocation("build.xml", lineNumber = 1, columnNumber = 5),
@@ -219,18 +219,18 @@ class ExecuteAnonymousApexTaskTestCase {
                 createLocation("build.xml", lineNumber = 5, columnNumber = 1)))
     }
 
-    fun createSystemUnderTest(project: Project = project()): ExecuteAnonymousApexTask {
+    private fun createSystemUnderTest(project: Project = project()): ExecuteAnonymousApexTask {
         val sut = ExecuteAnonymousApexTask()
         sut.project = project
         return sut
     }
 
-    fun createLocation(
+    private fun createLocation(
         fileName: String = "build.xml",
         lineNumber: Int = 0,
         columnNumber: Int = 0) : Location = Location(fileName, lineNumber, columnNumber)
 
-    fun createExecutionResult(
+    private fun createExecutionResult(
         compiled: Boolean = true,
         compileProblem: String? = null,
         success: Boolean = true,

@@ -44,8 +44,8 @@ class BatchTestTestCase {
 
         sut.addFileSet(input)
 
-        input.forEach {
-            assertTrue(sut.resources.contains(it))
+        input.forEach { file ->
+            assertTrue(sut.resources.contains(file))
         }
     }
 
@@ -159,5 +159,5 @@ class BatchTestTestCase {
                 "Should add namespace to file names"))
     }
 
-    fun createSystemUnderTest(): BatchTest = BatchTest(Project().apply { name = "TestProject" })
+    private fun createSystemUnderTest(): BatchTest = BatchTest(Project().apply { name = "TestProject" })
 }
