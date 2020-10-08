@@ -171,10 +171,10 @@ class RunTestsResultTestCase {
 
     @DataProvider
     fun coveredClassesTestData(): Array<Array<Any?>> = arrayOf(
-        arrayOf<Any?>(
+        arrayOf(
             arrayOf<CodeCoverageResult>(),
             setOf<String>()),
-        arrayOf<Any?>(
+        arrayOf(
             arrayOf(
                 codeCoverageResult(
                     name = "Foo",
@@ -198,10 +198,10 @@ class RunTestsResultTestCase {
 
     @DataProvider
     fun coveredTriggersTestData(): Array<Array<Any?>> = arrayOf(
-        arrayOf<Any?>(
+        arrayOf(
             arrayOf<CodeCoverageResult>(),
             setOf<String>()),
-        arrayOf<Any?>(
+        arrayOf(
             arrayOf(
                 codeCoverageResult(
                     name = "Foo",
@@ -225,10 +225,10 @@ class RunTestsResultTestCase {
 
     @DataProvider
     fun notCoveredClassesTestData(): Array<Array<Any?>> = arrayOf(
-        arrayOf<Any?>(
+        arrayOf(
             arrayOf<CodeCoverageWarning>(),
             setOf<String>()),
-        arrayOf<Any?>(
+        arrayOf(
             arrayOf(
                 codeCoverageWarning(
                     name = "Foo",
@@ -250,10 +250,10 @@ class RunTestsResultTestCase {
 
     @DataProvider
     fun notCoveredTriggersTestData(): Array<Array<Any?>> = arrayOf(
-        arrayOf<Any?>(
+        arrayOf(
             arrayOf<CodeCoverageWarning>(),
             setOf<String>()),
-        arrayOf<Any?>(
+        arrayOf(
             arrayOf(
                 codeCoverageWarning(
                     name = "Foo",
@@ -276,11 +276,11 @@ class RunTestsResultTestCase {
     @DataProvider
     fun numClassesAndTriggersTestData(): Array<Array<Any?>> {
         return arrayOf(
-            arrayOf<Any?>(
+            arrayOf(
                 arrayOf<CodeCoverageResult>(),
                 arrayOf<CodeCoverageWarning>(),
                 0),
-            arrayOf<Any?>(
+            arrayOf(
                 arrayOf(
                     codeCoverageResult(
                         name = "Foo",
@@ -318,7 +318,7 @@ class RunTestsResultTestCase {
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Class is 33%, at least 75% test coverage is required")),
                 1 + 1),
-            arrayOf<Any?>(
+            arrayOf(
                 arrayOf(
                     codeCoverageResult(
                         name = "Foo",
@@ -340,7 +340,7 @@ class RunTestsResultTestCase {
                         numLocationsNotCovered = 0)),
                 arrayOf<CodeCoverageWarning>(),
                 1),
-            arrayOf<Any?>(
+            arrayOf(
                 arrayOf<CodeCoverageResult>(),
                 arrayOf(
                     codeCoverageWarning(
@@ -365,7 +365,7 @@ class RunTestsResultTestCase {
     @DataProvider
     fun classAndTriggerCoverageTestData(): Array<Array<Any?>> {
         return arrayOf(
-            arrayOf<Any?>(
+            arrayOf(
                 arrayOf(
                     codeCoverageResult(
                         name = "Foo",
@@ -402,7 +402,7 @@ class RunTestsResultTestCase {
                         name = "Qux",
                         namespace = "qwe",
                         message = "Test coverage of selected Apex Class is 33%, at least 75% test coverage is required"))),
-            arrayOf<Any?>(
+            arrayOf(
                 arrayOf(
                     codeCoverageResult(
                         name = "Foo",
@@ -423,7 +423,7 @@ class RunTestsResultTestCase {
                         numLocations = 10,
                         numLocationsNotCovered = 0)),
                 arrayOf<CodeCoverageWarning>()),
-            arrayOf<Any?>(
+            arrayOf(
                 arrayOf<CodeCoverageResult>(),
                 arrayOf(
                     codeCoverageWarning(
@@ -446,16 +446,16 @@ class RunTestsResultTestCase {
 
     @DataProvider
     fun coverageTestData(): Array<Array<Any>> = nonEmptyCoverageTestData().plus(
-        arrayOf<Any>(
+        arrayOf(
             arrayOf<CodeCoverageResult>()))
 
     @DataProvider
     fun nonEmptyCoverageTestData(): Array<Array<Any>> = arrayOf(
-        arrayOf<Any>(
+        arrayOf(
             arrayOf(
                 codeCoverageResult(numLocations = 0, numLocationsNotCovered = 0),
                 codeCoverageResult(numLocations = 1, numLocationsNotCovered = 1))),
-        arrayOf<Any>(
+        arrayOf(
             arrayOf(
                 codeCoverageResult(numLocations = 0, numLocationsNotCovered = 0),
                 codeCoverageResult(numLocations = 100, numLocationsNotCovered = 56),

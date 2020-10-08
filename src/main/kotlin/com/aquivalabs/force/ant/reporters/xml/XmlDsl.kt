@@ -30,7 +30,7 @@ class CharacterDataElement(val text: String) : Element {
     override fun hashCode(): Int = text.hashCode()
 }
 
-abstract class Tag(val tagName: String) : Element {
+abstract class Tag(private val tagName: String) : Element {
     val children = arrayListOf<Element>()
     val attributes = hashMapOf<String, Any?>()
 
@@ -47,17 +47,17 @@ abstract class Tag(val tagName: String) : Element {
             renderWithChildren(builder, indent)
     }
 
-    protected fun renderAsSelfClosing(builder: StringBuilder, indent: String) {
+    private fun renderAsSelfClosing(builder: StringBuilder, indent: String) {
         builder.append("$indent<$tagName${renderAttributes()} />\n")
     }
 
-    protected fun renderWithChildren(builder: StringBuilder, indent: String) {
+    private fun renderWithChildren(builder: StringBuilder, indent: String) {
         builder.append("$indent<$tagName${renderAttributes()}>\n")
-        children.forEach { it.render(builder, indent + "  ") }
+        children.forEach { it.render(builder, "$indent  ") }
         builder.append("$indent</$tagName>\n")
     }
 
-    protected fun renderAttributes(): String? {
+    private fun renderAttributes(): String? {
         val builder = StringBuilder()
         attributes.keys.forEach { builder.append(" $it=\"${attributes[it]}\"") }
         return builder.toString()
@@ -85,7 +85,7 @@ abstract class Tag(val tagName: String) : Element {
 
 abstract class EmptyTag : Tag("") {
     override fun render(builder: StringBuilder, indent: String) =
-        children.forEach { it.render(builder, indent + "  ") }
+        children.forEach { it.render(builder, "$indent  ") }
 }
 
 abstract class TagWithTextData(name: String) : Tag(name) {

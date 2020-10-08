@@ -166,14 +166,14 @@ fun metadataConnection(deployResult: DeployResult = deployResult()): MetadataCon
 }
 
 fun qualifiedNameCommonTestData(): Array<Array<Any?>> = arrayOf(
-    arrayOf<Any?>(null, null, ""),
-    arrayOf<Any?>(null, "", ""),
-    arrayOf<Any?>("", null, ""),
-    arrayOf<Any?>("", "", ""),
-    arrayOf<Any?>("foo", "", "foo."),
-    arrayOf<Any?>("", "Class", "Class"),
-    arrayOf<Any?>(null, "Class", "Class"),
-    arrayOf<Any?>("foo", "Class", "foo.Class"))
+    arrayOf(null, null, ""),
+    arrayOf(null, "", ""),
+    arrayOf("", null, ""),
+    arrayOf("", "", ""),
+    arrayOf("foo", "", "foo."),
+    arrayOf("", "Class", "Class"),
+    arrayOf(null, "Class", "Class"),
+    arrayOf("foo", "Class", "foo.Class"))
 
 private fun calleeClass() = Thread.currentThread().stackTrace.first {
     it.fileName != "TestData.kt"
@@ -211,9 +211,9 @@ fun withZipFile(
     packageXml: String? = generateDestructiveChanges("*", 37.0),
     classes: Set<String>? = setOf("Foobar"),
     triggers: Set<String>? = null,
-    test: (File) -> Unit) = withTestDirectory {
+    test: (File) -> Unit) = withTestDirectory { directory ->
 
-    val zip = File(it, "src.zip")
+    val zip = File(directory, "src.zip")
     val fileOutput = FileOutputStream(zip)
     ZipOutputStream(fileOutput).use { zipOutput ->
         if (packageXml != null)

@@ -128,7 +128,7 @@ class DeployWithTestReportsTaskTestCase {
 
     @DataProvider
     fun improperTestLevelForCoverageTestClassData(): Array<Array<out Any?>> = arrayOf(
-        arrayOf<Any?>(null, null),
+        arrayOf(null, null),
         arrayOf<Any?>("", null),
         arrayOf<Any?>(TestLevel.NoTestRun.name, null),
         arrayOf<Any?>(null, false),
@@ -403,7 +403,7 @@ class DeployWithTestReportsTaskTestCase {
             sut.handleResponse(metadataConnection(), asyncResult())
 
             // Assert
-            val actual = testDirectory.listFiles().single { it.name == "TEST-TestSuite.xml"}
+            val actual = testDirectory.listFiles()!!.single { it.name == "TEST-TestSuite.xml"}
             assertTrue(actual.exists(), "Report file wasn't found")
         }
     }
@@ -421,7 +421,7 @@ class DeployWithTestReportsTaskTestCase {
             sut.handleResponse(metadataConnection(), asyncResult())
 
             // Assert
-            val actual = testDirectory.listFiles().single { it.name == report.file }
+            val actual = testDirectory.listFiles()!!.single { it.name == report.file }
             assertTrue(actual.exists(), "Report file wasn't found")
         }
     }
@@ -439,7 +439,7 @@ class DeployWithTestReportsTaskTestCase {
             sut.handleResponse(metadataConnection(), asyncResult())
 
             // Assert
-            val actual = testDirectory.listFiles().single { it.name == report.dir }
+            val actual = testDirectory.listFiles()!!.single { it.name == report.dir }
             assertTrue(actual.exists(), "Report file wasn't found")
         }
     }
@@ -457,14 +457,14 @@ class DeployWithTestReportsTaskTestCase {
             sut.handleResponse(metadataConnection(), asyncResult())
 
             // Assert
-            val actual = zipFile.parentFile.listFiles().single { it.name == report.dir }
+            val actual = zipFile.parentFile.listFiles()!!.single { it.name == report.dir }
             assertTrue(actual.exists(), "Report file wasn't found")
         }
     }
 
     @Test
     fun handleResponse_withNonBlankCoverageTestClassName_shouldRemoveItFromTestResult() {
-        withTestDirectory {
+        withTestDirectory { directory ->
             // Arrange
             val numTestsRun = 3
             val coverageTestClassName = generateTestClassName()
@@ -477,8 +477,8 @@ class DeployWithTestReportsTaskTestCase {
                         runTestSuccess(name = "bar"))))
 
             val sut = createMockedSystemUnderTest(metadataConnection = metadataConnection(deployResult))
-            sut.reportDir = it
-            sut.sourceDir = it
+            sut.reportDir = directory
+            sut.sourceDir = directory
             sut.coverageTestClassName = coverageTestClassName
             sut.addConfiguredJUnitReport(JUnitReport())
             sut.addConfiguredCoberturaReport(CoberturaReport(file = "Cobertura.xml"))
@@ -490,7 +490,7 @@ class DeployWithTestReportsTaskTestCase {
             sut.handleResponse(sut.metadataConnection, asyncResult())
 
             // Assert
-            Files.walk(it.toPath())
+            Files.walk(directory.toPath())
                 .filter { Files.isRegularFile(it) }
                 .forEach { assertFalse(it.toFile().readText().contains(sut.coverageTestClassName)) }
             assertEquals(teamcityLog.filter { it.contains(sut.coverageTestClassName) }.size, 0)
@@ -514,8 +514,8 @@ class DeployWithTestReportsTaskTestCase {
             val mockFileReporter = mock<Reporter<File>>()
             whenever(mockFileReporter.createReport(any())).thenReturn(testDirectory)
 
-            sut.consoleReporters.put("TestConsoleReporter", mockConsoleReporter)
-            sut.fileReporters.put("TestFileReporter", mockFileReporter)
+            sut.consoleReporters["TestConsoleReporter"] = mockConsoleReporter
+            sut.fileReporters["TestFileReporter"] = mockFileReporter
 
             // Act
             sut.handleResponse(sut.metadataConnection, asyncResult())
@@ -550,19 +550,21 @@ class DeployWithTestReportsTaskTestCase {
         val mockFileReporter = mock<Reporter<File>>()
         whenever(mockFileReporter.createReport(any())).thenReturn(testDirectory)
 
-        sut.consoleReporters.put("TestConsoleReporter", mockConsoleReporter)
-        sut.fileReporters.put("TestFileReporter", mockFileReporter)
+        sut.consoleReporters["TestConsoleReporter"] = mockConsoleReporter
+        sut.fileReporters["TestFileReporter"] = mockFileReporter
 
         // Act
         sut.handleResponse(sut.metadataConnection, asyncResult())
 
         // Assert
         verify(mockConsoleReporter).createReport(argThat {
-            Arrays.equals(expectedClassNames, coverageClassNames())
-                && Arrays.equals(expectedClassNames, coverageWarningsClassNames())})
+            expectedClassNames.contentEquals(coverageClassNames())
+                && expectedClassNames.contentEquals(coverageWarningsClassNames())
+        })
         verify(mockFileReporter).createReport(argThat {
-            Arrays.equals(expectedClassNames, coverageClassNames())
-                && Arrays.equals(expectedClassNames, coverageWarningsClassNames())})
+            expectedClassNames.contentEquals(coverageClassNames())
+                && expectedClassNames.contentEquals(coverageWarningsClassNames())
+        })
     }
 
     @Test
@@ -687,7 +689,7 @@ class DeployWithTestReportsTaskTestCase {
     private fun DeployResult.coverageWarningsClassNames() =
         details.runTestResult.codeCoverageWarnings.map { it.qualifiedName }.toTypedArray()
 
-    fun generatePackageWithApexClasses(classNames: LinkedHashSet<String>) =
+    private fun generatePackageWithApexClasses(classNames: LinkedHashSet<String>) =
         """<?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
@@ -697,9 +699,9 @@ class DeployWithTestReportsTaskTestCase {
     <version>37.0</version>
 </Package>"""
 
-    fun generatePackageWithoutApexClasses() = generatePackage(37.0)
+    private fun generatePackageWithoutApexClasses() = generatePackage(37.0)
 
-    fun createSystemUnderTest(
+    private fun createSystemUnderTest(
         project: Project = project(),
         testLevel: String? = TestLevel.RunSpecifiedTests.name,
         deployRoot: String? = null,
@@ -715,7 +717,7 @@ class DeployWithTestReportsTaskTestCase {
         return sut
     }
 
-    fun createMockedSystemUnderTest(
+    private fun createMockedSystemUnderTest(
         metadataConnection: MetadataConnection = metadataConnection()): DeployWithTestReportsTask {
 
         val sut = spy(createSystemUnderTest())
@@ -723,18 +725,18 @@ class DeployWithTestReportsTaskTestCase {
         return sut
     }
 
-    fun createRunTestElement(text: String = ""): DeployTask.CodeNameElement {
+    private fun createRunTestElement(text: String = ""): DeployTask.CodeNameElement {
         val runTest = DeployTask.CodeNameElement()
         runTest.addText(text)
         return runTest
     }
 
-    fun createTestClassesFileSet(directory: File, fileNames: Iterable<String>): FileSet =
+    private fun createTestClassesFileSet(directory: File, fileNames: Iterable<String>): FileSet =
         fileSet(
             directory,
             fileNames.map { it + APEX_CLASS_FILE_EXTENSION })
 
-    fun createTeamCityReporter(log: (String) -> Unit = ::println): TeamCityReporter {
+    private fun createTeamCityReporter(log: (String) -> Unit = ::println): TeamCityReporter {
         val env = hashMapOf("TEAMCITY_PROJECT_NAME" to "foo")
         return TeamCityReporter({ env[it] }, log)
     }

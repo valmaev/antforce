@@ -21,9 +21,9 @@ class CodeCoverageResultTestCase {
 
     @DataProvider
     fun numLocationsCoveredTestData(): Array<Array<Any>> = arrayOf(
-        arrayOf<Any>(0, 0, 0),
-        arrayOf<Any>(1, 1, 0),
-        arrayOf<Any>(10, 5, 5))
+        arrayOf(0, 0, 0),
+        arrayOf(1, 1, 0),
+        arrayOf(10, 5, 5))
 
     @Test
     fun coverage_ifNumLocationsEquals0_shouldReturn1() {
@@ -44,9 +44,9 @@ class CodeCoverageResultTestCase {
 
     @DataProvider
     fun coverageTestData(): Array<Array<Any>> = arrayOf(
-        arrayOf<Any>(1, 1),
-        arrayOf<Any>(12, 4),
-        arrayOf<Any>(3, 2))
+        arrayOf(1, 1),
+        arrayOf(12, 4),
+        arrayOf(3, 2))
 
     @Test(dataProvider = "coverageTestData")
     fun coveragePercentage_always_shouldReturnCoverageMultipliedBy100(
@@ -85,18 +85,18 @@ class CodeCoverageResultTestCase {
 
     @DataProvider
     fun classFileNameTestData(): Array<Array<Any?>> = arrayOf(
-        arrayOf<Any?>(null, null, null, ""),
-        arrayOf<Any?>("", null, null, ""),
-        arrayOf<Any?>(null, "", null, ""),
-        arrayOf<Any?>(null, null, "", ""),
-        arrayOf<Any?>("", "", null, ""),
-        arrayOf<Any?>(null, "", "", ""),
-        arrayOf<Any?>("", null, "", ""),
-        arrayOf<Any?>("", "", "", ""),
-        arrayOf<Any?>(null, "MyClass", "Class", "classes${File.separator}MyClass$APEX_CLASS_FILE_EXTENSION"),
-        arrayOf<Any?>("", "MyClass", "Class", "classes${File.separator}MyClass$APEX_CLASS_FILE_EXTENSION"),
-        arrayOf<Any?>("foo", "MyClass", "Class", "classes${File.separator}MyClass$APEX_CLASS_FILE_EXTENSION"),
-        arrayOf<Any?>(null, "MyTrigger", "Trigger", "triggers${File.separator}MyTrigger$APEX_TRIGGER_FILE_EXTENSION"),
-        arrayOf<Any?>("", "MyTrigger", "Trigger", "triggers${File.separator}MyTrigger$APEX_TRIGGER_FILE_EXTENSION"),
-        arrayOf<Any?>("foo", "MyTrigger", "Trigger", "triggers${File.separator}MyTrigger$APEX_TRIGGER_FILE_EXTENSION"))
+        arrayOf(null, null, null, ""),
+        arrayOf("", null, null, ""),
+        arrayOf(null, "", null, ""),
+        arrayOf(null, null, "", ""),
+        arrayOf("", "", null, ""),
+        arrayOf(null, "", "", ""),
+        arrayOf("", null, "", ""),
+        arrayOf("", "", "", ""),
+        arrayOf(null, "MyClass", "Class", "classes${File.separator}MyClass$APEX_CLASS_FILE_EXTENSION"),
+        arrayOf("", "MyClass", "Class", "classes${File.separator}MyClass$APEX_CLASS_FILE_EXTENSION"),
+        arrayOf("foo", "MyClass", "Class", "classes${File.separator}MyClass$APEX_CLASS_FILE_EXTENSION"),
+        arrayOf(null, "MyTrigger", "Trigger", "triggers${File.separator}MyTrigger$APEX_TRIGGER_FILE_EXTENSION"),
+        arrayOf("", "MyTrigger", "Trigger", "triggers${File.separator}MyTrigger$APEX_TRIGGER_FILE_EXTENSION"),
+        arrayOf("foo", "MyTrigger", "Trigger", "triggers${File.separator}MyTrigger$APEX_TRIGGER_FILE_EXTENSION"))
 }

@@ -8,11 +8,11 @@ import org.apache.tools.ant.Location
 
 class ExecuteAnonymousApexTask : SFDCAntTask() {
     companion object {
-        val ERROR_HEADER = "*********** APEX EXECUTION FAILED ***********"
+        const val ERROR_HEADER = "*********** APEX EXECUTION FAILED ***********"
     }
 
     private var _code = ""
-    var expandProperties: Boolean = true
+    private var expandProperties: Boolean = true
 
     fun addText(code: String) {
         _code = code
@@ -20,7 +20,7 @@ class ExecuteAnonymousApexTask : SFDCAntTask() {
 
     override fun execute() {
         var trimmedCode = _code.trim()
-        if (trimmedCode.isNullOrBlank()) {
+        if (trimmedCode.isBlank()) {
             log("Apex code wasn't specified")
             return
         }

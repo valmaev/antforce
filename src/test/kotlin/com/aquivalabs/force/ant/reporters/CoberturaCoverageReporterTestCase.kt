@@ -358,7 +358,7 @@ class CoberturaCoverageReporterTestCase {
                 "Should properly handle trailing slash in projectRootPath"))
     }
 
-    fun createSystemUnderTest(projectRootPath: String?) = CoberturaCoverageReporter(
+    private fun createSystemUnderTest(projectRootPath: String?) = CoberturaCoverageReporter(
         outputFile = File("foo"),
         projectRootPath = projectRootPath)
 }

@@ -21,7 +21,7 @@ import java.util.zip.ZipOutputStream
 
 open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
 
-    val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.MIN }
+    private val dateTimeProvider: () -> LocalDateTime = { LocalDateTime.MIN }
 
     @Test(dataProvider = "createReportTestData")
     fun createReport_always_shouldContainTotalLineCoveragePercentage(
@@ -152,7 +152,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
     @DataProvider
     fun createReportTestData(): Array<Array<Any?>> {
         return arrayOf(
-            arrayOf<Any?>(
+            arrayOf(
                 arrayOf(
                     codeCoverageResult(
                         name = "Foo",
@@ -210,24 +210,23 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
 
     @DataProvider
     fun createReportWarningsTestData(): Array<Array<Any?>> =
-        emptyCoverageWarningTestData()
-            .plus(nonEmptyCoverageWarningsTestData())
-            .plus(arrayOf(arrayOf<Any?>(
-                arrayOf(
-                    codeCoverageWarning()))))
+        emptyCoverageWarningTestData() +
+            nonEmptyCoverageWarningsTestData() +
+                arrayOf<Array<Any?>>(arrayOf(
+                    arrayOf(codeCoverageWarning())))
 
     @DataProvider
     fun emptyCoverageWarningTestData(): Array<Array<Any?>> {
         return arrayOf(
-            arrayOf<Any?>(null),
-            arrayOf<Any?>(
+            arrayOf(null),
+            arrayOf(
                 arrayOf<CodeCoverageWarning>()))
     }
 
     @DataProvider
     fun nonEmptyCoverageWarningsTestData(): Array<Array<Any?>> {
         return arrayOf(
-            arrayOf<Any?>(
+            arrayOf(
                 arrayOf(
                     codeCoverageWarning(
                         name = "Book",
@@ -415,7 +414,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
         // Assert
         val report = Jsoup.parse(reportFile, Charsets.UTF_8.name())
         val actual = report.getElementsByTag("style").first().data().trim()
-        val expected = File(javaClass.classLoader.getResource("coverage-report.css").file)
+        val expected = File(javaClass.classLoader.getResource("coverage-report.css")!!.file)
             .readText().trim()
         assertEquals(actual, expected)
     }
@@ -423,9 +422,9 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
     @Test(dataProvider = "createReportClassCoveragePageData")
     fun createReport_withNonEmptySourceDir_shouldCreateClassCoverageHtmlPages(
         sourceFiles: Map<String, String>,
-        codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) {
+        codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) { directory ->
         // Arrange
-        val sut = createSystemUnderTest(sourcesRoot(it), outputDir = it)
+        val sut = createSystemUnderTest(sourcesRoot(directory), outputDir = directory)
 
         // Act
         val outputDir = sut.createReport(
@@ -448,9 +447,9 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
     @Test(dataProvider = "createReportClassCoveragePageData")
     fun createReport_withNonEmptySourceDir_shouldCreateClassCoverageHtmlPagesWithExpectedTotalLineCoveragePercentage(
         sourceFiles: Map<String, String>,
-        codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) {
+        codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) { directory ->
         // Arrange
-        val sut = createSystemUnderTest(sourcesRoot(it), outputDir = it)
+        val sut = createSystemUnderTest(sourcesRoot(directory), outputDir = directory)
 
         // Act
         val outputDir = sut.createReport(
@@ -469,9 +468,9 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
     @Test(dataProvider = "createReportClassCoveragePageData")
     fun createReport_withNonEmptySourceDir_shouldCreateClassCoverageHtmlPagesWithExpectedTotalLineCoverage(
         sourceFiles: Map<String, String>,
-        codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) {
+        codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) { directory ->
         // Arrange
-        val sut = createSystemUnderTest(sourceDir = sourcesRoot(it), outputDir = it)
+        val sut = createSystemUnderTest(sourceDir = sourcesRoot(directory), outputDir = directory)
 
         // Act
         val outputDir = sut.createReport(
@@ -490,9 +489,9 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
     @Test(dataProvider = "createReportClassCoveragePageData")
     fun createReport_withNonEmptySourceDir_shouldCreateClassCoverageHtmlPagesWithExpectedHighlightedLines(
         sourceFiles: Map<String, String>,
-        codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) {
+        codeCoverage: Array<CodeCoverageResult>) = withDeployRoot(sourceFiles) { directory ->
         // Arrange
-        val sut = createSystemUnderTest(sourceDir = sourcesRoot(it), outputDir = it)
+        val sut = createSystemUnderTest(sourceDir = sourcesRoot(directory), outputDir = directory)
 
         // Act
         val outputDir = sut.createReport(
@@ -500,7 +499,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
 
         // Assert
         sourceFiles.keys.forEach { file ->
-            val coverage = codeCoverage.single { it.classFileName == file }
+            val coverage = codeCoverage.single { c -> c.classFileName == file }
             val html = Jsoup.parse(File(outputDir, "$file.html"), Charsets.UTF_8.name())
             coverage.locationsNotCovered.forEach {
                 val actual = html
@@ -535,7 +534,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
     @DataProvider
     fun createReportClassCoveragePageData(): Array<Array<Any?>> {
         return arrayOf(
-            arrayOf<Any?>(
+            arrayOf(
                 mapOf(
                     "classes/Foo.cls" to "public class Foo{\npublic String field;\n}",
                     "triggers/Bar.trigger" to "trigger Bar on Bar (before insert){\n System.debug('test');\n}"),
@@ -590,7 +589,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
     @DataProvider
     fun createReportSummaryReportStatusLineData(): Array<Array<Any?>> {
         return arrayOf(
-            arrayOf<Any?>(
+            arrayOf(
                 mapOf(
                     "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
                 arrayOf(
@@ -604,7 +603,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
                             .toTypedArray())),
                 0.0,
                 "low"),
-            arrayOf<Any?>(
+            arrayOf(
                 mapOf(
                     "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
                 arrayOf(
@@ -618,7 +617,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
                             .toTypedArray())),
                 0.5,
                 "low"),
-            arrayOf<Any?>(
+            arrayOf(
                 mapOf(
                     "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
                 arrayOf(
@@ -632,7 +631,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
                             .toTypedArray())),
                 0.75,
                 "high"),
-            arrayOf<Any?>(
+            arrayOf(
                 mapOf(
                     "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
                 arrayOf(
@@ -680,7 +679,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
     @DataProvider
     fun createReportCoverageReportStatusLineData(): Array<Array<Any?>> {
         return arrayOf(
-            arrayOf<Any?>(
+            arrayOf(
                 mapOf(
                     "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
                 arrayOf(
@@ -694,7 +693,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
                             .toTypedArray())),
                 0.0,
                 "low"),
-            arrayOf<Any?>(
+            arrayOf(
                 mapOf(
                     "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
                 arrayOf(
@@ -708,7 +707,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
                             .toTypedArray())),
                 0.5,
                 "low"),
-            arrayOf<Any?>(
+            arrayOf(
                 mapOf(
                     "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
                 arrayOf(
@@ -722,7 +721,7 @@ open class HtmlCoverageReporterTestCase<out T> where T : HtmlCoverageReporter {
                             .toTypedArray())),
                 0.75,
                 "high"),
-            arrayOf<Any?>(
+            arrayOf(
                 mapOf(
                     "classes/Foo.cls" to "public class Foo{\npublic String field;\n}"),
                 arrayOf(
@@ -767,9 +766,8 @@ class ZipRootHtmlCoverageReporterTestCase : HtmlCoverageReporterTestCase<ZipRoot
         dateTimeProvider: () -> LocalDateTime) =
         ZipRootHtmlCoverageReporter(sourceDir, outputDir, codeHighlighting, dateTimeProvider)
 
-    override fun withDeployRoot(files: Map<String, String>, test: (File) -> Unit) = withTestDirectory {
-
-        val zip = sourcesRoot(it)
+    override fun withDeployRoot(files: Map<String, String>, test: (File) -> Unit) = withTestDirectory { directory ->
+        val zip = sourcesRoot(directory)
         val fileOutput = FileOutputStream(zip)
         ZipOutputStream(fileOutput).use { zipOutput ->
             zipOutput.addEntry("classes", "")
