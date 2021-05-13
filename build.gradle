@@ -2,8 +2,8 @@ plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.4.10'
     id 'maven-publish'
-    id 'com.jfrog.bintray' version '1.8.5'
     id 'jacoco'
+    id 'de.undercouch.download' version '4.1.1'
 }
 
 group 'com.aquivalabs.force.ant'
@@ -11,8 +11,6 @@ version '0.12'
 
 repositories {
     mavenCentral()
-    jcenter()
-    maven { url "https://dl.bintray.com/valmaev/maven" }
 }
 
 def kotlin_version = '1.4.10'
@@ -21,16 +19,16 @@ def ant_salesforce_version = '47.0'
 def xmlunit_version = '2.3.0'
 
 dependencies {
+    implementation files("libs/ant-salesforce-${ant_salesforce_version}.jar")
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'org.jetbrains.kotlinx:kotlinx-html:0.7.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-html:0.7.3'
     implementation "org.apache.ant:ant:$ant_version"
-    implementation "org.valmaev.force:ant-salesforce:$ant_salesforce_version"
     testImplementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     testImplementation 'org.testng:testng:6.9.13.6'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
     testImplementation "org.xmlunit:xmlunit-core:$xmlunit_version"
     testImplementation "org.xmlunit:xmlunit-matchers:$xmlunit_version"
-    testImplementation "com.nhaarman:mockito-kotlin:0.12.2"
+    testImplementation 'com.nhaarman:mockito-kotlin:0.12.2'
     testImplementation 'org.jsoup:jsoup:1.10.1'
 }
 
@@ -61,6 +59,30 @@ jar {
     }
 }
 
+task downloadAntSalesforce(type: Download) {
+    def archiveName = "salesforce_ant_${ant_salesforce_version}.zip"
+    def downloadedFile = file("$buildDir/downloads/$archiveName")
+
+    onlyIf {!downloadedFile.exists()}
+
+    src "https://gs0.salesforce.com/dwnld/SfdcAnt/$archiveName"
+    dest downloadedFile
+    overwrite false
+}
+
+task unzipAntSalesforce(dependsOn: downloadAntSalesforce, type: Copy) {
+    from zipTree(downloadAntSalesforce.dest)
+    into layout.buildDirectory.dir("downloads/unzipped-${ant_salesforce_version}")
+}
+
+task copyAntSalesforce(dependsOn: unzipAntSalesforce, type: Copy) {
+    from layout.buildDirectory.file("downloads/unzipped-${ant_salesforce_version}/ant-salesforce.jar")
+    into layout.projectDirectory.file('libs')
+    rename { String name -> "ant-salesforce-${ant_salesforce_version}.jar" }
+}
+
+compileKotlin.dependsOn.add(copyAntSalesforce)
+
 task fatJar(type: Jar) {
     manifest.from jar.manifest
     archiveClassifier.set 'all'
@@ -90,35 +112,42 @@ artifacts {
     archives sourceJar
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            artifact sourceJar
+if (project.hasProperty('mavenRepositoryUsername') && project.hasProperty('mavenRepositoryPassword')) {
+    publishing {
+        repositories {
+            maven {
+                url = 'https://aquiva.jfrog.io/artifactory/maven-salesforce'
+                credentials {
+                    username = project.property('mavenRepositoryUsername')
+                    password = project.property('mavenRepositoryPassword')
+                }
+            }
         }
-    }
-}
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+                artifact sourceJar
 
-if (rootProject.hasProperty('bintrayUser') && rootProject.hasProperty('bintrayApiKey')) {
-    bintray {
-        user = getProperty('bintrayUser')
-        key = getProperty('bintrayApiKey')
-        publications = ['mavenJava']
-        pkg {
-            repo = 'maven'
-            name = 'antforce'
-            desc = 'A Set of extension tasks for Force.com Migration tool: reports, execution of anonymous Apex, integration with build servers, etc.'
-            userOrg = user
-            licenses = ['Apache-2.0']
-            labels = ['ant', 'salesforce', 'force.com']
-            websiteUrl = 'https://github.com/valmaev/antforce'
-            vcsUrl = 'https://github.com/valmaev/antforce.git'
-            issueTrackerUrl = 'https://github.com/valmaev/antforce/issues'
-            githubRepo = 'valmaev/antforce'
-            version {
-                name = project.version
-                released = new Date()
-                vcsTag = "v$project.version"
+                pom {
+                    name = 'antforce'
+                    description = 'A set of Apache Ant tasks that help to implement Continuous Integration for Force.com projects. It\'s built on top of Force.com Migration Tool and extends it in many ways.'
+                    url = 'https://github.com/valmaev/antforce'
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'valmaev'
+                            name = 'Vladimir Almaev'
+                        }
+                    }
+                    scm {
+                        url = 'https://github.com/valmaev/antforce'
+                    }
+                }
             }
         }
     }
