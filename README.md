@@ -6,7 +6,7 @@
 
 # AntForce
 
-**AntForce** is a set of [Apache Ant](https://ant.apache.org) tasks that help to implement Continuous Integration for Force.com projects. It's built on top of [Force.com Migration Tool](https://developer.salesforce.com/docs/atlas.en-us.daas.meta/daas) and extend it in many ways.
+**AntForce** is a set of [Apache Ant](https://ant.apache.org) tasks that help to implement Continuous Integration for Force.com projects. It's built on top of [Force.com Migration Tool](https://developer.salesforce.com/docs/atlas.en-us.daas.meta/daas) and extends it in many ways.
 
 ## Features
 
@@ -30,7 +30,7 @@
 
 ## Delivery
 
-AntForce delivered through [Bintray](https://bintray.com/valmaev/maven/antforce/_latestVersion). It means that:
+AntForce delivered through [JFrog Cloud](https://aquiva.jfrog.io/artifactory/maven-salesforce/com/aquivalabs/force/ant/antforce). It means that:
 
 - you don't need to store any build-related .jar-files inside your repo! 
 - you can use dependency manager such as [Apache Ivy](https://ant.apache.org/ivy) to download AntForce right in process of your project's build.
