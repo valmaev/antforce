@@ -30,7 +30,7 @@
 
 ## Delivery
 
-AntForce delivered through [JFrog Cloud](https://aquiva.jfrog.io/artifactory/maven-salesforce/com/aquivalabs/force/ant/antforce). It means that:
+AntForce delivered through [MyGet](https://www.myget.org/feed/aquiva-salesforce/package/maven/com.aquivalabs.force.ant/antforce). It means that:
 
 - you don't need to store any build-related .jar-files inside your repo! 
 - you can use dependency manager such as [Apache Ivy](https://ant.apache.org/ivy) to download AntForce right in process of your project's build.

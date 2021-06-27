@@ -116,7 +116,7 @@ if (project.hasProperty('mavenRepositoryUsername') && project.hasProperty('maven
     publishing {
         repositories {
             maven {
-                url = 'https://aquiva.jfrog.io/artifactory/maven-salesforce'
+                url = 'https://www.myget.org/F/aquiva-salesforce/maven'
                 credentials {
                     username = project.property('mavenRepositoryUsername')
                     password = project.property('mavenRepositoryPassword')
