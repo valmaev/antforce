@@ -1,0 +1,13 @@
+<ivy-module version="2.0">
+    <info organisation="aquiva" module="sample"/>
+    <configurations>
+        <conf name="tasks" description="Ant tasks"/>
+    </configurations>
+    <dependencies>
+        <dependency org="com.aquivalabs.force.ant" name="antforce" rev="0.13" conf="tasks->default">
+            <exclude name="ant" />
+            <exclude name="ant-launcher" />
+        </dependency>
+        <dependency org="ant-contrib" name="ant-contrib" rev="1.0b3"/>
+    </dependencies>
+</ivy-module>

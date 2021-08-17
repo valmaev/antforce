@@ -1,28 +1,60 @@
 <?xml version="1.0"?>
 
-<project xmlns:antforce="antlib:com.aquivalabs.force.ant" default="deploy">
+<project xmlns:antforce="antlib:com.aquivalabs.force.ant"
+         xmlns:ivy="antlib:org.apache.ivy.ant"
+         xmlns:sf="antlib:com.salesforce"
+         default="deploy">
     <property file="build.properties" />
     <property name="sf.server" value="https://login.salesforce.com" />
     <property name="sf.testLevel" value="RunSpecifiedTests" />
     <property name="outputdir" value="artifacts" />
 
-    <taskdef
-        uri="antlib:com.aquivalabs.force.ant"
-        name="deploy"
-        classname="com.aquivalabs.force.ant.DeployWithTestReportsTask"
-        classpath="${lib.dir}" />
-    <taskdef
-        uri="antlib:com.aquivalabs.force.ant"
-        name="executeApex"
-        classname="com.aquivalabs.force.ant.ExecuteAnonymousApexTask"
-        classpath="${lib.dir}" />
-    <taskdef
-        uri="antlib:com.aquivalabs.force.ant"
-        name="installPackage"
-        classname="com.aquivalabs.force.ant.InstallPackageTask"
-        classpath="${lib.dir}" />
+    <property name="ivy.version" value="2.4.0"/>
+    <property name="ivy.lib.dir" value="${outputdir}/lib"/>
 
-    <target name="deploy">
+    <property name="ant.salesforce.version" value="47.0" description="Version of the Ant Migration Tool aka ant.salesforce.jar"/>
+
+    <target name="bootstrap" description="Install prerequisites (ivy, Migration Tool, etc.)">
+        <mkdir dir="${user.home}/.ant/lib"/>
+        <get dest="${user.home}/.ant/lib/ivy-${ivy.version}.jar"
+             src="https://search.maven.org/remotecontent?filepath=org/apache/ivy/ivy/${ivy.version}/ivy-${ivy.version}.jar"
+             skipexisting="true"/>
+
+        <mkdir dir="${user.home}/.ant/downloads"/>
+        <get dest="${user.home}/.ant/downloads/salesforce_ant_${ant.salesforce.version}.zip"
+             src="https://gs0.salesforce.com/dwnld/SfdcAnt/salesforce_ant_${ant.salesforce.version}.zip"
+             skipexisting="true"/>
+        <unzip dest="${user.home}/.ant/downloads/ant_salesforce_${ant.salesforce.version}"
+               src="${user.home}/.ant/downloads/salesforce_ant_${ant.salesforce.version}.zip"/>
+     </target>
+
+    <target name="init" description="Retrieve binary dependencies, clear output dir"
+            depends="bootstrap">
+        <delete dir="${outputdir}/lib"/>
+        <mkdir dir="${outputdir}"/>
+        <mkdir dir="${outputdir}/lib"/>
+
+        <taskdef uri="antlib:org.apache.ivy.ant"
+                 resource="org/apache/ivy/ant/antlib.xml"
+                 classpath="${user.home}/.ant/lib/ivy-${ivy.version}.jar"/>
+
+        <ivy:retrieve />
+        <ivy:cachepath pathid="ivy.tasks.path" conf="tasks"/>
+
+        <taskdef uri="antlib:com.salesforce"
+                 resource="com/salesforce/antlib.xml"
+                 classpath="${user.home}/.ant/downloads/ant_salesforce_${ant.salesforce.version}/ant-salesforce.jar"/>
+
+        <taskdef uri="antlib:com.aquivalabs.force.ant"
+                 resource="com/aquivalabs/force/ant/antlib.xml">
+            <classpath>
+                <path refid="ivy.tasks.path"/>
+                <pathelement location="${user.home}/.ant/downloads/ant_salesforce_${ant.salesforce.version}/ant-salesforce.jar"/>
+            </classpath>
+        </taskdef>
+    </target>
+
+    <target name="deploy" depends="init">
         <antforce:deploy
             username="${sf.username}"
             password="${sf.password}${sf.token}"
